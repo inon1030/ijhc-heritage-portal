@@ -273,3 +273,25 @@ test.describe('the contributor register', () => {
     expect(unlink.status()).toBe(401);
   });
 });
+
+/**
+ * Erasing a contributor.
+ *
+ * Added after preflight found the register could be written into and never
+ * taken out of. The endpoint now does two different things behind one verb —
+ * unlink from a family, and erase the person — so both need a guard, and a
+ * stranger must reach neither.
+ */
+test.describe('erasing a contributor', () => {
+  const ID = '00000000-0000-0000-0000-000000000000';
+
+  test('is refused to a stranger', async ({ request }) => {
+    const erase = await request.delete(`/api/manage/contributors?contributorId=${ID}`);
+    expect(erase.status()).toBe(401);
+  });
+
+  test('needs to say who', async ({ request }) => {
+    const nobody = await request.delete('/api/manage/contributors');
+    expect(nobody.status()).toBe(401);
+  });
+});

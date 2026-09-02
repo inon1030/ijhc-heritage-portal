@@ -225,6 +225,53 @@ export async function unlinkContributorFromFamily(contributorId: string, familyI
   if (error) throw error;
 }
 
+/**
+ * Corrects a mistyped address.
+ *
+ * A volunteer's act, not an administrator's: the person who notices is the one
+ * whose reply bounced, and correcting a typo is cataloguing. `contributors`
+ * has one row per address, so the correction may collide with somebody the
+ * archive already knows — 23505 is that, and it is a real answer rather than a
+ * failure: the two are the same person and the records should be pointed at
+ * the row that already exists.
+ */
+export async function setContributorEmail(id: string, email: string) {
+  const supabase = await createServerSupabase();
+  const { error } = await supabase
+    .from('contributors')
+    .update({ email: email.trim().toLowerCase() })
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+/**
+ * Forgets a person and keeps their material.
+ *
+ * The handling notice promises a contributor they can ask what is held about
+ * them and ask for it to be removed. Until migration 0022 neither request
+ * could be honoured through the interface at all.
+ *
+ * `items.contributor_id` is `ON DELETE SET NULL`, so the records this person
+ * sent keep their scans, their catalogue and their place in the archive, and
+ * lose only the link to a named human being. Withdrawing the *material* is a
+ * different request and the bin answers it.
+ *
+ * Administrators only, enforced by `contributors_admin_delete`. This function
+ * does not check the role — RLS does, and a volunteer calling it deletes
+ * nothing and gets a count of zero.
+ */
+export async function eraseContributor(id: string): Promise<boolean> {
+  const supabase = await createServerSupabase();
+  const { error, count } = await supabase
+    .from('contributors')
+    .delete({ count: 'exact' })
+    .eq('id', id);
+
+  if (error) throw error;
+  return Boolean(count);
+}
+
 /** Corrects a name a volunteer has better information about. */
 export async function setContributorName(id: string, fullName: string | null) {
   const supabase = await createServerSupabase();

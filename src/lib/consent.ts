@@ -27,7 +27,7 @@
  *    one do so. Noted in `../PILOT WITH EREZ/09 — Open Questions.md`.
  */
 
-export const CONSENT_VERSION = '2026-09-02b';
+export const CONSENT_VERSION = '2026-09-02c';
 
 /**
  * The address someone writes to in order to withdraw material or ask what is
@@ -104,6 +104,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     heading: 'Changing your mind',
     body: [
       'You can ask for material to be taken down, or ask what is held about you, at any time. A record removed from public view stops being published; the archive keeps an internal note that it existed, so the same item is not re-accepted later by mistake.',
+      'You can also ask to be forgotten without withdrawing what you sent. Your name and address are erased and the material stays in the archive, no longer linked to a person. The two are separate requests and you can make either one.',
     ],
   },
 ];

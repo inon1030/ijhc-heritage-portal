@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, Loader2, Mail, Plus, Trash2, X } from 'lucide-react';
+import { ChevronDown, Loader2, Mail, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { buttonClass } from '@/components/primitives';
 import { COMMUNITY_COLORS, COMMUNITY_ORDER } from '@/lib/communities';
 import { COMMUNITY_LABELS, type Community, type Contributor, type Family } from '@/lib/types';
@@ -35,6 +35,10 @@ export function FamilyManager({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openFamily, setOpenFamily] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draftEmail, setDraftEmail] = useState('');
+  const [erasing, setErasing] = useState<string | null>(null);
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
 
@@ -101,6 +105,25 @@ export function FamilyManager({
       method: 'DELETE',
     });
     setBusyId(null);
+  }
+
+  async function correctEmail(id: string) {
+    if (!draftEmail.trim()) return;
+    setBusyId(`edit:${id}`);
+    const done = await send('/api/manage/contributors', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ contributorId: id, email: draftEmail.trim() }),
+    });
+    if (done) setEditing(null);
+    setBusyId(null);
+  }
+
+  async function erase(id: string) {
+    setBusyId(`erase:${id}`);
+    await send(`/api/manage/contributors?contributorId=${id}`, { method: 'DELETE' });
+    setBusyId(null);
+    setErasing(null);
   }
 
   async function remove(family: Family) {
@@ -369,6 +392,169 @@ export function FamilyManager({
           ))}
         </div>
       )}
+
+      {/*
+          The register.
+
+          Until preflight found it, a contributor was only reachable through a
+          family they happened to be linked to — so a person who had sent
+          something and belonged to no family was in the database and nowhere on
+          screen. That made the handling notice's promise ("ask what is held
+          about you, ask for it to be taken down") impossible to honour without
+          somebody opening the database by hand.
+      */}
+      <section className="mt-12 border-t border-rule pt-8">
+        <h2 className="font-display text-xl">Contributors</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          Everyone who has sent the archive something, or whom a volunteer has recorded against a
+          family. Addresses are never published. Correcting one is a volunteer&rsquo;s to do;
+          erasing a person is an administrator&rsquo;s.
+        </p>
+
+        {contributors.length === 0 ? (
+          <p className="mt-5 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-5 py-8 text-center text-sm text-muted">
+            Nobody has left an address yet.
+          </p>
+        ) : (
+          <>
+            <label className="mt-4 block">
+              <span className="sr-only">Search contributors</span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Find an address or a name"
+                className="h-12 w-full max-w-md rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+              />
+            </label>
+
+            <ul className="mt-4 divide-y divide-rule border-y border-rule">
+              {contributors
+                .filter((c) => {
+                  const needle = search.trim().toLowerCase();
+                  if (!needle) return true;
+                  return (
+                    c.email.toLowerCase().includes(needle) ||
+                    (c.full_name ?? '').toLowerCase().includes(needle)
+                  );
+                })
+                .map((contact) => (
+                  <li key={contact.id} className="py-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="machine text-sm">{contact.email}</span>
+                      {contact.full_name && (
+                        <span className="text-sm text-muted">{contact.full_name}</span>
+                      )}
+                      <span className="text-sm text-muted">
+                        {contact.submissions} {contact.submissions === 1 ? 'record' : 'records'}
+                        {contact.familyIds.length > 0 &&
+                          ` · ${contact.familyIds.length} ${contact.familyIds.length === 1 ? 'family' : 'families'}`}
+                      </span>
+
+                      <span className="flex-1" />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditing(editing === contact.id ? null : contact.id);
+                          setDraftEmail(contact.email);
+                          setErasing(null);
+                        }}
+                        className="rounded p-1.5 text-muted transition-colors hover:bg-accent-wash hover:text-ink"
+                      >
+                        <Pencil size={14} />
+                        <span className="sr-only">Correct {contact.email}</span>
+                      </button>
+
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setErasing(erasing === contact.id ? null : contact.id);
+                            setEditing(null);
+                          }}
+                          className="rounded p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
+                        >
+                          <Trash2 size={14} />
+                          <span className="sr-only">Erase {contact.email}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {editing === contact.id && (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <input
+                          type="email"
+                          value={draftEmail}
+                          onChange={(e) => setDraftEmail(e.target.value)}
+                          maxLength={160}
+                          aria-label={`Corrected address for ${contact.email}`}
+                          className="h-11 min-w-[16rem] flex-1 rounded-lg border border-rule-strong bg-paper px-3 focus:border-accent-strong focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          disabled={!draftEmail.trim() || draftEmail.trim() === contact.email}
+                          onClick={() => correctEmail(contact.id)}
+                          className="inline-flex h-11 items-center gap-1.5 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-all duration-200 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
+                        >
+                          {busyId === `edit:${contact.id}` && (
+                            <Loader2 size={14} className="animate-spin" />
+                          )}
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditing(null)}
+                          className="h-11 rounded-full px-3 text-sm text-muted hover:text-ink"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+
+                    {erasing === contact.id && (
+                      <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
+                        <p className="text-sm leading-relaxed">
+                          Erase <strong>{contact.email}</strong> from the register? This is what to
+                          do when somebody asks to be forgotten.{' '}
+                          {contact.submissions > 0 ? (
+                            <>
+                              Their {contact.submissions}{' '}
+                              {contact.submissions === 1 ? 'record stays' : 'records stay'} in the
+                              archive and stop being linked to a person.
+                            </>
+                          ) : (
+                            <>They have sent nothing, so only the register entry goes.</>
+                          )}{' '}
+                          To take the material down as well, use the bin.
+                        </p>
+                        <div className="mt-2.5 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => erase(contact.id)}
+                            disabled={busyId === `erase:${contact.id}`}
+                            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                          >
+                            {busyId === `erase:${contact.id}` && (
+                              <Loader2 size={14} className="animate-spin" />
+                            )}
+                            Erase them
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setErasing(null)}
+                            className="h-10 rounded-full px-3 text-sm text-muted hover:text-ink"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                ))}
+            </ul>
+          </>
+        )}
+      </section>
 
       {pending && <span className="sr-only">Saving</span>}
     </div>

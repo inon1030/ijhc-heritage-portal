@@ -63,6 +63,19 @@ describe('the handling notice', () => {
     expect(text).toMatch(/not published by that alone/i);
   });
 
+  it('explains that being forgotten and withdrawing material are two requests', () => {
+    // Added when preflight found that neither request could be honoured through
+    // the interface at all: the register had no edit path and no delete path,
+    // and `contributors_admin_delete` was a policy nothing called. Both work
+    // now, and erasure keeps the material — so the notice has to say which of
+    // the two a contributor is asking for.
+    const change = CONSENT_CLAUSES.find((c) => c.heading === 'Changing your mind')!;
+    const text = change.body.join(' ');
+    expect(text).toMatch(/forgotten without withdrawing/i);
+    expect(text).toMatch(/material stays in the archive/i);
+    expect(text).toMatch(/separate requests/i);
+  });
+
   it('warns that family names are published', () => {
     const names = CONSENT_CLAUSES.find((c) => c.heading === 'Names of people')!;
     expect(names.body.join(' ')).toMatch(/published/i);

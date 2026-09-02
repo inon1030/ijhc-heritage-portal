@@ -3,12 +3,14 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { fail, invalid, ok, unexpected } from '@/lib/api';
 import {
+  eraseContributor,
   findOrCreateContributor,
   linkContributorToFamily,
+  setContributorEmail,
   setContributorName,
   unlinkContributorFromFamily,
 } from '@/lib/contributors';
-import { getCurrentVolunteer } from '@/lib/supabase/server';
+import { getCurrentAdmin, getCurrentVolunteer } from '@/lib/supabase/server';
 
 /**
  * Which addresses belong to which family.
@@ -31,10 +33,22 @@ const Link = z.object({
   familyId: z.string().uuid().nullable().optional(),
 });
 
-const Rename = z.object({
-  contributorId: z.string().uuid(),
-  fullName: z.string().trim().min(2).max(120).nullable(),
-});
+/**
+ * Correcting what the archive holds about a person.
+ *
+ * Both fields are optional and at least one must be present, because the two
+ * corrections are independent: a bounced reply means the address is wrong, and
+ * a volunteer learning a surname means the name was blank.
+ */
+const Amend = z
+  .object({
+    contributorId: z.string().uuid(),
+    fullName: z.string().trim().min(2).max(120).nullable().optional(),
+    email: z.string().trim().email().max(160).optional(),
+  })
+  .refine((v) => v.fullName !== undefined || v.email !== undefined, {
+    message: 'Nothing to change.',
+  });
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,14 +81,29 @@ export async function PATCH(request: NextRequest) {
       return fail(401, 'unauthorised', 'Sign in as a volunteer to correct a name.');
     }
 
-    const parsed = Rename.safeParse(await request.json());
+    const parsed = Amend.safeParse(await request.json());
     if (!parsed.success) return invalid(parsed.error);
 
-    await setContributorName(parsed.data.contributorId, parsed.data.fullName);
+    if (parsed.data.fullName !== undefined) {
+      await setContributorName(parsed.data.contributorId, parsed.data.fullName);
+    }
+    if (parsed.data.email !== undefined) {
+      await setContributorEmail(parsed.data.contributorId, parsed.data.email);
+    }
 
     revalidatePath('/manage/families');
     return ok({ updated: true });
   } catch (error) {
+    // One row per address. A correction that lands on somebody the archive
+    // already knows is not a failure — it means the two are the same person —
+    // and saying so is more use than "that did not go through".
+    if ((error as { code?: string }).code === '23505') {
+      return fail(
+        409,
+        'already_known',
+        'The archive already holds that address under another contributor. Link the records to that one instead.',
+      );
+    }
     return unexpected(error);
   }
 }
@@ -89,17 +118,35 @@ export async function DELETE(request: NextRequest) {
     const contributorId = url.searchParams.get('contributorId');
     const familyId = url.searchParams.get('familyId');
 
-    if (!contributorId || !familyId) {
-      return fail(400, 'invalid_request', 'Which address, and which family?');
+    if (!contributorId) return fail(400, 'invalid_request', 'Which contributor?');
+
+    /*
+     * Two different acts behind one verb, told apart by whether a family was
+     * named.
+     *
+     * With a family: unlink. A volunteer's, and reversible — the contributor
+     * stays and so does every record.
+     *
+     * Without one: erase the person. An administrator's, irreversible, and the
+     * thing the handling notice promises. `items.contributor_id` is ON DELETE
+     * SET NULL since 0022, so the material stays and only the link to a named
+     * human being goes.
+     */
+    if (familyId) {
+      await unlinkContributorFromFamily(contributorId, familyId);
+      revalidatePath('/manage/families');
+      return ok({ unlinked: true });
     }
 
-    // Unlinks only. The contributor row stays: they have sent the archive
-    // material, and deleting the person because one family link was wrong would
-    // orphan every record that points at them.
-    await unlinkContributorFromFamily(contributorId, familyId);
+    if (!(await getCurrentAdmin())) {
+      return fail(403, 'forbidden', 'Erasing a contributor is an administrator action.');
+    }
+
+    const erased = await eraseContributor(contributorId);
+    if (!erased) return fail(404, 'not_found', 'No such contributor.');
 
     revalidatePath('/manage/families');
-    return ok({ unlinked: true });
+    return ok({ erased: true });
   } catch (error) {
     return unexpected(error);
   }
