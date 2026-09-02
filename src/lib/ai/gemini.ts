@@ -32,14 +32,45 @@ import type { AIProvider, AnalysisInput, AnalysisResult } from './types';
  * AIProvider and change AI_PROVIDER. Nothing outside src/lib/ai needs to know.
  */
 
-const RESPONSE_SCHEMA = {
+/**
+ * The response shape, built per request because the allowed subject terms are
+ * data rather than code.
+ *
+ * `keywords` is an **enum** of the archive's own terms, not a description
+ * asking for them. The distinction is the whole point: a description is a
+ * request the model may reasonably reinterpret, and an enum is a shape it
+ * cannot return outside of. `fields.key` has worked this way since the tree
+ * arrived; subject terms were the one place still taking free text, which is
+ * why eight files produced thirty-six queued candidates.
+ *
+ * It falls back to free text when the vocabulary is empty — a fresh archive
+ * with no terms yet would otherwise be unable to return any keyword at all,
+ * and an empty enum is not a valid schema.
+ */
+function responseSchema(allowed: string[]) {
+  return {
   type: Type.OBJECT,
   properties: {
     summary: { type: Type.STRING, description: 'Two sentences on what this item contains.' },
     keywords: {
       type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: 'About five subject concepts.',
+      items: allowed.length ? { type: Type.STRING, enum: allowed } : { type: Type.STRING },
+      description: allowed.length
+        ? 'Subject terms from the list you were given, in the spelling shown. Only what the material supports.'
+        : 'About five subject concepts.',
+    },
+    newTerms: {
+      type: Type.ARRAY,
+      description:
+        'Subject words the material needs that the list does not hold. Each names the branch it subdivides. Leave empty when the list was enough.',
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          term: { type: Type.STRING },
+          branchKey: { type: Type.STRING, enum: MODEL_FIELDS.map((f) => f.key) },
+        },
+        required: ['term', 'branchKey'],
+      },
     },
     ocrText: {
       type: Type.STRING,
@@ -82,8 +113,9 @@ const RESPONSE_SCHEMA = {
       },
     },
   },
-  required: ['summary', 'keywords', 'fields'],
-} as const;
+    required: ['summary', 'keywords', 'fields'],
+  } as const;
+}
 
 function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString('base64');
@@ -120,6 +152,22 @@ export function createGeminiProvider(): AIProvider {
     isSimulated: false,
 
     async analyze(input: AnalysisInput): Promise<AnalysisResult> {
+      /*
+       * The archive's own subject list, in the prompt and in the schema.
+       *
+       * Both, not either: the prompt explains what the list is for and how a
+       * proposal works, and the enum makes returning something outside it
+       * impossible rather than discouraged. Variants are offered to the enum
+       * too — the model may well read `Bombay` off an imprint — and resolve to
+       * the preferred spelling when the record is saved.
+       */
+      const vocabulary = input.vocabulary ?? [];
+      const allowed = [
+        ...new Set(
+          vocabulary.flatMap((branch) => branch.terms.flatMap((t) => [t.term, ...t.variants])),
+        ),
+      ];
+
       const response = await client.models.generateContent({
         model: GEMINI_MODEL,
         contents: [
@@ -134,9 +182,9 @@ export function createGeminiProvider(): AIProvider {
           },
         ],
         config: {
-          systemInstruction: buildInstructions(),
+          systemInstruction: buildInstructions(vocabulary),
           responseMimeType: 'application/json',
-          responseSchema: RESPONSE_SCHEMA,
+          responseSchema: responseSchema(allowed),
           temperature: 0.2,
         },
       });
@@ -168,6 +216,14 @@ export function createGeminiProvider(): AIProvider {
         provider: 'gemini',
         model: GEMINI_MODEL,
         summary: nonEmpty(parsed.summary) ?? '',
+        newTerms: Array.isArray(parsed.newTerms)
+          ? (parsed.newTerms as { term?: unknown; branchKey?: unknown }[])
+              .map((row) => ({
+                term: nonEmpty(row.term) ?? '',
+                branchKey: nonEmpty(row.branchKey) ?? '',
+              }))
+              .filter((row) => row.term && row.branchKey)
+          : [],
         keywords: Array.isArray(parsed.keywords)
           ? parsed.keywords
               .filter((k): k is string => typeof k === 'string' && k.trim().length > 0)

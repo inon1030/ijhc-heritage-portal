@@ -24,8 +24,8 @@ import {
   type ItemDetail,
   type ItemFile,
   type ItemStatus,
-  type Keyword,
 } from '@/lib/types';
+import { byBranch, termsFor, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
 import { cn, formatBytes, formatDuration } from '@/lib/utils';
 
 /**
@@ -44,8 +44,8 @@ export function ReviewWorkbench({
   selectedFamilyIds,
 }: {
   item: ItemDetail;
-  /** The only terms a record may carry. Managed at /manage/vocabulary. */
-  vocabulary: Keyword[];
+  /** The only terms a record may carry, with their variants. Managed at /manage/vocabulary. */
+  vocabulary: VocabularyTerm[];
   families: Family[];
   selectedFamilyIds: string[];
 }) {
@@ -96,7 +96,7 @@ export function ReviewWorkbench({
 
   // Only terms offered for the chosen community, plus the global ones. The
   // list narrows as soon as a reviewer picks a stream, which is the point.
-  const offered = vocabulary.filter((k) => k.community === null || k.community === community);
+  const offered = termsFor(vocabulary, community || null);
   const offeredFamilies = community ? families.filter((f) => f.community === community) : [];
 
   async function decide(status: ItemStatus) {
@@ -782,25 +782,51 @@ function VocabularyPicker({
 }: {
   keywords: string[];
   onChange: (next: string[]) => void;
-  offered: Keyword[];
+  offered: VocabularyTerm[];
   suggestions: string[];
   contributorTerms: string[];
   communityChosen: boolean;
 }) {
   const [filter, setFilter] = useState('');
 
-  const terms = offered.map((k) => k.term);
-  const lower = new Set(terms.map((t) => t.toLowerCase()));
+  const terms = offered.map((t) => t.term);
+
+  /*
+   * Variants resolve here as well as at the endpoint.
+   *
+   * A term the archive holds under another spelling is not a term the archive
+   * lacks. Without this, a model returning `Bombay` off an imprint — which it
+   * is invited to do, the enum offers variants — would be shown to a reviewer
+   * as "not in the vocabulary" beside a `Mumbai` chip they could have clicked.
+   */
+  const preferredFor = new Map<string, string>();
+  for (const term of offered) {
+    preferredFor.set(term.term.toLowerCase(), term.term);
+    for (const variant of term.variants) preferredFor.set(variant.toLowerCase(), term.term);
+  }
 
   const proposed = [...new Set([...suggestions, ...contributorTerms])].filter(
-    (t) => !keywords.some((k) => k.toLowerCase() === t.toLowerCase()),
+    (t) => !keywords.some((k) => k.toLowerCase() === (preferredFor.get(t.toLowerCase()) ?? t).toLowerCase()),
   );
-  const available = proposed.filter((t) => lower.has(t.toLowerCase()));
-  const notInVocabulary = proposed.filter((t) => !lower.has(t.toLowerCase()));
+  const available = [
+    ...new Set(proposed.map((t) => preferredFor.get(t.toLowerCase())).filter((t): t is string => Boolean(t))),
+  ];
+  const notInVocabulary = proposed.filter((t) => !preferredFor.has(t.toLowerCase()));
 
-  const matching = terms
-    .filter((t) => !keywords.includes(t))
-    .filter((t) => !filter.trim() || t.toLowerCase().includes(filter.trim().toLowerCase()));
+  const needle = filter.trim().toLowerCase();
+
+  // Typing an old spelling finds the term. Somebody who knows the city as
+  // Bombay should not have to know the archive settled on Mumbai.
+  const matching = offered
+    .filter((t) => !keywords.includes(t.term))
+    .filter(
+      (t) =>
+        !needle ||
+        t.term.toLowerCase().includes(needle) ||
+        t.variants.some((v) => v.toLowerCase().includes(needle)),
+    );
+
+  const grouped = byBranch(matching);
 
   function add(term: string) {
     if (keywords.includes(term) || keywords.length >= 20) return;
@@ -878,15 +904,27 @@ function VocabularyPicker({
             maxLength={60}
             className="mt-3 h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
           />
-          <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-auto">
-            {matching.map((term) => (
-              <button
-                key={term}
-                onClick={() => add(term)}
-                className="border border-rule bg-paper-2 px-2.5 py-1 text-sm transition-colors hover:border-accent hover:bg-accent-wash"
-              >
-                {term}
-              </button>
+          {/* Under the branch each term subdivides, so a reviewer picking a
+              keyword sees the same structure they just filed the record
+              under. A flat list of sixty words is a search box; a list under
+              "Cities and Villages" is a question with an answer. */}
+          <div className="mt-2 max-h-52 space-y-3 overflow-auto">
+            {grouped.map((group) => (
+              <div key={group.branchKey}>
+                <p className="eyebrow mb-1.5">{group.label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {group.terms.map((term) => (
+                    <button
+                      key={term.id}
+                      onClick={() => add(term.term)}
+                      title={term.variants.length ? `Also written: ${term.variants.join(', ')}` : undefined}
+                      className="border border-rule bg-paper-2 px-2.5 py-1 text-sm transition-colors hover:border-accent hover:bg-accent-wash"
+                    >
+                      {term.term}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
             {matching.length === 0 && (
               <span className="text-sm text-muted italic">Nothing matches that.</span>

@@ -2,6 +2,12 @@ import type { FieldSuggestion } from '@/lib/fields/suggestions';
 import type { Community, EvidenceLedger, ItemCategory } from '@/lib/types';
 
 export interface AnalysisInput {
+  /**
+   * The archive's controlled subject list, grouped under the tree branches it
+   * subdivides. Optional so a provider can be exercised without a database;
+   * absent means the model is given no list and returns free text.
+   */
+  vocabulary?: import('@/lib/vocabulary/thesaurus').VocabularyBranch[];
   bytes: Uint8Array;
   mimeType: string;
   fileName: string;
@@ -16,6 +22,14 @@ export interface AnalysisResult {
   summary: string;
   /** About five concepts. Suggested, never authoritative. */
   keywords: string[];
+  /**
+   * Words the vocabulary does not hold, each naming the branch it subdivides.
+   *
+   * Kept apart from `keywords` because they are proposals, not values: they
+   * queue at /manage/vocabulary for a volunteer and never reach a record until
+   * one is accepted. See migration 0021.
+   */
+  newTerms: { term: string; branchKey: string }[];
   /** The dominant language of the material, not of the interface. */
   language: string | null;
   /** The model's own confidence, 0 to 1. Kept so reviewers can triage. */

@@ -1,21 +1,22 @@
 import type { Metadata } from 'next';
 import { VocabularyManager } from '@/components/vocabulary-manager';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
-import { listKeywords, listOpenCandidates } from '@/lib/vocabulary/queries';
+import { listOpenCandidates } from '@/lib/vocabulary/queries';
+import { readVocabulary } from '@/lib/vocabulary/load';
 
 export const metadata: Metadata = { title: 'Vocabulary' };
 export const dynamic = 'force-dynamic';
 
 export default async function VocabularyPage() {
-  const [volunteer, keywords, candidates] = await Promise.all([
+  const [volunteer, terms, candidates] = await Promise.all([
     getCurrentVolunteer(),
-    listKeywords(),
+    readVocabulary(),
     listOpenCandidates(),
   ]);
 
   return (
     <VocabularyManager
-      keywords={keywords}
+      terms={terms}
       candidates={candidates}
       isAdmin={volunteer?.role === 'admin'}
     />

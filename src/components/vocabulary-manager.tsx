@@ -2,26 +2,38 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Loader2, Plus, Trash2, X } from 'lucide-react';
+import { Check, Loader2, Merge, Plus, Trash2, X } from 'lucide-react';
 import { buttonClass } from '@/components/primitives';
 import { COMMUNITY_COLORS, COMMUNITY_ORDER } from '@/lib/communities';
-import { COMMUNITY_LABELS, type Community, type Keyword, type KeywordCandidate } from '@/lib/types';
+import { FIELD_GROUPS, GROUP_ORDER, MODEL_FIELDS, fieldDef } from '@/lib/fields/registry';
+import { byBranch, unplaced, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
+import { COMMUNITY_LABELS, type Community, type KeywordCandidate } from '@/lib/types';
 
 /**
- * The controlled vocabulary, and the queue of terms the model wants added to it.
+ * The controlled vocabulary, as a thesaurus hung on the logical tree.
  *
- * A record may carry no keyword that is not on this list. That is what makes
- * two volunteers cataloguing the same kind of object reach for the same word,
- * and it is why the second half exists: without somewhere for the model's own
- * suggestions to go, a closed list would slowly make the archive blind to
- * whatever nobody thought to type.
+ * Three things a cataloguer does here, in the order the screen puts them:
+ *
+ *   **Place what is homeless.** A term with no branch is a term nobody can
+ *   reason about. Four of the first twenty-nine had none, so this section is
+ *   first and disappears when it is empty.
+ *
+ *   **Merge what has split.** `Bombay` and `Mumbai` were two terms for one
+ *   city, and a search for either missed the other. Merging keeps both
+ *   spellings, moves the records, and settles which one the archive writes.
+ *   It is a volunteer's to do: an operation people must ask permission for is
+ *   an operation that does not happen, and it destroys nothing.
+ *
+ *   **Judge what the model proposed.** A proposal now arrives naming the
+ *   branch it subdivides, so accepting one is adding a subdivision to a
+ *   catalogue rather than dropping a word into a bag.
  */
 export function VocabularyManager({
-  keywords,
+  terms,
   candidates,
   isAdmin,
 }: {
-  keywords: Keyword[];
+  terms: VocabularyTerm[];
   candidates: KeywordCandidate[];
   isAdmin: boolean;
 }) {
@@ -29,17 +41,13 @@ export function VocabularyManager({
   const [pending, startTransition] = useTransition();
   const [term, setTerm] = useState('');
   const [scope, setScope] = useState<Community | ''>('');
+  const [branch, setBranch] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [merging, setMerging] = useState<string | null>(null);
 
-  const grouped = useMemo(() => {
-    const global = keywords.filter((k) => k.community === null);
-    const byCommunity = COMMUNITY_ORDER.map((c) => ({
-      community: c,
-      terms: keywords.filter((k) => k.community === c),
-    })).filter((g) => g.terms.length > 0);
-    return { global, byCommunity };
-  }, [keywords]);
+  const branches = useMemo(() => byBranch(terms), [terms]);
+  const homeless = useMemo(() => unplaced(terms), [terms]);
 
   async function send(url: string, init: RequestInit): Promise<boolean> {
     setError(null);
@@ -55,20 +63,31 @@ export function VocabularyManager({
 
   async function add(event: React.FormEvent) {
     event.preventDefault();
-    if (!term.trim()) return;
+    if (!term.trim() || !branch) return;
     setBusyId('new');
     const done = await send('/api/manage/keywords', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ term: term.trim(), community: scope || null }),
+      body: JSON.stringify({ term: term.trim(), community: scope || null, branchKey: branch }),
     });
     if (done) setTerm('');
     setBusyId(null);
   }
 
-  async function remove(keyword: Keyword) {
-    setBusyId(keyword.id);
-    await send(`/api/manage/keywords?id=${keyword.id}`, { method: 'DELETE' });
+  async function amend(body: Record<string, unknown>, id: string) {
+    setBusyId(id);
+    await send('/api/manage/keywords', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    setBusyId(null);
+    setMerging(null);
+  }
+
+  async function remove(id: string) {
+    setBusyId(id);
+    await send(`/api/manage/keywords?id=${id}`, { method: 'DELETE' });
     setBusyId(null);
   }
 
@@ -85,24 +104,40 @@ export function VocabularyManager({
   return (
     <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
       <section>
-        <form onSubmit={add} className="mb-6 flex flex-wrap items-end gap-3">
-          <label className="min-w-[16rem] flex-1">
+        <form onSubmit={add} className="mb-6 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+          <label>
             <span className="eyebrow mb-1.5 block">New term</span>
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               maxLength={60}
-              placeholder="Synagogue"
+              placeholder="Alibag"
               className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
             />
           </label>
 
-          <label>
+          <button
+            type="submit"
+            disabled={busyId === 'new' || !term.trim() || !branch}
+            className={buttonClass('primary', 'h-13')}
+          >
+            {busyId === 'new' ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            Add
+          </button>
+
+          <label className="sm:col-span-2">
+            {/* Required, not optional. A term that subdivides nothing is the
+                thing this screen was rebuilt to stop producing. */}
+            <span className="eyebrow mb-1.5 block">Subdivides</span>
+            <BranchSelect value={branch} onChange={setBranch} placeholder="Choose a branch" />
+          </label>
+
+          <label className="sm:col-span-2">
             <span className="eyebrow mb-1.5 block">Offered for</span>
             <select
               value={scope}
               onChange={(e) => setScope(e.target.value as Community | '')}
-              className="h-13 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
             >
               <option value="">Every community</option>
               {COMMUNITY_ORDER.map((c) => (
@@ -112,49 +147,144 @@ export function VocabularyManager({
               ))}
             </select>
           </label>
-
-          <button
-            type="submit"
-            disabled={busyId === 'new' || !term.trim()}
-            className={buttonClass('primary', 'h-13')}
-          >
-            {busyId === 'new' ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-            Add
-          </button>
         </form>
 
         {error && (
-          <p role="alert" className="mb-5 rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
+          <p
+            role="alert"
+            className="mb-5 rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
+          >
             {error}
           </p>
         )}
 
-        {keywords.length === 0 ? (
+        {homeless.length > 0 && (
+          <div className="mb-8 rounded-xl border-l-[3px] border-caution bg-accent-wash px-4 py-4">
+            <h2 className="font-display text-lg">
+              {homeless.length === 1 ? 'One term has no home' : `${homeless.length} terms have no home`}
+            </h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-caution">
+              These predate the tree. Until a term says which branch it subdivides, nothing can
+              reason about it — and the model is never offered it as a proposal target.
+            </p>
+            <ul className="mt-4 space-y-2.5">
+              {homeless.map((row) => (
+                <li key={row.id} className="flex flex-wrap items-center gap-2">
+                  <span className="min-w-[8rem] font-medium">{row.term}</span>
+                  <BranchSelect
+                    value=""
+                    placeholder="Place it under…"
+                    disabled={busyId === row.id}
+                    onChange={(branchKey) =>
+                      branchKey && amend({ action: 'place', id: row.id, branchKey }, row.id)
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {branches.length === 0 && homeless.length === 0 ? (
           <p className="rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-6 py-10 text-center text-muted">
             The vocabulary is empty. Until it has terms, records can carry no keywords at all.
           </p>
         ) : (
-          <div className="space-y-7">
-            {grouped.global.length > 0 && (
-              <TermGroup
-                heading="Every community"
-                color={null}
-                terms={grouped.global}
-                isAdmin={isAdmin}
-                busyId={busyId}
-                onRemove={remove}
-              />
-            )}
-            {grouped.byCommunity.map(({ community, terms }) => (
-              <TermGroup
-                key={community}
-                heading={COMMUNITY_LABELS[community]}
-                color={COMMUNITY_COLORS[community]}
-                terms={terms}
-                isAdmin={isAdmin}
-                busyId={busyId}
-                onRemove={remove}
-              />
+          <div className="space-y-8">
+            {branches.map((group) => (
+              <div key={group.branchKey}>
+                <h3 className="eyebrow mb-1 flex flex-wrap items-baseline gap-2">
+                  {group.label}
+                  <span className="font-mono normal-case">{group.terms.length}</span>
+                </h3>
+                <p className="mb-3 text-sm text-muted">{group.catalogue}</p>
+
+                <ul className="space-y-2">
+                  {group.terms.map((row) => (
+                    <li key={row.id} className="rounded-lg border border-rule bg-paper-2 px-3.5 py-2.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">{row.term}</span>
+
+                        {row.community && (
+                          <span
+                            className="inline-flex items-center gap-1.5 text-sm text-muted"
+                            title={`Only offered on ${COMMUNITY_LABELS[row.community]} records`}
+                          >
+                            <span
+                              aria-hidden
+                              className="h-2 w-2 rounded-full"
+                              style={{ backgroundColor: COMMUNITY_COLORS[row.community] }}
+                            />
+                            {COMMUNITY_LABELS[row.community]}
+                          </span>
+                        )}
+
+                        {/* The variants. Shown plainly rather than hidden,
+                            because "we already have a word for that" is the
+                            single most useful thing this screen can tell
+                            somebody about to add a duplicate. */}
+                        {row.variants.length > 0 && (
+                          <span className="text-sm text-muted">
+                            also: {row.variants.join(', ')}
+                          </span>
+                        )}
+
+                        <span className="flex-1" />
+
+                        <button
+                          type="button"
+                          onClick={() => setMerging(merging === row.id ? null : row.id)}
+                          disabled={busyId === row.id}
+                          title="Make this a spelling of another term"
+                          className="rounded p-1.5 text-muted transition-colors hover:bg-accent-wash hover:text-ink disabled:opacity-40"
+                        >
+                          <Merge size={15} />
+                          <span className="sr-only">Merge {row.term} into another term</span>
+                        </button>
+
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => remove(row.id)}
+                            disabled={busyId === row.id}
+                            className="rounded p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
+                          >
+                            <Trash2 size={14} />
+                            <span className="sr-only">Remove {row.term}</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {merging === row.id && (
+                        <div className="mt-3 border-t border-rule pt-3">
+                          <p className="mb-2 text-sm leading-relaxed text-muted">
+                            Make <strong>{row.term}</strong> another spelling of a term in this
+                            branch. Both spellings keep working; records move to the one you choose.
+                          </p>
+                          <select
+                            defaultValue=""
+                            disabled={busyId === row.id}
+                            onChange={(e) =>
+                              e.target.value &&
+                              amend({ action: 'merge', id: row.id, intoId: e.target.value }, row.id)
+                            }
+                            className="h-11 w-full rounded-lg border border-rule-strong bg-paper px-3 focus:border-accent-strong focus:outline-none"
+                          >
+                            <option value="">Which term is it a spelling of?</option>
+                            {group.terms
+                              .filter((other) => other.id !== row.id && other.variants.length === 0)
+                              .map((other) => (
+                                <option key={other.id} value={other.id}>
+                                  {other.term}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </div>
         )}
@@ -163,8 +293,8 @@ export function VocabularyManager({
       <section>
         <h2 className="font-display text-xl">Suggested by the model</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          Words the analysis reached for that the vocabulary does not hold. The count is how many
-          times it has come up.
+          Words the analysis needed that the vocabulary does not hold, each naming the branch it
+          would subdivide. The count is how many times it has come up.
         </p>
 
         {candidates.length === 0 ? (
@@ -173,39 +303,41 @@ export function VocabularyManager({
           </p>
         ) : (
           <ul className="mt-5 divide-y divide-rule border-y border-rule">
-            {candidates.map((candidate) => (
-              <li key={candidate.id} className="flex items-center gap-3 py-2.5">
-                <span className="flex-1">
-                  {candidate.term}
-                  {candidate.community && (
-                    <span className="ml-2 text-xs text-muted">
-                      {COMMUNITY_LABELS[candidate.community]}
+            {candidates.map((candidate) => {
+              const def = candidate.branch_key ? fieldDef(candidate.branch_key) : null;
+              return (
+                <li key={candidate.id} className="flex items-center gap-3 py-2.5">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{candidate.term}</span>
+                    <span className="block truncate text-sm text-muted">
+                      {def ? def.label : 'No branch — from before the tree'}
+                      {candidate.community && ` · ${COMMUNITY_LABELS[candidate.community]}`}
                     </span>
-                  )}
-                </span>
-                <span className="font-mono text-xs text-muted">×{candidate.seen_count}</span>
-                <button
-                  type="button"
-                  onClick={() => judge(candidate, 'accept')}
-                  disabled={busyId === candidate.id}
-                  title="Add to the vocabulary"
-                  className="rounded p-2 text-positive transition-colors hover:bg-positive/10 disabled:opacity-40"
-                >
-                  <Check size={17} />
-                  <span className="sr-only">Add {candidate.term} to the vocabulary</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => judge(candidate, 'decline')}
-                  disabled={busyId === candidate.id}
-                  title="Not a term for this archive"
-                  className="rounded p-2 text-muted transition-colors hover:bg-paper-3 disabled:opacity-40"
-                >
-                  <X size={17} />
-                  <span className="sr-only">Decline {candidate.term}</span>
-                </button>
-              </li>
-            ))}
+                  </span>
+                  <span className="font-mono text-xs text-muted">×{candidate.seen_count}</span>
+                  <button
+                    type="button"
+                    onClick={() => judge(candidate, 'accept')}
+                    disabled={busyId === candidate.id}
+                    title="Add to the vocabulary"
+                    className="rounded p-2 text-positive transition-colors hover:bg-positive/10 disabled:opacity-40"
+                  >
+                    <Check size={17} />
+                    <span className="sr-only">Add {candidate.term} to the vocabulary</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => judge(candidate, 'decline')}
+                    disabled={busyId === candidate.id}
+                    title="Not a term for this archive"
+                    className="rounded p-2 text-muted transition-colors hover:bg-paper-3 disabled:opacity-40"
+                  >
+                    <X size={17} />
+                    <span className="sr-only">Decline {candidate.term}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -215,51 +347,48 @@ export function VocabularyManager({
   );
 }
 
-function TermGroup({
-  heading,
-  color,
-  terms,
-  isAdmin,
-  busyId,
-  onRemove,
+/**
+ * Every branch of the tree, under the catalogue it belongs to.
+ *
+ * `MODEL_FIELDS` rather than every field: the six that are columns on `items`
+ * — community, category, period — are not subdivided by subject words, and the
+ * five the file itself answers are not either.
+ */
+function BranchSelect({
+  value,
+  onChange,
+  placeholder,
+  disabled,
 }: {
-  heading: string;
-  color: string | null;
-  terms: Keyword[];
-  isAdmin: boolean;
-  busyId: string | null;
-  onRemove: (keyword: Keyword) => void;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  disabled?: boolean;
 }) {
+  const groups = GROUP_ORDER.map((group) => ({
+    group,
+    label: FIELD_GROUPS[group].label,
+    catalogue: FIELD_GROUPS[group].blurb,
+    fields: MODEL_FIELDS.filter((f) => f.group === group && f.type !== 'enum'),
+  })).filter((g) => g.fields.length > 0);
+
   return (
-    <div>
-      <h3 className="eyebrow mb-2.5 flex items-center gap-2">
-        {color && (
-          <span aria-hidden className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-        )}
-        {heading}
-        <span className="font-mono normal-case">{terms.length}</span>
-      </h3>
-      <ul className="flex flex-wrap gap-2">
-        {terms.map((keyword) => (
-          <li
-            key={keyword.id}
-            className="flex items-center gap-1.5 rounded-full border border-rule bg-paper-2 py-2 pr-2 pl-4 text-sm transition-colors hover:border-accent-strong"
-          >
-            {keyword.term}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => onRemove(keyword)}
-                disabled={busyId === keyword.id}
-                className="rounded-full p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
-              >
-                <Trash2 size={13} />
-                <span className="sr-only">Remove {keyword.term}</span>
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <select
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
+    >
+      <option value="">{placeholder}</option>
+      {groups.map((group) => (
+        <optgroup key={group.group} label={`${group.catalogue} · ${group.label}`}>
+          {group.fields.map((field) => (
+            <option key={field.key} value={field.key}>
+              {field.label}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
   );
 }

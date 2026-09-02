@@ -10,6 +10,7 @@ import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { makeRendition, needsRendition, renditionPath } from '@/lib/files/rendition';
 import { mediaFacetFrom } from '@/lib/fields/suggestions';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { loadVocabulary } from '@/lib/vocabulary/load';
 
 const Body = z.object({
   path: z.string().min(1).max(400),
@@ -133,12 +134,30 @@ export async function POST(request: NextRequest) {
 
     const provider = getAIProvider();
 
+    /*
+     * The archive's own subject list goes into the request.
+     *
+     * Read with the service-role client because the caller is an anonymous
+     * contributor and `keywords` is public to read but this route holds no
+     * session at all. It is the same list a volunteer sees, hung on the same
+     * tree branches, so a term the model returns is a term the review screen
+     * can offer without a translation step.
+     *
+     * A failure here is not worth losing the analysis over: an empty list means
+     * the model falls back to free text, which is where it was before 0021.
+     */
+    const vocabulary = await loadVocabulary().catch((cause) => {
+      console.error('[analyze] vocabulary unavailable, falling back to free text', cause);
+      return [];
+    });
+
     try {
       const analysis = await provider.analyze({
         bytes,
         mimeType,
         fileName: parsed.data.path.split('/').pop() ?? 'file',
         title: parsed.data.title ?? '',
+        vocabulary,
       });
 
       /*

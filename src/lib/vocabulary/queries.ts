@@ -1,6 +1,6 @@
 import 'server-only';
 import { createServerSupabase } from '@/lib/supabase/server';
-import type { Community, Family, Keyword, KeywordCandidate, Profile } from '@/lib/types';
+import type { Family, KeywordCandidate, Profile } from '@/lib/types';
 
 /**
  * Reads for the controlled vocabulary, the family register, and the account
@@ -8,29 +8,6 @@ import type { Community, Family, Keyword, KeywordCandidate, Profile } from '@/li
  * comes back — the candidates queue and the account roll return nothing at all
  * without the right role, whatever the calling code asks for.
  */
-
-/** Every term, ordered so the globals come first and the rest alphabetically. */
-export async function listKeywords(): Promise<Keyword[]> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from('keywords')
-    .select('*')
-    .order('community', { ascending: true, nullsFirst: true })
-    .order('term', { ascending: true });
-
-  if (error) throw error;
-  return (data ?? []) as Keyword[];
-}
-
-/**
- * The terms offered for one community: those scoped to it, plus every global
- * term. This is what the review workbench shows once a stream is chosen.
- */
-export function keywordsFor(all: Keyword[], community: Community | null): Keyword[] {
-  return all
-    .filter((k) => k.community === null || (community !== null && k.community === community))
-    .sort((a, b) => a.term.localeCompare(b.term));
-}
 
 /** What the model proposed and the vocabulary does not hold. Volunteers only. */
 export async function listOpenCandidates(): Promise<KeywordCandidate[]> {

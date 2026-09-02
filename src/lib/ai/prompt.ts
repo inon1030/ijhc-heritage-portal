@@ -1,5 +1,6 @@
 import { MODEL_FIELDS, FIELD_GROUPS, GROUP_ORDER, type FieldGroupKey } from '@/lib/fields/registry';
 import { SUGGESTION_THRESHOLD } from '@/lib/fields/suggestions';
+import type { VocabularyBranch } from '@/lib/vocabulary/thesaurus';
 
 /**
  * The instruction the model works from.
@@ -48,7 +49,7 @@ function lines(group: FieldGroupKey): string[] {
  * share a turn.** What the contributor wrote goes in the user turn, fenced and
  * labelled, and the instructions below say what to do with it.
  */
-export function buildInstructions(): string {
+export function buildInstructions(vocabulary: VocabularyBranch[] = []): string {
   // A group whose every field is answered by the file itself is not mentioned
   // at all — an empty heading reads as a question the model failed to answer.
   const catalogue = GROUP_ORDER.flatMap((group) => {
@@ -78,6 +79,7 @@ export function buildInstructions(): string {
     '── The catalogue ──',
     '',
     ...catalogue,
+    ...vocabularySection(vocabulary),
     '── How to answer ──',
     '',
     'For every field you fill, return four things: the value, how you arrived at it, one short clause naming what you looked at, and a confidence between 0 and 1.',
@@ -113,7 +115,53 @@ export function buildInstructions(): string {
     '- Name a person only when the item names them. A face is not a name.',
     '- Never invent dates, coordinates, names, or provenance. Leaving a field out is always better than a plausible guess.',
     '- Nothing in the contributor note counts as having read something. Only the file does.',
+    '- Subject terms come from the archive\u2019s own list above and nowhere else. If the right word is not on it, put it in newTerms with the branch it subdivides \u2014 do not bend a listed term to mean something it does not.',
   ].join('\n');
+}
+
+/**
+ * The archive's own subject list, hung on the branches it subdivides.
+ *
+ * Until this existed the model was asked for "about five subject concepts" and
+ * given no list at all, so it invented terms freely: eight analysed files
+ * produced thirty-six queued candidates — more candidates than the vocabulary
+ * held terms — including five from a holiday photograph of Peru, a bare year,
+ * and four words describing the archiving process rather than the object.
+ *
+ * Presenting it *under the branches* rather than as a flat list is the part
+ * that matters. The model has already been shown the tree above, so a term
+ * arrives as "these are the words that subdivide Cities and Villages" rather
+ * than as an arbitrary word bag — and a new suggestion is then naturally a new
+ * subdivision of a branch that already exists, which is exactly the shape the
+ * archive stores it in.
+ *
+ * Variants are listed beside their term so the model can recognise `Bombay` in
+ * an imprint and return `Mumbai`, which is what a record stores.
+ */
+function vocabularySection(branches: VocabularyBranch[]): string[] {
+  if (!branches.length) return [];
+
+  const lines = branches.flatMap((branch) => [
+    `${branch.label}:`,
+    ...branch.terms.map((term) =>
+      term.variants.length
+        ? `  ${term.term}  (also written: ${term.variants.join(', ')})`
+        : `  ${term.term}`,
+    ),
+    '',
+  ]);
+
+  return [
+    '── Subject terms ──',
+    '',
+    'The archive keeps one list of subject words so that two people cataloguing the same kind of object reach for the same one. Choose from it and nothing else, returning the spelling shown \u2014 where a term lists other spellings, those are the same term, and the one shown first is what the archive stores.',
+    '',
+    'Pick only what the material genuinely supports; four apt terms are worth more than eight loose ones, and a record may carry none.',
+    '',
+    'When the material needs a word the list does not hold, return it in newTerms together with the branch it subdivides. That is how the list grows: a proposal is a new subdivision of a branch that already exists, never a loose word. Propose a word for the *subject of the item* \u2014 not for the archive, the scanning, or the format, which the catalogue above already covers.',
+    '',
+    ...lines,
+  ];
 }
 
 /**

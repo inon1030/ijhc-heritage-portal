@@ -25,6 +25,7 @@ export function createMockProvider(): AIProvider {
         summary:
           'Simulated analysis. No AI model examined this file. Connect a GEMINI_API_KEY to get a real description, transcription, and keyword set.',
         keywords: [],
+        newTerms: [],
         // Nothing clears the gate, because nothing was looked at.
         fields: [],
         suggestedCategory: null,

@@ -265,6 +265,20 @@ export interface Keyword {
   term: string;
   /** Null means the term is offered for every community. */
   community: Community | null;
+  /**
+   * The branch of the logical tree this term subdivides — `domain.lifestyle.food`.
+   * Matches `FieldDef.key` in the registry. Null while a cataloguer has not
+   * placed it. See migration 0021.
+   */
+  branch_key: string | null;
+  /**
+   * Null: this row is the preferred spelling, and records carry it.
+   * Set: this row is another way of writing that term. `Bombay` points at
+   * `Mumbai`; both find the same records, only one is ever stored.
+   */
+  preferred_id: string | null;
+  /** An outside authority id — `wikidata:Q1156` — so this archive can be joined to others. */
+  external_id: string | null;
   created_by: string | null;
   created_at: string;
 }
@@ -274,6 +288,8 @@ export interface KeywordCandidate {
   id: string;
   term: string;
   community: Community | null;
+  /** Which branch the model said this subdivides. A proposal is never free-floating. */
+  branch_key: string | null;
   seen_count: number;
   first_item_id: string | null;
   status: 'open' | 'accepted' | 'declined';

@@ -7,6 +7,8 @@ import { FIELD_KEYS, fieldDef, isValidValue } from '@/lib/fields/registry';
 import { binItem, reviewItem } from '@/lib/items/mutations';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { setItemFamilies } from '@/lib/vocabulary/mutations';
+import { readVocabulary } from '@/lib/vocabulary/load';
+import { resolveTerms } from '@/lib/vocabulary/thesaurus';
 import { CATEGORIES, COMMUNITIES } from '@/lib/types';
 
 const STATUSES = ['pending', 'accepted', 'rejected', 'shadow_gallery'] as const;
@@ -61,7 +63,21 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       description: body.description,
       community: body.community as never,
       provenance: body.provenance,
-      keywords: body.keywords,
+      /*
+       * Resolved against the archive's own list, which does two things at once.
+       *
+       * A variant becomes its preferred spelling — a reviewer picking `Bombay`
+       * from an old tab writes `Mumbai`, so the collection stays whole. And a
+       * word the vocabulary does not hold is dropped rather than written: the
+       * workbench only offers listed terms, but the workbench is not the only
+       * thing that can POST here, and "the vocabulary is closed" has to be true
+       * at the endpoint or it is not true at all.
+       *
+       * Dropped rather than refused, because a stale tab holding a term an
+       * administrator has just removed is ordinary, and failing a volunteer's
+       * whole save over one word is not a good trade.
+       */
+      keywords: resolveTerms(await readVocabulary(), body.keywords),
       language: body.language,
       period: body.period,
       originPlace: body.originPlace,

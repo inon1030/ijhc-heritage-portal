@@ -170,14 +170,29 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
 
   await writeFields(item.id, input.files, input.contributorFields);
 
-  // Terms the model reached for that the vocabulary does not hold yet. Queued
-  // for a volunteer rather than dropped, which is what keeps a closed
-  // vocabulary from slowly making the archive blind.
-  const suggested = input.files.flatMap((f) => f.analysis?.keywords ?? []);
+  /*
+   * Words the model needed and the vocabulary does not hold.
+   *
+   * `analysis.keywords` no longer appears here: since 0021 the model chooses
+   * those from the archive's own list, so by construction they are already
+   * terms. What is left is `newTerms` — proposals, each naming the branch it
+   * subdivides — which is what keeps a closed vocabulary from slowly making
+   * the archive blind to whatever nobody has thought of yet.
+   *
+   * The contributor's own tags are deliberately not queued. They are a
+   * stranger's words with no branch, and they are not lost by staying out of
+   * the vocabulary: they are on the record in `contributor_keywords` and the
+   * review screen shows them under "What the contributor said", where a
+   * volunteer can adopt one properly if it deserves to be a term.
+   *
+   * Nothing is queued at all from material the model judged off-topic.
+   */
+  const proposals = input.files.flatMap((f) => f.analysis?.newTerms ?? []);
   await recordCandidates(
-    [...suggested, ...input.contributorKeywords],
+    proposals,
     input.files[0]?.analysis?.suggestedCommunity ?? null,
     item.id,
+    { offTopic: input.files.every((f) => f.analysis?.offTopic ?? false) },
   );
 
   await admin.from('item_events').insert({

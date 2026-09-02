@@ -4,7 +4,8 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import { ReviewWorkbench } from '@/components/review-workbench';
 import { getItemDetail, listItemEvents } from '@/lib/items/queries';
-import { listFamilies, listItemFamilyIds, listKeywords } from '@/lib/vocabulary/queries';
+import { listFamilies, listItemFamilyIds } from '@/lib/vocabulary/queries';
+import { readVocabulary } from '@/lib/vocabulary/load';
 import { formatDate } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Review' };
@@ -19,7 +20,7 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
 
   const [events, vocabulary, families, selectedFamilyIds] = await Promise.all([
     listItemEvents(id),
-    listKeywords(),
+    readVocabulary(),
     listFamilies(),
     listItemFamilyIds(id),
   ]);
