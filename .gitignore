@@ -51,3 +51,8 @@ next-env.d.ts
 # Playwright output
 /test-results/
 /playwright-report/
+
+# Backups. Outside git deliberately: they hold contributor email addresses and
+# scans of family material, and a backup committed to a repo is a leak waiting
+# for the repo to be shared.
+backups/
