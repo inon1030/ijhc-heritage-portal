@@ -235,7 +235,10 @@ export function VocabularyManager({
 
                         <button
                           type="button"
-                          onClick={() => setMerging(merging === row.id ? null : row.id)}
+                          onClick={() => {
+                            setMerging(merging === row.id ? null : row.id);
+                            setRemoving(null);
+                          }}
                           disabled={busyId === row.id}
                           title="Make this a spelling of another term"
                           className="rounded p-1.5 text-muted transition-colors hover:bg-accent-wash hover:text-ink disabled:opacity-40"
@@ -247,7 +250,10 @@ export function VocabularyManager({
                         {isAdmin && (
                           <button
                             type="button"
-                            onClick={() => setRemoving(removing === row.id ? null : row.id)}
+                            onClick={() => {
+                              setRemoving(removing === row.id ? null : row.id);
+                              setMerging(null);
+                            }}
                             disabled={busyId === row.id}
                             className="rounded p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
                           >
@@ -272,11 +278,16 @@ export function VocabularyManager({
                             Remove <strong>{row.term}</strong> from the vocabulary? Records already
                             catalogued with it keep the word, but it can no longer be chosen — and
                             the next review saved on one of those records will drop it.
-                            {row.variants.length > 0 && (
-                              <> Its {row.variants.length === 1 ? 'variant' : 'variants'}{' '}
-                              <strong>{row.variants.join(', ')}</strong> go with it.</>
-                            )}{' '}
-                            If it is a duplicate, merge it instead.
+                            {row.variants.length > 0 ? (
+                              <>
+                                {' '}Its {row.variants.length === 1 ? 'variant' : 'variants'}{' '}
+                                <strong>{row.variants.join(', ')}</strong> go with it. A term that
+                                already holds variants cannot be merged into another — split them
+                                off first if you want to keep them.
+                              </>
+                            ) : (
+                              <> If it is a duplicate, merge it instead.</>
+                            )}
                           </p>
                           <div className="mt-2.5 flex gap-2">
                             <button

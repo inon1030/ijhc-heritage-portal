@@ -290,8 +290,17 @@ test.describe('erasing a contributor', () => {
     expect(erase.status()).toBe(401);
   });
 
-  test('needs to say who', async ({ request }) => {
-    const nobody = await request.delete('/api/manage/contributors');
-    expect(nobody.status()).toBe(401);
+  test('is refused to a stranger whatever it is asked to do', async ({ request }) => {
+    // The previous version of this sent a DELETE with no parameters and
+    // asserted 401 — which it got from the session check, not from the missing
+    // parameter, making it a copy of the test above. Both shapes are asserted
+    // here so the test says what it means.
+    const unlink = await request.delete(
+      `/api/manage/contributors?contributorId=${ID}&familyId=${ID}`,
+    );
+    expect(unlink.status()).toBe(401);
+
+    const nothing = await request.delete('/api/manage/contributors');
+    expect(nothing.status()).toBe(401);
   });
 });

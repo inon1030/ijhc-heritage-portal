@@ -121,16 +121,21 @@ export function FamilyManager({
 
   async function erase(id: string) {
     setBusyId(`erase:${id}`);
-    await send(`/api/manage/contributors?contributorId=${id}`, { method: 'DELETE' });
+    const done = await send(`/api/manage/contributors?contributorId=${id}&erase=true`, {
+      method: 'DELETE',
+    });
     setBusyId(null);
-    setErasing(null);
+    // Only on success. Closing the panel regardless left a failed erase looking
+    // exactly like a successful one — the row stayed, the panel went, and the
+    // explanation sat in a banner at the top of a long page.
+    if (done) setErasing(null);
   }
 
   async function remove(family: Family) {
     setBusyId(family.id);
-    await send(`/api/manage/families?id=${family.id}`, { method: 'DELETE' });
+    const done = await send(`/api/manage/families?id=${family.id}`, { method: 'DELETE' });
     setBusyId(null);
-    setRemoving(null);
+    if (done) setRemoving(null);
   }
 
   const byCommunity = COMMUNITY_ORDER.map((c) => ({

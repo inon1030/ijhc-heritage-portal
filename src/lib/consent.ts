@@ -15,11 +15,14 @@
  *    Known gap: only the current version's wording is held here. A record
  *    stamped `2026-08-27b` links to today's text, so the archive can say
  *    *which* version somebody agreed to but cannot show them what it said.
- *    Keeping past wordings is the fix. Three versions now exist, which makes
- *    this more pressing than it was: `2026-09-02` said volunteers could not
- *    read a contributor's address, and `2026-09-02b` says they can. Nobody
- *    submitted under `2026-09-02` — it stood for a day and no contribution
- *    arrived in it — but the next reversal may not be so lucky.
+ *    Keeping past wordings is the fix, and four versions now exist. Two of
+ *    them contradict each other: `2026-09-02` said volunteers could not read a
+ *    contributor's address and `2026-09-02b` says they can. Checked against
+ *    the live database on 2026-09-02: every stamped record carries
+ *    `2026-08-27b` and nothing was submitted under any of the three later
+ *    versions, so no contributor is currently pointed at wording that
+ *    contradicts what they agreed to. That is luck rather than design, and it
+ *    runs out the first time somebody uploads between two bumps.
  *
  * 3. **It is plain language, not a legal instrument.** Nobody with a law degree
  *    has read it. An archive that publishes family material under an

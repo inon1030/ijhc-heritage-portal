@@ -19,7 +19,9 @@
     "verify": "npm run typecheck && npm run lint && npm run test",
     "sync:vault": "node scripts/sync-vault.mjs --apply",
     "deploy": "node scripts/deploy.mjs",
-    "public": "node scripts/serve-public.mjs"
+    "public": "node scripts/serve-public.mjs",
+    "db:backup": "tsx scripts/backup.ts",
+    "db:backup:verify": "tsx scripts/backup.ts --verify"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",

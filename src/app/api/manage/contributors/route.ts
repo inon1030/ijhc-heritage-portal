@@ -121,21 +121,35 @@ export async function DELETE(request: NextRequest) {
     if (!contributorId) return fail(400, 'invalid_request', 'Which contributor?');
 
     /*
-     * Two different acts behind one verb, told apart by whether a family was
-     * named.
+     * Two different acts behind one verb, and the destructive one is opted into.
      *
      * With a family: unlink. A volunteer's, and reversible — the contributor
      * stays and so does every record.
      *
-     * Without one: erase the person. An administrator's, irreversible, and the
-     * thing the handling notice promises. `items.contributor_id` is ON DELETE
-     * SET NULL since 0022, so the material stays and only the link to a named
-     * human being goes.
+     * With `erase=true` and no family: erase the person. An administrator's,
+     * irreversible, and the thing the handling notice promises.
+     * `items.contributor_id` is ON DELETE SET NULL since 0022, so the material
+     * stays and only the link to a named human being goes.
+     *
+     * The flag is required rather than inferred from a missing `familyId`.
+     * That is how it was written first, and it meant a dropped or empty
+     * parameter — `?contributorId=X&familyId=` is enough — turned a reversible
+     * unlink into a permanent erasure. For the only irreversible verb on this
+     * endpoint, falling open in the destructive direction is the wrong way
+     * round.
      */
     if (familyId) {
       await unlinkContributorFromFamily(contributorId, familyId);
       revalidatePath('/manage/families');
       return ok({ unlinked: true });
+    }
+
+    if (url.searchParams.get('erase') !== 'true') {
+      return fail(
+        400,
+        'invalid_request',
+        'To unlink, name the family. To erase the contributor, pass erase=true.',
+      );
     }
 
     if (!(await getCurrentAdmin())) {

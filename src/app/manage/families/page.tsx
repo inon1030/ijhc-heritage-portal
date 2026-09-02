@@ -20,7 +20,12 @@ export default async function FamiliesPage() {
   const [volunteer, families, contributors] = await Promise.all([
     getCurrentVolunteer(),
     listFamilies(),
-    listContributors().catch(() => []),
+    // Deliberately not caught. An empty register renders as "no addresses are
+    // linked to it" in the family-delete confirmation, so swallowing a failure
+    // here turns a broken query into a false reassurance shown to an
+    // administrator immediately before an irreversible cascade. Failing the
+    // page is the honest outcome; error.tsx handles it.
+    listContributors(),
   ]);
 
   return (
