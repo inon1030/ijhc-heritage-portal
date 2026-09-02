@@ -34,6 +34,7 @@ export function FamilyManager({
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openFamily, setOpenFamily] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
 
@@ -106,6 +107,7 @@ export function FamilyManager({
     setBusyId(family.id);
     await send(`/api/manage/families?id=${family.id}`, { method: 'DELETE' });
     setBusyId(null);
+    setRemoving(null);
   }
 
   const byCommunity = COMMUNITY_ORDER.map((c) => ({
@@ -234,7 +236,7 @@ export function FamilyManager({
                         {isAdmin && (
                           <button
                             type="button"
-                            onClick={() => remove(family)}
+                            onClick={() => setRemoving(removing === family.id ? null : family.id)}
                             disabled={busyId === family.id}
                             className="rounded p-2 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
                           >
@@ -243,6 +245,45 @@ export function FamilyManager({
                           </button>
                         )}
                       </div>
+
+                      {/*
+                          Removing a family cascades: every record attached to
+                          it loses the attachment, and every address linked to
+                          it loses the link. On one click, with nothing on
+                          screen saying how many. There is also no way to edit a
+                          family, so a misspelled name had to be deleted — which
+                          is exactly the case where the cascade costs most.
+                      */}
+                      {removing === family.id && (
+                        <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
+                          <p className="text-sm leading-relaxed">
+                            Remove <strong>{family.name}</strong>? Every record attached to this
+                            family loses the attachment, and{' '}
+                            {contacts.length === 0
+                              ? 'no addresses are linked to it'
+                              : `${contacts.length} linked ${contacts.length === 1 ? 'address' : 'addresses'} lose the link`}
+                            . The records and the contributors themselves stay.
+                          </p>
+                          <div className="mt-2.5 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => remove(family)}
+                              disabled={busyId === family.id}
+                              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                            >
+                              {busyId === family.id && <Loader2 size={14} className="animate-spin" />}
+                              Remove it
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRemoving(null)}
+                              className="h-10 rounded-full px-3 text-sm text-muted hover:text-ink"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                       {open && (
                         <div className="mt-3 rounded-lg bg-paper-2/70 px-4 py-3.5">

@@ -45,6 +45,7 @@ export function VocabularyManager({
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [merging, setMerging] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   const branches = useMemo(() => byBranch(terms), [terms]);
   const homeless = useMemo(() => unplaced(terms), [terms]);
@@ -89,6 +90,7 @@ export function VocabularyManager({
     setBusyId(id);
     await send(`/api/manage/keywords?id=${id}`, { method: 'DELETE' });
     setBusyId(null);
+    setRemoving(null);
   }
 
   async function judge(candidate: KeywordCandidate, decision: 'accept' | 'decline') {
@@ -245,7 +247,7 @@ export function VocabularyManager({
                         {isAdmin && (
                           <button
                             type="button"
-                            onClick={() => remove(row.id)}
+                            onClick={() => setRemoving(removing === row.id ? null : row.id)}
                             disabled={busyId === row.id}
                             className="rounded p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
                           >
@@ -254,6 +256,48 @@ export function VocabularyManager({
                           </button>
                         )}
                       </div>
+
+                      {/*
+                          Removing a term is the one action on this screen that
+                          reaches back into records already catalogued, and it
+                          did it on a single click. The word stays on every
+                          record that carries it and stops being choosable — so
+                          the next reviewer to save one of those records loses
+                          it silently, because the save resolves against the
+                          vocabulary. Merging is almost always what was meant.
+                      */}
+                      {removing === row.id && (
+                        <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
+                          <p className="text-sm leading-relaxed">
+                            Remove <strong>{row.term}</strong> from the vocabulary? Records already
+                            catalogued with it keep the word, but it can no longer be chosen — and
+                            the next review saved on one of those records will drop it.
+                            {row.variants.length > 0 && (
+                              <> Its {row.variants.length === 1 ? 'variant' : 'variants'}{' '}
+                              <strong>{row.variants.join(', ')}</strong> go with it.</>
+                            )}{' '}
+                            If it is a duplicate, merge it instead.
+                          </p>
+                          <div className="mt-2.5 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => remove(row.id)}
+                              disabled={busyId === row.id}
+                              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                            >
+                              {busyId === row.id && <Loader2 size={14} className="animate-spin" />}
+                              Remove it
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRemoving(null)}
+                              className="h-10 rounded-full px-3 text-sm text-muted hover:text-ink"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
                       {merging === row.id && (
                         <div className="mt-3 border-t border-rule pt-3">
