@@ -1,0 +1,41 @@
+-- =============================================================================
+-- The bin from 0018 did not work, and the reason is worth writing down.
+--
+-- A volunteer could not bin anything. Every attempt came back with "new row
+-- violates row-level security policy for table items", even though
+-- `items_volunteer_update` has USING `is_volunteer() and deleted_at is null`
+-- — which the row satisfied — and WITH CHECK `is_volunteer()`, which the
+-- volunteer satisfied. Both clauses passed and the write was still refused.
+--
+-- Postgres checks a third thing on UPDATE that neither clause mentions: the
+-- row as it would become must still be visible to you under the SELECT
+-- policies. It is not enough to be allowed to write the new row; you have to be
+-- allowed to see what you wrote.
+--
+-- So the update was refusing itself. Setting `deleted_at` makes the row fail
+-- `items_volunteer_select` (`deleted_at is null`) and `items_public_select`,
+-- and `items_admin_bin_select` needs an administrator. No SELECT policy admitted
+-- the result, so the statement could not be legal for a volunteer no matter how
+-- the UPDATE policies were written.
+--
+--   **You cannot hide a row from yourself in a single UPDATE.**
+--
+-- Which is really a design question rather than a syntax one: if a volunteer
+-- may put a record in the bin, a volunteer may see that record in the bin.
+-- Deciding they cannot see it was not a decision anybody took — it fell out of
+-- 0018 writing the read policies as though the bin belonged only to
+-- administrators, while the write policies handed the act to volunteers.
+--
+-- The narrowest answer that makes it true: a volunteer sees the records they
+-- binned themselves, and nobody else's. They still cannot restore one and still
+-- cannot destroy one — those remain `is_admin()`, which was the whole point.
+--
+-- A consequence worth knowing about: this policy requires `deleted_by` to be
+-- the caller, so binning without stamping `deleted_by` is refused outright
+-- rather than half-working. That is deliberate. See binItem() in
+-- src/lib/items/mutations.ts, which sets it.
+-- =============================================================================
+
+create policy items_volunteer_bin_select on items
+  for select to authenticated
+  using (is_volunteer() and deleted_at is not null and deleted_by = auth.uid());

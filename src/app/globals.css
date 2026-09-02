@@ -1,0 +1,325 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Indian Jewish Heritage Center — design system
+
+   Warm earth, not cold interface. Terracotta, sage, turquoise and muted gold
+   on aged paper — the palette of the material this archive actually holds:
+   Konkan textiles, Kerala tile, Bombay letterpress, brass and olive wood.
+
+   Two rules carried over from earlier decisions and not up for redesign:
+
+   1. Typography carries the product's central claim. Machine-generated values
+      are set in mono; human-verified values are set in serif or sans. You can
+      tell at a glance who wrote what. (ADR-007)
+
+   2. The community colours are not decoration. They express "Four Streams,
+      One River" and drive the proportional rule under the masthead.
+
+   The Center's logo is blue and saffron. The masthead is therefore paper, not
+   a dark band: the mark shows in its own colours instead of fighting a ground
+   that disagrees with it, and its saffron sits naturally beside terracotta.
+   ========================================================================== */
+
+@theme {
+  /* ── ground ─────────────────────────────────────────────────────────── */
+  --color-paper:       #fdfbf7;  /* aged paper, never stark white */
+  --color-paper-2:     #f7f2e9;
+  --color-paper-3:     #efe7d9;
+
+  /* ── ink ────────────────────────────────────────────────────────────── */
+  /* Deep sage rather than black: the dark ground and the primary button, at
+     more than 11:1 on paper. */
+  --color-ink:         #2c3a16;
+  --color-ink-2:       #3f6212;
+  --color-ink-3:       #5a7c2a;
+
+  /* ── accent ─────────────────────────────────────────────────────────── */
+  --color-accent:        #b45309;  /* muted gold — borders, focus, quiet marks */
+  --color-accent-strong: #d97706;  /* terracotta — the one loud colour */
+  --color-accent-wash:   #fef3e2;
+
+  /* ── secondary ──────────────────────────────────────────────────────── */
+  --color-sage:        #3f6212;
+  --color-sage-wash:   #f0f4e6;
+  --color-turquoise:   #0f766e;
+  --color-turquoise-wash: #e6f4f1;
+
+  /* ── the poster ─────────────────────────────────────────────────────── */
+  /* The Center's own campaign pair, sampled from the "2,000 Years of our
+     Heritage / Save it Now" artwork, and used only on the front door. The
+     saffron is the chakra in the mark and the blue is the star around it, so
+     the poster and the logo are already the same two colours. Elsewhere the
+     site stays on terracotta and sage — two accents everywhere would leave
+     neither meaning anything. */
+  --color-brand-saffron: #ef9f24;
+  --color-brand-blue:    #3d72b4;
+  --color-brand-blue-deep: #2f5c93;
+
+  /* ── structure ──────────────────────────────────────────────────────── */
+  --color-rule:        #e6ddcb;  /* warm border, never grey */
+  --color-rule-strong: #d8cbb2;
+  --color-muted:       #6b6259;  /* 5.3:1 on paper */
+
+  /* ── the streams ────────────────────────────────────────────────────── */
+  /* Five hues that stay distinguishable inside one warm family. */
+  --color-bene:        #0f766e;  /* turquoise — the Konkan coast */
+  --color-cochin:      #0e7490;  /* deeper cyan — Paradesi tilework */
+  --color-baghdadi:    #9a3412;  /* rust — the Sassoon textile houses */
+  --color-menashe:     #3f6212;  /* sage — the Manipur and Mizoram hills */
+  --color-general:     #78716c;  /* stone — filed as Indian Jewish, unplaced */
+
+  /* ── states ─────────────────────────────────────────────────────────── */
+  --color-positive:    #15803d;
+  --color-caution:     #b45309;
+  --color-critical:    #b91c1c;
+
+  --font-display: var(--font-spectral), Georgia, serif;
+  --font-sans:    var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono:    var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius-card: 0.75rem;
+
+  /* Between h-12 and h-14. Form fields want the extra 4px on a 17px base. */
+  --spacing-13: 3.25rem;
+
+  /* Soft and warm rather than a grey drop shadow. */
+  --shadow-soft:  0 1px 2px rgb(68 52 30 / 0.04), 0 4px 16px rgb(68 52 30 / 0.05);
+  --shadow-lift:  0 2px 6px rgb(68 52 30 / 0.07), 0 12px 32px rgb(68 52 30 / 0.09);
+  --shadow-ring:  0 0 0 1px rgb(230 221 203 / 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /*
+     * 17px instead of the browser's 16. Every size and gap is expressed in rem,
+     * so this one line lifts the whole interface — which is what "easier to
+     * read" means here. Anyone who has changed their browser's default keeps
+     * it: this scales from their setting rather than replacing it.
+     */
+    font-size: 106.25%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv05" 1, "ss01" 1;
+    line-height: 1.65;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.18;
+  }
+
+  /* One unmistakable focus ring everywhere, thick enough to find. */
+  :focus-visible {
+    outline: 2.5px solid var(--color-accent-strong);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-wash);
+    color: var(--color-ink);
+  }
+
+  /* A cream page deserves a cream scrollbar. */
+  * {
+    scrollbar-color: var(--color-rule-strong) transparent;
+  }
+}
+
+@layer components {
+  /* The eyebrow that labels each block of metadata. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    /* 13.8px at the 17px root. The previous 12.75px was legible on a laptop
+       and hard work on a phone, and these labels carry real information. */
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /*
+   * The Center's name set as a wordmark.
+   *
+   * The shadow is a letterpress, not a drop shadow: a hairline of near-white
+   * above each letter and a soft warm shadow below, so the type reads as
+   * pressed into the paper rather than floating over it. A conventional drop
+   * shadow on a wordmark is the fastest way to make an institution look
+   * amateur, and it is the opposite of what it is for.
+   *
+   * A gradient fill was tried first and did not survive contact with the
+   * shadow: `background-clip: text` needs `color: transparent`, and a
+   * `drop-shadow` filter on the same element opens a rendering context that
+   * eats the clip, so the name disappeared entirely. Solid ink and a text
+   * shadow do the same job and always paint.
+   */
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.016em;
+    color: var(--color-ink);
+    text-shadow:
+      0 1px 0 rgb(255 255 255 / 0.9),
+      0 1px 3px rgb(68 52 30 / 0.18);
+  }
+
+  /* Machine-written. Anything wearing this came from a model, not a person. */
+  .machine {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.7;
+  }
+
+  /*
+   * The card. One class rather than a dozen repeated utility strings, so a
+   * change to the resting elevation is one edit and every card moves together.
+   */
+  .card {
+    background-color: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+    transition:
+      box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 240ms ease;
+  }
+
+  /* Only for a card that is genuinely a link or a button. */
+  .card-interactive:hover {
+    box-shadow: var(--shadow-lift);
+    border-color: var(--color-accent-strong);
+    transform: translateY(-3px);
+  }
+
+  .card-interactive:active {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /*
+   * The double ring. Reserved for the handful of marks that carry a number or
+   * a step — the streams on the portal, the steps in the contribution flow.
+   * Using it everywhere would make it mean nothing.
+   */
+  .ring-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: var(--color-paper);
+    box-shadow:
+      0 0 0 1.5px var(--ring-mark-inner, var(--color-accent-strong)),
+      0 0 0 6px var(--color-paper),
+      0 0 0 7.5px var(--ring-mark-outer, var(--color-rule));
+    transition: box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+/* ==========================================================================
+   Motion
+
+   Built on IntersectionObserver and CSS rather than an animation library:
+   forty lines against forty kilobytes, and this page is mostly server-rendered
+   so there is nothing for a client-side motion runtime to earn back.
+
+   Everything below is a transform and an opacity — the two properties a
+   browser can animate without laying the page out again.
+   ========================================================================== */
+
+@layer utilities {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  [data-reveal='shown'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Sideways, for anything that reads as arriving from the margin. */
+  [data-reveal-from='left'] {
+    transform: translateX(-22px);
+  }
+
+  [data-reveal-from='scale'] {
+    transform: scale(0.965);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* For things already on screen at load, which have nothing to scroll into. */
+  .animate-rise {
+    animation: rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  @keyframes grow-rule {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .animate-grow-rule {
+    transform-origin: left;
+    animation: grow-rule 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+/*
+ * Someone who has asked their operating system to stop moving things means it.
+ * Content still appears — it simply appears rather than arriving.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .card-interactive:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,75 @@
+import Link from 'next/link';
+import { emptyCommunityCounts } from '@/lib/communities';
+import { Logo, hasSuppliedLogo } from '@/components/logo';
+import { MastheadShell } from '@/components/masthead-shell';
+import { SiteNav } from '@/components/site-nav';
+import { StreamRule } from '@/components/stream-rule';
+import { countReviewQueue, getCommunityCounts } from '@/lib/items/queries';
+import { getCurrentProfile } from '@/lib/supabase/server';
+
+/**
+ * The masthead, folded away behind a strip. `MastheadShell` handles the
+ * opening; everything here is what appears once it has.
+ *
+ * It sits on paper rather than a dark band. The Center's mark is a blue star
+ * around a saffron chakra: on a coloured ground it reads as a sticker on
+ * someone else's page, and on cream it is simply the Center's.
+ */
+export async function Masthead() {
+  // Renders above every route, including the sign-in page, so it must survive
+  // the database being unreachable or not yet configured.
+  const [profile, counts] = await Promise.all([
+    getCurrentProfile().catch(() => null),
+    getCommunityCounts().catch(emptyCommunityCounts),
+  ]);
+
+  // A pending account has a profile and no rights. Counting its queue would
+  // return zero anyway — RLS sees to that — but asking at all would imply it
+  // has one.
+  const approved = profile?.role === 'volunteer' || profile?.role === 'admin';
+  const queueCount = approved ? await countReviewQueue().catch(() => 0) : 0;
+
+  return (
+    <MastheadShell
+      mark={<Logo variant="mark" size={22} />}
+      rule={<StreamRule counts={counts} />}
+    >
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-5 md:flex-row md:items-start md:gap-8">
+        <Link
+          href="/"
+          className="group flex items-center gap-3 self-start rounded-xl transition-transform duration-300 hover:-translate-y-0.5 md:pt-1"
+        >
+          {hasSuppliedLogo ? (
+            <>
+              {/* The lockup carries the name inside the artwork, so the name is
+                  set only for screen readers. */}
+              <Logo variant="lockup" size={58} />
+              <span className="sr-only">Indian Jewish Heritage Center — home</span>
+              <span className="hidden border-l border-rule pl-4 lg:block">
+                <span className="wordmark block text-lg leading-tight">
+                  Indian Jewish Heritage Center
+                </span>
+                <span className="eyebrow block">Four Streams of History</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <Logo
+                size={40}
+                className="text-turquoise transition-colors group-hover:text-accent-strong"
+              />
+              <span>
+                <span className="wordmark block text-[1.35rem] leading-tight">
+                  Indian Jewish Heritage Center
+                </span>
+                <span className="eyebrow block">Digital Archive · Four Streams of History</span>
+              </span>
+            </>
+          )}
+        </Link>
+
+        <SiteNav profile={profile} queueCount={queueCount} />
+      </div>
+    </MastheadShell>
+  );
+}

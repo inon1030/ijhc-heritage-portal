@@ -1,0 +1,344 @@
+{
+  "asf-bollywood-poster.jpeg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "Exhibition poster for Baghdadis & The Bene Israel in Bollywood & Beyond: Indian Jews in the Movies, presented by the American Sephardi Federation. The exhibition ran from November 2015 through March 2016 at the Leon Levy Gallery, featuring items from the Kenneth & Joyce Robbins Collection.",
+    "keywords": [
+      "Bollywood",
+      "Baghdadi Jews",
+      "Bene Israel",
+      "Indian Cinema",
+      "Exhibition"
+    ],
+    "language": "English",
+    "confidence": 0.95,
+    "ocrText": "BAGHDADIS & THE BENE ISRAEL IN BOLLYWOOD & BEYOND • INDIAN JEWS IN THE MOVIES • American Sephardi Federation November 2015 through March 2016 LEON LEVY GALLERY Books & Ephemera from the Kenneth & Joyce Robbins Collection",
+    "transcript": null,
+    "suggestedCommunity": null,
+    "suggestedPeriod": "2010s",
+    "suggestedOrigin": "New York, USA",
+    "reasoning": "The poster explicitly gives the exhibition dates as November 2015 through March 2016 and lists the host institution as the American Sephardi Federation's Leon Levy Gallery in New York.",
+    "raw": {
+      "summary": "Exhibition poster for Baghdadis & The Bene Israel in Bollywood & Beyond: Indian Jews in the Movies, presented by the American Sephardi Federation. The exhibition ran from November 2015 through March 2016 at the Leon Levy Gallery, featuring items from the Kenneth & Joyce Robbins Collection.",
+      "keywords": [
+        "Bollywood",
+        "Baghdadi Jews",
+        "Bene Israel",
+        "Indian Cinema",
+        "Exhibition"
+      ],
+      "confidence": 0.95,
+      "language": "English",
+      "ocrText": "BAGHDADIS & THE BENE ISRAEL IN BOLLYWOOD & BEYOND • INDIAN JEWS IN THE MOVIES • American Sephardi Federation November 2015 through March 2016 LEON LEVY GALLERY Books & Ephemera from the Kenneth & Joyce Robbins Collection",
+      "reasoning": "The poster explicitly gives the exhibition dates as November 2015 through March 2016 and lists the host institution as the American Sephardi Federation's Leon Levy Gallery in New York.",
+      "suggestedCommunity": null,
+      "suggestedOrigin": "New York, USA",
+      "suggestedPeriod": "2010s",
+      "transcript": null
+    }
+  },
+  "ezra-clipping.jpeg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "This print item features a portrait photograph and a Rosh Hashanah greeting signed by Sir David Ezra in Calcutta. In the message, he wishes peace and health to all while acknowledging the distress faced by fellow Jews in distant lands.",
+    "keywords": [
+      "Sir David Ezra",
+      "Rosh Hashanah",
+      "Calcutta",
+      "Baghdadi Jewish community",
+      "Newspaper greeting"
+    ],
+    "language": "English",
+    "confidence": 0.95,
+    "ocrText": "Sir David Ezra. Another Rosh Hashannah is on the approach. We want to wish everybody a year of peace, contentment and health. There is so much distress among our fellow-Jews in distant lands that it saddens one, especially at the approach of our Holy days. We sincerely hope for the best with God's will. Calcutta. David Ezra",
+    "transcript": null,
+    "suggestedCommunity": "baghdadi",
+    "suggestedPeriod": "1930s",
+    "suggestedOrigin": "Calcutta, India",
+    "reasoning": "Sir David Ezra was a prominent Baghdadi Jewish leader in Calcutta who was knighted in 1927; the location Calcutta is explicitly stated at the bottom of the clipping.",
+    "raw": {
+      "summary": "This print item features a portrait photograph and a Rosh Hashanah greeting signed by Sir David Ezra in Calcutta. In the message, he wishes peace and health to all while acknowledging the distress faced by fellow Jews in distant lands.",
+      "keywords": [
+        "Sir David Ezra",
+        "Rosh Hashanah",
+        "Calcutta",
+        "Baghdadi Jewish community",
+        "Newspaper greeting"
+      ],
+      "confidence": 0.95,
+      "language": "English",
+      "ocrText": "Sir David Ezra. Another Rosh Hashannah is on the approach. We want to wish everybody a year of peace, contentment and health. There is so much distress among our fellow-Jews in distant lands that it saddens one, especially at the approach of our Holy days. We sincerely hope for the best with God's will. Calcutta. David Ezra",
+      "reasoning": "Sir David Ezra was a prominent Baghdadi Jewish leader in Calcutta who was knighted in 1927; the location Calcutta is explicitly stated at the bottom of the clipping.",
+      "suggestedCommunity": "baghdadi",
+      "suggestedOrigin": "Calcutta, India",
+      "suggestedPeriod": "1930s",
+      "transcript": null
+    }
+  },
+  "jewish-family-group.jpg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "A studio portrait photograph depicting an extended Indian Jewish family, including men, women, and young children. The adults and children are dressed in period attire, with the men and boys wearing distinctive patterned skullcaps and layered robes.",
+    "keywords": [
+      "family portrait",
+      "traditional dress",
+      "skullcaps",
+      "photograph",
+      "Cochin Jews"
+    ],
+    "language": null,
+    "confidence": 0.85,
+    "ocrText": null,
+    "transcript": null,
+    "suggestedCommunity": "cochin",
+    "suggestedPeriod": "late 19th century",
+    "suggestedOrigin": "Cochin, India",
+    "reasoning": "The distinct patterned headcaps (tuppis) and regional clothing styles, together with late 19th-century photographic presentation, indicate a Cochin Jewish family group.",
+    "raw": {
+      "summary": "A studio portrait photograph depicting an extended Indian Jewish family, including men, women, and young children. The adults and children are dressed in period attire, with the men and boys wearing distinctive patterned skullcaps and layered robes.",
+      "keywords": [
+        "family portrait",
+        "traditional dress",
+        "skullcaps",
+        "photograph",
+        "Cochin Jews"
+      ],
+      "confidence": 0.85,
+      "language": null,
+      "ocrText": null,
+      "reasoning": "The distinct patterned headcaps (tuppis) and regional clothing styles, together with late 19th-century photographic presentation, indicate a Cochin Jewish family group.",
+      "suggestedCommunity": "cochin",
+      "suggestedOrigin": "Cochin, India",
+      "suggestedPeriod": "late 19th century",
+      "transcript": null
+    }
+  },
+  "kachori.jpeg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "A metal platter containing fried golden-brown pleated dumplings, commonly known as kachoris. A small metal bowl filled with a white yogurt-based sauce with green herbs accompanies the dish.",
+    "keywords": [
+      "kachori",
+      "dumpling",
+      "culinary heritage",
+      "Indian Jewish cuisine",
+      "food"
+    ],
+    "language": null,
+    "confidence": 0.8,
+    "ocrText": null,
+    "transcript": null,
+    "suggestedCommunity": null,
+    "suggestedPeriod": null,
+    "suggestedOrigin": null,
+    "reasoning": "The image depicts fried dumplings (kachori) served on a metal tray with a dip. No text, inscriptions, or unique stylistic elements allow a specific dating or geographic attribution.",
+    "raw": {
+      "summary": "A metal platter containing fried golden-brown pleated dumplings, commonly known as kachoris. A small metal bowl filled with a white yogurt-based sauce with green herbs accompanies the dish.",
+      "keywords": [
+        "kachori",
+        "dumpling",
+        "culinary heritage",
+        "Indian Jewish cuisine",
+        "food"
+      ],
+      "confidence": 0.8,
+      "language": null,
+      "ocrText": null,
+      "reasoning": "The image depicts fried dumplings (kachori) served on a metal tray with a dip. No text, inscriptions, or unique stylistic elements allow a specific dating or geographic attribution.",
+      "suggestedCommunity": null,
+      "suggestedOrigin": null,
+      "suggestedPeriod": null,
+      "transcript": null
+    }
+  },
+  "ketuba-detail.jpg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "An illuminated manuscript page of the Book of Esther featuring Hebrew scroll text alongside Marathi titles in Devanagari script. The miniature illustration depicts Queen Esther before King Ahasuerus seated on a throne in an Indian courtly setting.",
+    "keywords": [
+      "Megillat Esther",
+      "Bene Israel",
+      "Marathi",
+      "Hebrew manuscript",
+      "Purim"
+    ],
+    "language": "Hebrew, Marathi",
+    "confidence": 0.95,
+    "ocrText": "एस्तर साठी एक कथा\n\nויהי בימי אחשורוש הוא אחשורוש\nכוש שבע ועשרים ומאה מדינה\nאחשורוש על כסא מלכותו אשר\nשלוש למלכו עשה משתה לכל\nומדי הפרתמים ושרי המדינות\nכבוד מלכותו ואת יקר תפארת\nומאת יום וכמלאות הימים האלה\nהנמצאים בשושן הבירה למגדול\nימים בחצר גנת בית המלך\nבחבלי בוץ וארגמן על גלילי כסף\nזהב וכסף על רצפת בהט ושש ודר\n\nएस्तर ची कथा",
+    "transcript": null,
+    "suggestedCommunity": "bene_israel",
+    "suggestedPeriod": "late 19th century",
+    "suggestedOrigin": "Maharashtra, India",
+    "reasoning": "The combination of Hebrew biblical scroll text for Megillat Esther with Marathi headings in Devanagari script and Indian miniature painting style is characteristic of Bene Israel manuscripts from Maharashtra, India, dating to the late 19th century.",
+    "raw": {
+      "summary": "An illuminated manuscript page of the Book of Esther featuring Hebrew scroll text alongside Marathi titles in Devanagari script. The miniature illustration depicts Queen Esther before King Ahasuerus seated on a throne in an Indian courtly setting.",
+      "keywords": [
+        "Megillat Esther",
+        "Bene Israel",
+        "Marathi",
+        "Hebrew manuscript",
+        "Purim"
+      ],
+      "confidence": 0.95,
+      "language": "Hebrew, Marathi",
+      "ocrText": "एस्तर साठी एक कथा\n\nויהי בימי אחשורוש הוא אחשורוש\nכוש שבע ועשרים ומאה מדינה\nאחשורוש על כסא מלכותו אשר\nשלוש למלכו עשה משתה לכל\nומדי הפרתמים ושרי המדינות\nכבוד מלכותו ואת יקר תפארת\nומאת יום וכמלאות הימים האלה\nהנמצאים בשושן הבירה למגדול\nימים בחצר גנת בית המלך\nבחבלי בוץ וארגמן על גלילי כסף\nזהב וכסף על רצפת בהט ושש ודר\n\nएस्तर ची कथा",
+      "reasoning": "The combination of Hebrew biblical scroll text for Megillat Esther with Marathi headings in Devanagari script and Indian miniature painting style is characteristic of Bene Israel manuscripts from Maharashtra, India, dating to the late 19th century.",
+      "suggestedCommunity": "bene_israel",
+      "suggestedOrigin": "Maharashtra, India",
+      "suggestedPeriod": "late 19th century",
+      "transcript": null
+    }
+  },
+  "lady-ezra-group.png": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "This black-and-white group photograph features Lady Rachel Ezra seated centrally at a table bearing a Hanukkah menorah, flanked by members of a Jewish women's committee and young girls in uniforms bearing Stars of David. The image captures a gathering of the Jewish Women's League or WIZO organization in Calcutta.",
+    "keywords": [
+      "Lady Rachel Ezra",
+      "Baghdadi Jews",
+      "Calcutta",
+      "WIZO",
+      "menorah"
+    ],
+    "language": null,
+    "confidence": 0.9,
+    "ocrText": null,
+    "transcript": null,
+    "suggestedCommunity": "baghdadi",
+    "suggestedPeriod": "1930s-1940s",
+    "suggestedOrigin": "Calcutta, India",
+    "reasoning": "Lady Rachel Ezra was a prominent leader of the Baghdadi Jewish community and WIZO in Calcutta. The women's dresses, puff sleeves, and hairstyles belong to the 1930s–1940s.",
+    "raw": {
+      "summary": "This black-and-white group photograph features Lady Rachel Ezra seated centrally at a table bearing a Hanukkah menorah, flanked by members of a Jewish women's committee and young girls in uniforms bearing Stars of David. The image captures a gathering of the Jewish Women's League or WIZO organization in Calcutta.",
+      "keywords": [
+        "Lady Rachel Ezra",
+        "Baghdadi Jews",
+        "Calcutta",
+        "WIZO",
+        "menorah"
+      ],
+      "confidence": 0.9,
+      "language": null,
+      "ocrText": null,
+      "reasoning": "Lady Rachel Ezra was a prominent leader of the Baghdadi Jewish community and WIZO in Calcutta. The women's dresses, puff sleeves, and hairstyles belong to the 1930s–1940s.",
+      "suggestedCommunity": "baghdadi",
+      "suggestedOrigin": "Calcutta, India",
+      "suggestedPeriod": "1930s-1940s",
+      "transcript": null
+    }
+  },
+  "synagogue-exterior.webp": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "An exterior photograph showing a three-story Victorian Classical Revival style synagogue featuring a blue and white painted facade with arched windows and a triangular pediment. Street-level yellow security barricades in front of the building bear the text MUMBAI POLICE.",
+    "keywords": [
+      "synagogue",
+      "architecture",
+      "Baghdadi Jews",
+      "Mumbai",
+      "Keneseth Eliyahoo"
+    ],
+    "language": "English",
+    "confidence": 0.95,
+    "ocrText": "MUMBAI POLICE",
+    "transcript": null,
+    "suggestedCommunity": "baghdadi",
+    "suggestedPeriod": "late 19th century",
+    "suggestedOrigin": "Mumbai, India",
+    "reasoning": "The building shown is the Keneseth Eliyahoo Synagogue located in Fort, Mumbai, constructed in 1884. The location is further confirmed by the yellow street barricades explicitly labeled MUMBAI POLICE.",
+    "raw": {
+      "summary": "An exterior photograph showing a three-story Victorian Classical Revival style synagogue featuring a blue and white painted facade with arched windows and a triangular pediment. Street-level yellow security barricades in front of the building bear the text MUMBAI POLICE.",
+      "keywords": [
+        "synagogue",
+        "architecture",
+        "Baghdadi Jews",
+        "Mumbai",
+        "Keneseth Eliyahoo"
+      ],
+      "confidence": 0.95,
+      "language": "English",
+      "ocrText": "MUMBAI POLICE",
+      "reasoning": "The building shown is the Keneseth Eliyahoo Synagogue located in Fort, Mumbai, constructed in 1884. The location is further confirmed by the yellow street barricades explicitly labeled MUMBAI POLICE.",
+      "suggestedCommunity": "baghdadi",
+      "suggestedOrigin": "Mumbai, India",
+      "suggestedPeriod": "late 19th century",
+      "transcript": null
+    }
+  },
+  "baghdadi-religious-book.jpeg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "This is the title page of a Jewish prayer book containing supplications and confession prayers according to the Baghdadi custom, accompanied by an English translation. It was printed in 1907 by J. D. Ashkenazy & Co. at the Lebanon Printing Press in Fort, Bombay.",
+    "keywords": [
+      "Baghdadi custom",
+      "Order of Supplication",
+      "Order of Confession",
+      "Bombay",
+      "Lebanon Printing Press"
+    ],
+    "language": "English",
+    "confidence": 0.95,
+    "ocrText": "Z. H. Joseph. THE Order of Supplication AND other prayers including THE Order of Confession ACCORDING TO THE CUSTOM OF THE JEWISH COMMUNITY OF BAGDAD WITH AN ENGLISH TRANSLATION. PRINTED & PUBLISHED BY J. D. ASHKENAZY & Co. PROPRIETORS LEBANON PRINTING PRESS BAKE HOUSE LANE, FORT, BOMBAY 5667-1907.",
+    "transcript": null,
+    "suggestedCommunity": "baghdadi",
+    "suggestedPeriod": "1900s",
+    "suggestedOrigin": "Bombay, India",
+    "reasoning": "The title page explicitly states the publication place as Bombay (Fort, Bake House Lane) and provides the dual Hebrew/Gregorian year 5667-1907.",
+    "raw": {
+      "summary": "This is the title page of a Jewish prayer book containing supplications and confession prayers according to the Baghdadi custom, accompanied by an English translation. It was printed in 1907 by J. D. Ashkenazy & Co. at the Lebanon Printing Press in Fort, Bombay.",
+      "keywords": [
+        "Baghdadi custom",
+        "Order of Supplication",
+        "Order of Confession",
+        "Bombay",
+        "Lebanon Printing Press"
+      ],
+      "confidence": 0.95,
+      "language": "English",
+      "ocrText": "Z. H. Joseph. THE Order of Supplication AND other prayers including THE Order of Confession ACCORDING TO THE CUSTOM OF THE JEWISH COMMUNITY OF BAGDAD WITH AN ENGLISH TRANSLATION. PRINTED & PUBLISHED BY J. D. ASHKENAZY & Co. PROPRIETORS LEBANON PRINTING PRESS BAKE HOUSE LANE, FORT, BOMBAY 5667-1907.",
+      "reasoning": "The title page explicitly states the publication place as Bombay (Fort, Bake House Lane) and provides the dual Hebrew/Gregorian year 5667-1907.",
+      "suggestedCommunity": "baghdadi",
+      "suggestedOrigin": "Bombay, India",
+      "suggestedPeriod": "1900s",
+      "transcript": null
+    }
+  },
+  "ketuba.jpg": {
+    "provider": "gemini",
+    "model": "gemini-3.6-flash",
+    "summary": "An illuminated manuscript Ketubah featuring gold leaf detailing, twin lions, a royal crown, and decorative architectural columns. The Hebrew marriage contract and introductory blessings are framed by elaborate floral scrolls and floral borders.",
+    "keywords": [
+      "ketubah",
+      "illuminated manuscript",
+      "Baghdadi Jewish",
+      "marriage contract",
+      "gold leaf"
+    ],
+    "language": "Hebrew",
+    "confidence": 0.9,
+    "ocrText": "בשם רחמן מלא רחמים יתברך שמו בשם אשר לו הגדולה והגבורה על כל ברכה ותהלה בסמנא טבא ובסמנא מעליא בשעה מעולה ועונה מהוללה חדוה וגילה שמחה וצהלה פדות וישע וגאולה ומלא כל שאלות לבחנו לטובה וילכו כח הקהלה יששו וישמחו יפרו וירבו בני ישראל מצא אשה מצא טוב ויפק רצון מה' בית והון נחלת אבות ומה' אשה משכלת אשתך כגפן פוריה בירכתי ביתך בניך כשתילי זיתים סביב לשלחנך הנה כי כן יבורך גבר ירא ה' יברכך ה' מציון וראה בטוב ירושלם כל ימי חייך וראה בנים לבניך שלום על ישראל",
+    "transcript": null,
+    "suggestedCommunity": "baghdadi",
+    "suggestedPeriod": "late 19th century",
+    "suggestedOrigin": "India",
+    "reasoning": "The visual motifs, including gilt heraldic lions supporting a crowned shield above architectural columns and floral wreaths, are classic attributes of 19th-century Baghdadi Jewish ketubot from India.",
+    "raw": {
+      "summary": "An illuminated manuscript Ketubah featuring gold leaf detailing, twin lions, a royal crown, and decorative architectural columns. The Hebrew marriage contract and introductory blessings are framed by elaborate floral scrolls and floral borders.",
+      "keywords": [
+        "ketubah",
+        "illuminated manuscript",
+        "Baghdadi Jewish",
+        "marriage contract",
+        "gold leaf"
+      ],
+      "confidence": 0.9,
+      "language": "Hebrew",
+      "ocrText": "בשם רחמן מלא רחמים יתברך שמו בשם אשר לו הגדולה והגבורה על כל ברכה ותהלה בסמנא טבא ובסמנא מעליא בשעה מעולה ועונה מהוללה חדוה וגילה שמחה וצהלה פדות וישע וגאולה ומלא כל שאלות לבחנו לטובה וילכו כח הקהלה יששו וישמחו יפרו וירבו בני ישראל מצא אשה מצא טוב ויפק רצון מה' בית והון נחלת אבות ומה' אשה משכלת אשתך כגפן פוריה בירכתי ביתך בניך כשתילי זיתים סביב לשלחנך הנה כי כן יבורך גבר ירא ה' יברכך ה' מציון וראה בטוב ירושלם כל ימי חייך וראה בנים לבניך שלום על ישראל",
+      "reasoning": "The visual motifs, including gilt heraldic lions supporting a crowned shield above architectural columns and floral wreaths, are classic attributes of 19th-century Baghdadi Jewish ketubot from India.",
+      "suggestedCommunity": "baghdadi",
+      "suggestedOrigin": "India",
+      "suggestedPeriod": "late 19th century",
+      "transcript": null
+    }
+  }
+}

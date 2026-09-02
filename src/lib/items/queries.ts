@@ -1,0 +1,260 @@
+import 'server-only';
+import { emptyCommunityCounts } from '@/lib/communities';
+import { createServerSupabase } from '@/lib/supabase/server';
+import { getContributor } from '@/lib/contributors';
+import { REVIEW_QUEUE_STATUSES } from './status';
+import { inTreeOrder } from '@/lib/fields/registry';
+import type {
+  AiAnalysis,
+  Community,
+  Item,
+  ItemCategory,
+  ItemDetail,
+  ItemEvent,
+  ItemField,
+  ItemFile,
+} from '@/lib/types';
+
+/**
+ * Every read in the app goes through this module.
+ *
+ * All of it runs on the server against the visitor's own session, so RLS is the
+ * thing that decides what comes back. A missing filter here is a bug; a missing
+ * filter combined with RLS is still not a leak.
+ */
+
+export interface PortalFilters {
+  query?: string;
+  category?: ItemCategory;
+  community?: Community;
+  /** Caps the rows fetched. The portal wants all of them; the front page does not. */
+  limit?: number;
+}
+
+type FileRow = ItemFile;
+
+/** Page order, with the primary first whatever its position says. */
+function orderedFiles(files: FileRow[] | null | undefined): ItemFile[] {
+  if (!files?.length) return [];
+  return [...files].sort((a, b) => {
+    if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
+    return (a.position ?? 0) - (b.position ?? 0);
+  });
+}
+
+function primaryFile(files: FileRow[] | null | undefined): ItemFile | null {
+  return orderedFiles(files)[0] ?? null;
+}
+
+/**
+ * Tree fields in the tree's own order.
+ *
+ * Postgres returns them in whatever order it likes, so without this the record
+ * page and the review screen would list the same fields differently, and a
+ * volunteer working through a queue would have to re-find "Community" on every
+ * record. A key no longer in the registry sorts last and renders under its raw
+ * key — a renamed branch loses its label, not its value.
+ */
+function orderedFields(fields: ItemField[] | null | undefined): ItemField[] {
+  return inTreeOrder(fields ?? [], (f) => f.field_key);
+}
+
+/**
+ * The analysis of the record's primary file.
+ *
+ * A record can hold several files and each is read on its own, so "the
+ * analysis" has to mean something specific. It means the one that looked at the
+ * file the record leads with. `file_id` is null on rows written before an item
+ * could have more than one file, and those fall back to the newest.
+ */
+function analysisFor(analyses: AiAnalysis[], file: ItemFile | null): AiAnalysis | null {
+  const sorted = [...analyses].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  if (file) {
+    const match = sorted.find((a) => a.file_id === file.id);
+    if (match) return match;
+  }
+  return sorted[0] ?? null;
+}
+
+/** Published items for the public portal. */
+export async function listPublishedItems(filters: PortalFilters = {}): Promise<(Item & { file: ItemFile | null })[]> {
+  const supabase = await createServerSupabase();
+
+  let q = supabase
+    .from('items')
+    .select('*, item_files(*)')
+    .eq('status', 'accepted')
+    .eq('access', 'public')
+    // Redundant for everyone but an administrator, whose `items_admin_bin_select`
+    // policy ORs the bin back in. RLS excludes it for every other role.
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (filters.limit) q = q.limit(filters.limit);
+  if (filters.category) q = q.eq('category', filters.category);
+  if (filters.community) q = q.eq('community', filters.community);
+  if (filters.query?.trim()) {
+    // Escape the LIKE wildcards so a search for "50%" is not a match-everything.
+    const term = filters.query.trim().replace(/[%_]/g, (c) => `\\${c}`);
+    q = q.ilike('search_text', `%${term}%`);
+  }
+
+  const { data, error } = await q;
+  if (error) throw error;
+
+  return (data ?? []).map(({ item_files, ...item }) => ({
+    ...(item as Item),
+    file: primaryFile(item_files as FileRow[]),
+  }));
+}
+
+/** One published record. Returns null for anything not public, by way of RLS. */
+export async function getPublishedItem(
+  id: string,
+): Promise<(Item & { file: ItemFile | null; files: ItemFile[]; fields: ItemField[] }) | null> {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('items')
+    .select('*, item_files(*), item_fields(*)')
+    .eq('id', id)
+    .eq('status', 'accepted')
+    .eq('access', 'public')
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const { item_files, item_fields, ...item } = data;
+  const files = orderedFiles(item_files as FileRow[]);
+  return {
+    ...(item as Item),
+    file: files[0] ?? null,
+    files,
+    fields: orderedFields(item_fields as ItemField[]),
+  };
+}
+
+/** How many published items each community holds. Drives the four-stream rule. */
+export async function getCommunityCounts(): Promise<Record<Community, number>> {
+  const supabase = await createServerSupabase();
+
+  // Counted in the database. This used to fetch every published row and count
+  // them in JavaScript — invisible at eight records, a full table transfer on
+  // every page load at eight hundred. RLS still governs what the function can
+  // see, because it is `security invoker`.
+  const { data, error } = await supabase.rpc('community_counts');
+  if (error) throw error;
+
+  const counts = emptyCommunityCounts();
+  for (const row of (data ?? []) as { community: Community; n: number }[]) {
+    if (row.community) counts[row.community] = Number(row.n);
+  }
+  return counts;
+}
+
+/** The review queue. RLS returns nothing at all without a volunteer session. */
+export async function listReviewQueue(): Promise<(Item & { file: ItemFile | null; analysis: AiAnalysis | null })[]> {
+  const supabase = await createServerSupabase();
+
+  // Named columns, not `*`. The queue renders cards that use four fields, and
+  // `ai_analyses(*)` was dragging `raw` — the entire model response — plus the
+  // OCR of every manuscript in the queue into a list page.
+  const { data, error } = await supabase
+    .from('items')
+    .select(
+      '*, item_files(*), ai_analyses(id, file_id, provider, model, status, summary, off_topic, off_topic_reason, created_at)',
+    )
+    .in('status', REVIEW_QUEUE_STATUSES)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return (data ?? []).map(({ item_files, ai_analyses, ...item }) => {
+    const file = primaryFile(item_files as FileRow[]);
+    return {
+      ...(item as Item),
+      file,
+      analysis: analysisFor((ai_analyses as AiAnalysis[]) ?? [], file),
+    };
+  });
+}
+
+/** Full detail for the review workbench. */
+export async function getItemDetail(id: string): Promise<ItemDetail | null> {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('items')
+    .select('*, item_files(*), ai_analyses(*), item_fields(*)')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const { item_files, ai_analyses, item_fields, ...item } = data;
+  const files = orderedFiles(item_files as FileRow[]);
+  const row = item as Item;
+
+  return {
+    ...row,
+    file: files[0] ?? null,
+    files,
+    analysis: analysisFor((ai_analyses as AiAnalysis[]) ?? [], files[0] ?? null),
+    fields: orderedFields(item_fields as ItemField[]),
+    // Fetched rather than embedded: the register is `is_volunteer()`, so this
+    // is null for anyone the policy does not admit, and the review screen is
+    // the only place that asks for it.
+    contributor: row.contributor_id ? await getContributor(row.contributor_id) : null,
+  };
+}
+
+/**
+ * The bin. Administrators only, and empty for everybody else — not by a filter
+ * here but because `items_admin_bin_select` is the one policy that admits a
+ * binned row at all.
+ */
+export async function listDeletedItems(): Promise<(Item & { file: ItemFile | null })[]> {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('items')
+    .select('*, item_files(*)')
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false });
+
+  if (error) throw error;
+
+  return (data ?? []).map(({ item_files, ...item }) => ({
+    ...(item as Item),
+    file: primaryFile(item_files as FileRow[]),
+  }));
+}
+
+/** Audit trail for one item. */
+export async function listItemEvents(itemId: string): Promise<ItemEvent[]> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from('item_events')
+    .select('*')
+    .eq('item_id', itemId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ItemEvent[];
+}
+
+/** Counts for the review queue badge. */
+export async function countReviewQueue(): Promise<number> {
+  const supabase = await createServerSupabase();
+  const { count, error } = await supabase
+    .from('items')
+    .select('id', { count: 'exact', head: true })
+    .in('status', REVIEW_QUEUE_STATUSES)
+    .is('deleted_at', null);
+  if (error) throw error;
+  return count ?? 0;
+}
