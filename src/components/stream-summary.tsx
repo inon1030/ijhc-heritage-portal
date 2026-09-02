@@ -55,8 +55,19 @@ export function StreamSummary({
                 {COMMUNITY_LABELS[community]}
               </span>
 
+              {/*
+                  Named for what it actually measures.
+
+                  It read "% of the archive" while the denominator is the four
+                  founding streams — so on a page whose header says nine records
+                  are published, Baghdadi's five showed as 71%, which is 5/7.
+                  The word "archive" meant two different things two lines apart.
+                  The denominator is right and the label was wrong: this block is
+                  about the four streams by design, and General India belongs in
+                  the filters rather than in the sentence.
+              */}
               <span className="eyebrow">
-                {total === 0 ? 'none yet' : `${share}% of the archive`}
+                {total === 0 ? 'none yet' : `${share}% of the four streams`}
               </span>
             </Link>
           </Reveal>
