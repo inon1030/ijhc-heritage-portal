@@ -154,6 +154,31 @@ export async function getCommunityCounts(): Promise<Record<Community, number>> {
   return counts;
 }
 
+/**
+ * How many records are published, counting every one of them.
+ *
+ * The front page used to derive this by summing the community counts, which
+ * silently excludes a published record whose community is null — and a null
+ * community is *deliberate*: the archive's rule is that no stream is better
+ * than a guessed one (decision 11). Measured with one such record present, the
+ * page rendered ten and said nine.
+ *
+ * Counted in the database rather than from `listPublishedItems`, because that
+ * call is capped for the wall and its length is not the archive's size.
+ */
+export async function countPublishedItems(): Promise<number> {
+  const supabase = await createServerSupabase();
+  const { count, error } = await supabase
+    .from('items')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'accepted')
+    .eq('access', 'public')
+    .is('deleted_at', null);
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
 /** The review queue. RLS returns nothing at all without a volunteer session. */
 export async function listReviewQueue(): Promise<(Item & { file: ItemFile | null; analysis: AiAnalysis | null })[]> {
   const supabase = await createServerSupabase();

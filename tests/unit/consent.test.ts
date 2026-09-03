@@ -37,6 +37,7 @@ describe('the handling notice', () => {
     expect(headings).toContain('Names of people');
     expect(headings).toContain('Rights in the material');
     expect(headings).toContain('Changing your mind');
+    expect(headings).toContain('What the Center may do without asking you');
   });
 
   it('says plainly that an email grants no access', () => {
@@ -61,6 +62,28 @@ describe('the handling notice', () => {
     expect(text).toMatch(/belongs to a particular family/i);
     // And the limit on it: a family link is not itself publication.
     expect(text).toMatch(/not published by that alone/i);
+  });
+
+  it('says the Center may remove material without notice, and does not thereby take away the two requests', () => {
+    // Added 2026-09-03 at Inon's instruction: volunteers must be able to
+    // curate — decline, unpublish, remove — without a duty to write to the
+    // contributor first, which with limited volunteer time would mean the
+    // decisions do not get made.
+    //
+    // The contributor's own right to ask is deliberately NOT removed with it.
+    // Deleting the sentence would not delete the obligation, and this file's
+    // first rule is that it describes what the system actually does — the
+    // register can now answer both requests, so it says so.
+    const discretion = CONSENT_CLAUSES.find(
+      (c) => c.heading === 'What the Center may do without asking you',
+    )!;
+    const text = discretion.body.join(' ');
+    expect(text).toMatch(/without telling you first/i);
+    expect(text).toMatch(/does not undertake to notify you/i);
+    expect(text).toMatch(/does not affect the two requests/i);
+
+    const change = CONSENT_CLAUSES.find((c) => c.heading === 'Changing your mind')!;
+    expect(change.body.join(' ')).toMatch(/at any time/i);
   });
 
   it('explains that being forgotten and withdrawing material are two requests', () => {

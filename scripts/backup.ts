@@ -39,7 +39,7 @@
  * which is the argument for having one.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
@@ -66,6 +66,32 @@ const ROOT = 'backups';
 
 /** PostgREST's per-response cap on this project, measured rather than assumed. */
 const PAGE = 1000;
+
+/**
+ * How many runs to keep.
+ *
+ * A run is ~55 MB today and almost all of that is the scans, which barely
+ * change between runs. Daily and unbounded, that is 20 GB a year of nearly
+ * identical copies — and a backup job that fills the disk it writes to takes
+ * the machine down with it, which is a worse outcome than the one it prevents.
+ *
+ * Fourteen is a fortnight: long enough to notice a corruption that happened
+ * while nobody was looking, short enough to stay well under a gigabyte.
+ */
+const KEEP = 14;
+
+/** Removes all but the newest KEEP completed runs. Never touches an unfinished one. */
+function prune() {
+  const completed = readdirSync(ROOT)
+    .filter((d) => statSync(join(ROOT, d)).isDirectory())
+    .filter((d) => existsSync(join(ROOT, d, 'manifest.json')))
+    .sort();
+
+  for (const old of completed.slice(0, Math.max(0, completed.length - KEEP))) {
+    rmSync(join(ROOT, old), { recursive: true, force: true });
+    console.log(`  pruned ${old}`);
+  }
+}
 
 /**
  * Every row of a table, however many pages that takes.
@@ -182,6 +208,10 @@ async function backup() {
   if (failed) console.log(`  ${failed} file(s) referenced by a record could not be downloaded.`);
   console.log(`\nwritten to ${dir}`);
   if (short) console.log(`${short} table(s) came back short. Do not rely on this run.`);
+
+  // After the manifest is written, so a run that died mid-way is never one that
+  // pruning counts as complete.
+  prune();
 
   return { dir, failed: failed + short };
 }

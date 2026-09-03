@@ -15,14 +15,15 @@
  *    Known gap: only the current version's wording is held here. A record
  *    stamped `2026-08-27b` links to today's text, so the archive can say
  *    *which* version somebody agreed to but cannot show them what it said.
- *    Keeping past wordings is the fix, and four versions now exist. Two of
- *    them contradict each other: `2026-09-02` said volunteers could not read a
- *    contributor's address and `2026-09-02b` says they can. Checked against
- *    the live database on 2026-09-02: every stamped record carries
- *    `2026-08-27b` and nothing was submitted under any of the three later
- *    versions, so no contributor is currently pointed at wording that
- *    contradicts what they agreed to. That is luck rather than design, and it
- *    runs out the first time somebody uploads between two bumps.
+ *    Keeping past wordings is the fix, and five versions now exist:
+ *    `2026-08-27b`, then four in two days as the archive's own behaviour
+ *    changed under it. Two of them contradict each other — `2026-09-02` said
+ *    volunteers could not read a contributor's address and `2026-09-02b` says
+ *    they can. Checked against the live database: every stamped record carries
+ *    `2026-08-27b` and nothing was submitted under any later version, so no
+ *    contributor is pointed at wording that contradicts what they agreed to.
+ *    That is luck rather than design, and it runs out the first time somebody
+ *    uploads between two bumps.
  *
  * 3. **It is plain language, not a legal instrument.** Nobody with a law degree
  *    has read it. An archive that publishes family material under an
@@ -30,7 +31,7 @@
  *    one do so. Noted in `../PILOT WITH EREZ/09 — Open Questions.md`.
  */
 
-export const CONSENT_VERSION = '2026-09-02c';
+export const CONSENT_VERSION = '2026-09-03';
 
 /**
  * The address someone writes to in order to withdraw material or ask what is
@@ -59,7 +60,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     heading: 'What happens to what you send',
     body: [
       'A volunteer reads it and checks it against the file before anything appears in public. Until then it is visible only to volunteers of the Heritage Center.',
-      'If it is accepted, the material and the description are published on this site under the Center’s name, and anyone can see them. If it is not accepted, it stays in the archive as an unpublished record rather than being deleted, so that a decision can be revisited.',
+      'If it is accepted, the material and the description are published on this site under the Center’s name, and anyone can see them. If it is not accepted, it normally stays in the archive as an unpublished record rather than being deleted, so that a decision can be revisited — but see what the Center may do without asking you, below.',
     ],
   },
   {
@@ -104,9 +105,18 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    heading: 'What the Center may do without asking you',
+    body: [
+      'The Heritage Center decides what the archive holds. It may decline your contribution, take a published record out of public view, or remove material entirely, at its own discretion and without telling you first.',
+      'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Volunteers are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
+      'What is kept is a note that the item existed, so the same thing is not accepted again later by mistake.',
+      'This does not affect the two requests below. Those are yours to make, and the Center answers them.',
+    ],
+  },
+  {
     heading: 'Changing your mind',
     body: [
-      'You can ask for material to be taken down, or ask what is held about you, at any time. A record removed from public view stops being published; the archive keeps an internal note that it existed, so the same item is not re-accepted later by mistake.',
+      'You can ask for material to be taken down, or ask what is held about you, at any time.',
       'You can also ask to be forgotten without withdrawing what you sent. Your name and address are erased and the material stays in the archive, no longer linked to a person. The two are separate requests and you can make either one.',
     ],
   },

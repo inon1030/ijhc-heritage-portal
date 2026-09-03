@@ -4,7 +4,7 @@ import { ArrowRight, Upload } from 'lucide-react';
 import { FilePreview } from '@/components/file-preview';
 import { Logo } from '@/components/logo';
 import { COMMUNITY_ORDER } from '@/lib/communities';
-import { getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
+import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
 import { COMMUNITY_LABELS } from '@/lib/types';
 import { fileKind } from '@/lib/files/validate';
 
@@ -40,16 +40,17 @@ export const metadata: Metadata = {
  * approving an account — lives in the bar at the top, one hover away.
  */
 export default async function Home() {
-  const [items, counts] = await Promise.all([
+  const [items, counts, total] = await Promise.all([
     // The wall shows eighteen. Asking for the whole archive to render eighteen
     // thumbnails is the kind of query that is invisible at eight records and
     // painful at eight hundred.
     listPublishedItems({ limit: 40 }).catch(() => []),
     getCommunityCounts().catch(() => null),
+    countPublishedItems().catch(() => 0),
   ]);
 
   const wall = items.filter((item) => item.file && fileKind(item.file.mime_type) === 'image').slice(0, 18);
-  const total = counts ? Object.values(counts).reduce((sum, n) => sum + n, 0) : 0;
+
 
   return (
     <div className="relative isolate overflow-hidden">
