@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowRight, Upload } from 'lucide-react';
-import { FilePreview } from '@/components/file-preview';
+import { FilePreview, viewableUrl } from '@/components/file-preview';
 import { Logo } from '@/components/logo';
+import { TimePassage } from '@/components/time-passage';
 import { COMMUNITY_ORDER } from '@/lib/communities';
 import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
 import { COMMUNITY_LABELS } from '@/lib/types';
@@ -51,9 +52,20 @@ export default async function Home() {
 
   const wall = items.filter((item) => item.file && fileKind(item.file.mime_type) === 'image').slice(0, 18);
 
+  /*
+   * The passage is drawn from the wall, not from a second query — it is the
+   * same photographs, which is what lets it end by settling into them. Twelve,
+   * because the corridor moves at about one every three hundred milliseconds
+   * and nobody should be held at the door for longer than four seconds.
+   */
+  const passage = wall
+    .slice(0, 12)
+    .map((item) => ({ id: item.id, src: viewableUrl(item.file!) }));
 
   return (
     <div className="relative isolate overflow-hidden">
+      <TimePassage frames={passage} mark={<Logo variant="mark" size={44} />} />
+
       {/* The wall. Decorative, so it is hidden from screen readers entirely —
           it is the same records that are listed properly one click away. */}
       {wall.length > 0 && (

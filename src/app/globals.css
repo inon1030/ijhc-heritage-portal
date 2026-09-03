@@ -312,6 +312,444 @@
   }
 }
 
+/* ==========================================================================
+   The passage
+
+   The front door's first four seconds: a helix of the archive's own
+   photographs receding into the distance and turning as it goes, with a
+   surveyor's rule counting the years along the bottom.
+
+   **It travels out of the dark into the light.** The first attempt ran the
+   corridor on the site's own cream, and every print — scans of newspaper and
+   faded paper, light to begin with — washed out into the ground it was
+   standing on. On ink they read the way a black-and-white photograph is meant
+   to. It also makes the ending honest rather than a cut: the light at the
+   vanishing point grows until the whole screen is paper, so by the time the
+   overlay lifts, what is underneath it is the same colour. You arrive at the
+   present, and the present is the page.
+
+   Geometry lives here; timing lives in `time-passage.tsx`, which places each
+   photograph along the corridor and works out when the camera reaches it.
+
+   Everything animated below is a transform or an opacity, and the corridor is
+   one element carrying one transform, so a dozen photographs cost the
+   compositor about what one costs.
+   ========================================================================== */
+
+@layer components {
+  .passage {
+    position: fixed;
+    inset: 0;
+    z-index: 90; /* over the masthead's 40 */
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    /* Warm dark, out of the same sage family as the site's ink — not black. */
+    background: radial-gradient(ellipse 80% 70% at 50% 46%, #26301a 0%, #151b0d 58%, #0b0f06 100%);
+    /*
+     * The way in.
+     *
+     * An overlay can only mount once React has hydrated, so the finished page
+     * paints first and is then covered — a flash of the destination before the
+     * journey. Cutting to black makes that read as a fault; dissolving makes it
+     * read as the point, the page receding into the dark it came out of. It is
+     * a concealment of a real limit and it is written down as one: the fix is a
+     * pre-paint decision in the document head, which is a nonce'd inline script
+     * and a larger change than this.
+     */
+    animation: passage-enter 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  @keyframes passage-enter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* The handover. By now the screen is already paper, so this is paper fading
+     over paper and the seam does not show. */
+  .passage[data-phase='leaving'] {
+    pointer-events: none;
+    animation: passage-leave var(--passage-leave) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes passage-leave {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.05);
+    }
+  }
+
+  .passage-stage {
+    position: absolute;
+    inset: 0;
+    perspective: 1200px;
+    perspective-origin: 50% 46%;
+    /* How far each photograph hangs from the corridor's axis. */
+    --passage-radius: clamp(150px, 40vmin, 470px);
+  }
+
+  .passage-corridor {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /*
+   * Forward, and rolling.
+   *
+   * Travel alone reads as a slideshow on rails. The roll is what makes it a
+   * passage: the photographs sweep past on an arc, and because they are set
+   * around the axis 47° apart the corridor is a helix — you turn as you
+   * advance, which is the difference between moving through time and scrolling
+   * through a list.
+   *
+   * Linear, deliberately. The per-photograph fades are timed from a constant
+   * camera speed; an eased camera would drift out of step with them. Arriving
+   * is carried by the light instead, which owes nothing to the corridor's
+   * timing.
+   */
+  .passage:not([data-phase='holding']) .passage-corridor {
+    animation: passage-travel var(--passage-duration) linear forwards;
+  }
+
+  @keyframes passage-travel {
+    from {
+      transform: translateZ(0) rotate(-5deg);
+    }
+    to {
+      transform: translateZ(var(--passage-travel)) rotate(5deg);
+    }
+  }
+
+  .passage-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    width: clamp(230px, 46vmin, 560px);
+    padding: 7px;
+    opacity: 0;
+    /* A white mount, the way a print is hung. It is what separates the
+       photograph from the dark rather than a border drawn around it. */
+    background: #f4efe4;
+    box-shadow: 0 26px 64px -20px rgb(0 0 0 / 0.85);
+  }
+
+  /* Nothing to show yet: no blank mount sailing past. */
+  .passage-frame:not([data-ready]) {
+    visibility: hidden;
+  }
+
+  .passage-frame[data-shape='portrait'] {
+    aspect-ratio: 3 / 4;
+  }
+  .passage-frame[data-shape='landscape'] {
+    aspect-ratio: 4 / 3;
+  }
+  .passage-frame[data-shape='square'] {
+    aspect-ratio: 1 / 1;
+  }
+
+  .passage-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #e8e1d2;
+    /* Black and white, as asked. Contrast lifted because scans of old prints
+       lose most of theirs, and grayscale alone leaves them flat. */
+    filter: grayscale(1) contrast(1.12);
+  }
+
+  /*
+   * Each photograph's own life on screen.
+   *
+   * The delay is inline, worked out from where the photograph sits along the
+   * corridor. It is gone at the moment the camera reaches its plane, so a
+   * print grows the whole way in and dissolves at its largest instead of
+   * swallowing the screen and blotting out the one behind it.
+   */
+  .passage:not([data-phase='holding']) .passage-frame {
+    animation: passage-frame var(--passage-frame-life) linear both;
+  }
+
+  @keyframes passage-frame {
+    0% {
+      opacity: 0;
+    }
+    24% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    96%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* The corridor's walls: a print dissolves into the dark at the edge of the
+     frame rather than being cut off by it. */
+  .passage-vignette {
+    position: absolute;
+    inset: -2px;
+    pointer-events: none;
+    background: radial-gradient(ellipse 82% 78% at 50% 46%, transparent 40%, #0b0f06 94%);
+  }
+
+  /* The light at the far end, always there, growing as it is approached. */
+  .passage-bloom {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      circle 48vmin at 50% 46%,
+      rgb(255 246 223 / 0.1) 0%,
+      rgb(255 246 223 / 0.04) 38%,
+      rgb(255 246 223 / 0) 72%
+    );
+  }
+
+  .passage:not([data-phase='holding']) .passage-bloom {
+    animation: passage-bloom var(--passage-duration) ease-in forwards;
+  }
+
+  @keyframes passage-bloom {
+    0% {
+      opacity: 0.5;
+      transform: scale(0.5);
+    }
+    62% {
+      opacity: 0.85;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(2.4);
+    }
+  }
+
+  /*
+   * Daylight.
+   *
+   * The last quarter of the run floods the screen with the page's own paper,
+   * so the corridor ends by becoming the thing it is handing over to. Topmost
+   * and inert, so it covers the rule and the skip control without taking the
+   * clicks meant for them.
+   */
+  .passage-dawn {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--color-paper);
+  }
+
+  .passage:not([data-phase='holding']) .passage-dawn {
+    animation: passage-dawn var(--passage-duration) cubic-bezier(0.6, 0, 0.9, 1) forwards;
+  }
+
+  @keyframes passage-dawn {
+    0%,
+    78% {
+      opacity: 0;
+    }
+    100% {
+      /* Not quite opaque. The headline underneath begins to show through the
+         light just before the overlay lifts, so the visitor arrives at the
+         page rather than waiting on a blank sheet for it. */
+      opacity: 0.96;
+    }
+  }
+
+  /* The mark in the dark, while the first photographs are fetched. A held
+     beat, not a spinner — there is nothing to wait for that anyone should
+     watch. */
+  .passage-mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .passage[data-phase='holding'] .passage-mark {
+    animation: passage-mark 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes passage-mark {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.94);
+    }
+    to {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  /*
+   * The rule.
+   *
+   * A scale bar, the way a map has one: it measures the span the headline
+   * claims — two thousand years — and lands on the present. It says nothing
+   * about any photograph above it, because the archive mostly does not know
+   * when its holdings were made and does not guess.
+   */
+  .passage-rule {
+    position: absolute;
+    right: clamp(1.25rem, 5vw, 4rem);
+    bottom: clamp(1.5rem, 6vh, 3.25rem);
+    left: clamp(1.25rem, 5vw, 4rem);
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+    opacity: 0;
+  }
+
+  .passage:not([data-phase='holding']) .passage-rule {
+    animation: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Saffron in the dark, blue on the paper it ends on — the same shift the
+     ground makes underneath it, on the same curve. */
+  .passage:not([data-phase='holding']) .passage-year {
+    animation: passage-year var(--passage-duration) cubic-bezier(0.6, 0, 0.9, 1) forwards;
+  }
+
+  @keyframes passage-year {
+    0%,
+    78% {
+      color: var(--color-brand-saffron);
+    }
+    100% {
+      color: var(--color-brand-blue);
+    }
+  }
+
+  /* The instrument goes; the reading stays. */
+  .passage:not([data-phase='holding']) .passage-ticks,
+  .passage:not([data-phase='holding']) .passage-skip {
+    animation: passage-recede var(--passage-duration) cubic-bezier(0.6, 0, 0.9, 1) forwards;
+  }
+
+  @keyframes passage-recede {
+    0%,
+    72% {
+      opacity: 1;
+    }
+    94%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .passage-year {
+    display: inline-flex;
+    flex: none;
+    align-items: baseline;
+    gap: 0.45rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.55rem, 4.5vw, 2.6rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-brand-saffron);
+    /* The digits must not dance while the number climbs. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  .passage-era {
+    font-family: var(--font-sans);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    /* Inherited, so it makes the same journey from saffron to blue and is
+       never white type on a white ground. */
+    color: currentColor;
+    opacity: 0.55;
+  }
+
+  .passage-ticks {
+    position: relative;
+    flex: 1;
+    height: 20px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 58%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 58%, transparent 100%);
+  }
+
+  .passage-ticks::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 200%;
+    background-image:
+      repeating-linear-gradient(90deg, var(--color-brand-saffron) 0 1.5px, transparent 1.5px 110px),
+      repeating-linear-gradient(90deg, rgb(253 251 247 / 0.3) 0 1px, transparent 1px 22px);
+    background-repeat: no-repeat;
+    background-position:
+      left bottom,
+      left bottom;
+    background-size:
+      100% 100%,
+      100% 48%;
+  }
+
+  /* One major tick per cycle, so the ruler joins itself. */
+  .passage:not([data-phase='holding']) .passage-ticks::before {
+    animation: passage-ticks 2200ms linear infinite;
+  }
+
+  @keyframes passage-ticks {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-110px);
+    }
+  }
+
+  .passage-skip {
+    position: absolute;
+    top: clamp(1.25rem, 4vh, 2.5rem);
+    right: clamp(1.25rem, 5vw, 4rem);
+    display: inline-flex;
+    align-items: center;
+    height: 2.5rem;
+    padding: 0 1.05rem;
+    border: 1px solid rgb(253 251 247 / 0.26);
+    border-radius: 999px;
+    background: rgb(11 15 6 / 0.35);
+    color: rgb(253 251 247 / 0.72);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition:
+      color 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .passage-skip:hover {
+    border-color: var(--color-brand-saffron);
+    color: var(--color-paper);
+  }
+}
+
 /*
  * Someone who has asked their operating system to stop moving things means it.
  * Content still appears — it simply appears rather than arriving.
