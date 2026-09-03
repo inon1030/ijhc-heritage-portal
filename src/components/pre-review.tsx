@@ -382,7 +382,10 @@ function Excerpt({ label, text }: { label: string; text: string }) {
   return (
     <div className="mt-5">
       <p className="eyebrow mb-1.5">{label}</p>
-      <p className="machine max-h-56 overflow-auto border border-rule bg-paper p-3 whitespace-pre-wrap">
+      <p
+        dir="auto"
+        className="transcription max-h-56 overflow-auto border border-rule bg-paper p-3"
+      >
         {text}
       </p>
     </div>

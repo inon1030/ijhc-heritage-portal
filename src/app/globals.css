@@ -74,8 +74,24 @@
   --color-caution:     #b45309;
   --color-critical:    #b91c1c;
 
-  --font-display: var(--font-spectral), Georgia, serif;
-  --font-sans:    var(--font-plex-sans), system-ui, sans-serif;
+  --font-display: var(--font-spectral), var(--font-scripts), Georgia, serif;
+  --font-sans:    var(--font-plex-sans), var(--font-scripts), system-ui, sans-serif;
+
+  /*
+   * The scripts this archive actually holds, appended to every stack.
+   *
+   * A fallback list is consulted per character, not per element, so an English
+   * caption carrying one Hebrew word gets Plex for the caption and Noto Sans
+   * Hebrew for the word — no markup, no class, no decision for whoever writes
+   * the component. next/font gives each of these a unicode-range, so a page
+   * with no Hebrew on it downloads no Hebrew.
+   *
+   * Before this, Spectral was loaded latin-only while its own comment claimed
+   * Hebrew, Marathi and Malayalam coverage, and every transcription the model
+   * returned rendered in whatever the browser had lying around.
+   */
+  --font-scripts: var(--font-hebrew), var(--font-devanagari),
+                  var(--font-malayalam), var(--font-arabic);
   --font-mono:    var(--font-plex-mono), ui-monospace, monospace;
 
   --radius-card: 0.75rem;
@@ -322,4 +338,36 @@
   .card-interactive:hover {
     transform: none;
   }
+}
+
+
+/*
+ * Text somebody else wrote — a contributor, a volunteer, or the model reading
+ * an object — and the archive is not entitled to assume its direction.
+ *
+ * `dir="auto"` lets the browser decide per element from its first strong
+ * character, which is what makes a Hebrew ketubah transcription lay out
+ * right-to-left with its punctuation in the right place while the English
+ * label above it stays left-to-right. `unicode-bidi: plaintext` does the same
+ * for each line inside a block, so an OCR dump alternating Hebrew and English
+ * lines does not have one direction imposed on all of it.
+ *
+ * Applied by attribute rather than by class so that forgetting the class is
+ * not a silent bug: an element without dir="auto" simply inherits, which is
+ * the behaviour that was wrong everywhere before this existed.
+ */
+[dir='auto'] {
+  unicode-bidi: plaintext;
+}
+
+/* A transcription is a block of somebody else's writing, and it reads better
+   with its own measure and a little more line height than interface copy. */
+.transcription {
+  /* Plex Mono first, then the script faces, and only then the generics.
+     `--font-mono` already ends in `monospace`, which matches every character,
+     so expanding it here would put a generic ahead of the Hebrew face and the
+     Hebrew face would never be reached. */
+  font-family: var(--font-plex-mono), var(--font-scripts), ui-monospace, monospace;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }

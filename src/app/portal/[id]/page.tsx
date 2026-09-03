@@ -72,6 +72,7 @@ export default async function RecordPage({ params }: { params: Params }) {
           <p className="eyebrow animate-rise">{categoryLabel(item.category)}</p>
           <h1
             className="animate-rise mt-3 font-display text-3xl leading-tight sm:text-4xl"
+            dir="auto"
             style={{ '--reveal-delay': '70ms' } as React.CSSProperties}
           >
             {item.title}

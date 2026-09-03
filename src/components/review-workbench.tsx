@@ -232,7 +232,14 @@ export function ReviewWorkbench({
         {analysis?.ocr_text && (
           <details className="mt-4 card bg-paper-2/50">
             <summary className="eyebrow cursor-pointer px-4 py-3">Text the model read</summary>
-            <p className="machine max-h-72 overflow-auto border-t border-rule px-4 py-3 whitespace-pre-wrap">
+            {/* `transcription`, not `machine`: the mono stack ends in the
+                generic `monospace`, which matches every character, so a Hebrew
+                or Malayalam transcription never reached a face that could draw
+                it. `dir="auto"` lets each line find its own direction. */}
+            <p
+              dir="auto"
+              className="transcription max-h-72 overflow-auto border-t border-rule px-4 py-3"
+            >
               {analysis.ocr_text}
             </p>
           </details>
@@ -241,7 +248,14 @@ export function ReviewWorkbench({
         {analysis?.transcript && (
           <details className="mt-3 card bg-paper-2/50">
             <summary className="eyebrow cursor-pointer px-4 py-3">Transcript</summary>
-            <p className="machine max-h-72 overflow-auto border-t border-rule px-4 py-3 whitespace-pre-wrap">
+            {/* `transcription`, not `machine`: the mono stack ends in the
+                generic `monospace`, which matches every character, so a Hebrew
+                or Malayalam transcription never reached a face that could draw
+                it. `dir="auto"` lets each line find its own direction. */}
+            <p
+              dir="auto"
+              className="transcription max-h-72 overflow-auto border-t border-rule px-4 py-3"
+            >
               {analysis.transcript}
             </p>
           </details>

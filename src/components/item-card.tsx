@@ -40,11 +40,16 @@ export function ItemCard({ item }: { item: Item & { file: ItemFile | null } }) {
 
       <div className="space-y-2 p-5">
         <p className="eyebrow">{categoryLabel(item.category)}</p>
-        <h3 className="font-display text-xl leading-snug transition-colors group-hover:text-accent">
+        <h3
+          dir="auto"
+          className="font-display text-xl leading-snug transition-colors group-hover:text-accent"
+        >
           {item.title}
         </h3>
         {item.description && (
-          <p className="line-clamp-2 leading-relaxed text-muted">{item.description}</p>
+          <p dir="auto" className="line-clamp-2 leading-relaxed text-muted">
+            {item.description}
+          </p>
         )}
         <p className="flex items-center gap-2 pt-1 text-sm text-muted">
           {item.community && (
@@ -84,7 +89,11 @@ export function ItemRow({ item }: { item: Item & { file: ItemFile | null } }) {
         <h3 className="truncate font-display text-xl transition-colors group-hover:text-accent">
           {item.title}
         </h3>
-        {item.description && <p className="line-clamp-2 text-muted">{item.description}</p>}
+        {item.description && (
+          <p dir="auto" className="line-clamp-2 text-muted">
+            {item.description}
+          </p>
+        )}
       </div>
 
       <ArrowUpRight

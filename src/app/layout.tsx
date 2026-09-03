@@ -1,14 +1,39 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { headers } from 'next/headers';
-import { IBM_Plex_Mono, IBM_Plex_Sans, Spectral } from 'next/font/google';
+import {
+  IBM_Plex_Mono,
+  IBM_Plex_Sans,
+  Noto_Sans_Arabic,
+  Noto_Sans_Devanagari,
+  Noto_Sans_Hebrew,
+  Noto_Sans_Malayalam,
+  Spectral,
+} from 'next/font/google';
 import { Masthead } from '@/components/masthead';
 import './globals.css';
 
 /**
- * Spectral for display: a bookish serif with the language coverage an archive
- * of Hebrew, Marathi, Malayalam and English material needs.
- * Plex Sans for interface, Plex Mono for anything a machine produced.
+ * Spectral for display, Plex Sans for interface, Plex Mono for anything a
+ * machine produced.
+ *
+ * ── the four below, and why they are not optional ───────────────────────────
+ *
+ * The comment that used to sit here said Spectral carries "the language
+ * coverage an archive of Hebrew, Marathi, Malayalam and English material
+ * needs". It does not, and never did — it is loaded `subsets: ['latin']` and
+ * Spectral has no Hebrew, Devanagari or Malayalam glyphs at all. Every Hebrew
+ * transcription the model returns has been rendering in whatever the browser
+ * happened to fall back to, which on a machine without a Hebrew face is tofu.
+ *
+ * The archive stores what is written on the object, in the script it was
+ * written in — the AI prompt says so in as many words. So the faces for those
+ * scripts belong here beside the Latin ones.
+ *
+ * **They cost nothing on a page that does not use them.** next/font emits a
+ * `unicode-range` per subset, so a browser downloads the Hebrew face only when
+ * Hebrew characters are actually on the page. A visitor reading English
+ * records fetches none of the four.
  */
 const spectral = Spectral({
   subsets: ['latin'],
@@ -28,6 +53,40 @@ const plexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
   variable: '--font-plex-mono',
+  display: 'swap',
+});
+
+/*
+ * One weight each. These render transcriptions and place names, not headlines,
+ * and a second weight would double a download most visitors never make.
+ */
+const notoHebrew = Noto_Sans_Hebrew({
+  subsets: ['hebrew'],
+  weight: ['400'],
+  variable: '--font-hebrew',
+  display: 'swap',
+});
+
+/** Marathi and Hindi. */
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ['devanagari'],
+  weight: ['400'],
+  variable: '--font-devanagari',
+  display: 'swap',
+});
+
+const notoMalayalam = Noto_Sans_Malayalam({
+  subsets: ['malayalam'],
+  weight: ['400'],
+  variable: '--font-malayalam',
+  display: 'swap',
+});
+
+/** Judeo-Arabic, which the Baghdadi material is full of. */
+const notoArabic = Noto_Sans_Arabic({
+  subsets: ['arabic'],
+  weight: ['400'],
+  variable: '--font-arabic',
   display: 'swap',
 });
 
@@ -86,7 +145,15 @@ export const viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${spectral.variable} ${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="en" className={[
+        spectral.variable,
+        plexSans.variable,
+        plexMono.variable,
+        notoHebrew.variable,
+        notoDevanagari.variable,
+        notoMalayalam.variable,
+        notoArabic.variable,
+      ].join(' ')}>
       <body className="flex min-h-dvh flex-col antialiased">
         <a
           href="#main"
