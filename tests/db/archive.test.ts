@@ -237,6 +237,40 @@ describe('the recycle bin', () => {
     expect(data![0].community).toBe('cochin');
   });
 
+  it('stops counting a binned record towards its stream', async () => {
+    /*
+     * The regression this exists for, found by the test above failing on its
+     * own arithmetic.
+     *
+     * `community_counts` filtered status, access and community, and not
+     * `deleted_at`. Being `security invoker`, RLS hid the binned rows from
+     * anonymous visitors and volunteers, so the public numbers were right and
+     * nothing ever looked wrong — but `items_admin_bin_select` ORs the bin back
+     * in for an administrator, so an administrator's masthead counted the
+     * recycle bin into the four-stream rule. Measured at eight published
+     * records: the rule said nine.
+     *
+     * This runs with the service role, which sees the bin the way an
+     * administrator does, so it is the right place to hold the guarantee.
+     */
+    const item = await makeItem(`${MARKER} counted then binned`);
+    await admin.from('items').update({ status: 'accepted', community: 'cochin' }).eq('id', item.id);
+
+    const countCochin = async () => {
+      const { data } = await admin.rpc('community_counts');
+      const row = (data ?? []).find((r: { community: string }) => r.community === 'cochin');
+      return Number(row?.n ?? 0);
+    };
+
+    const before = await countCochin();
+    await admin.from('items').update({ deleted_at: new Date().toISOString() }).eq('id', item.id);
+    expect(await countCochin()).toBe(before - 1);
+
+    // And it comes back with the record, because the bin is not a deletion.
+    await admin.from('items').update({ deleted_at: null }).eq('id', item.id);
+    expect(await countCochin()).toBe(before);
+  });
+
   it('takes the catalogue fields with it and brings them back', async () => {
     const item = await makeItem(`${MARKER} with fields`);
     await admin.from('items').update({ status: 'accepted', community: 'baghdadi' }).eq('id', item.id);

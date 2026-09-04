@@ -60,6 +60,22 @@ const TABLES = [
   'contributor_families',
   'ai_analyses',
   'item_events',
+  /*
+   * The translation layer.
+   *
+   * `item_translations` is mostly regenerable — losing a machine translation
+   * costs a model call, not a record. Two things in here are not: a row marked
+   * `source = 'human'` is a volunteer's own work and exists nowhere else, and
+   * `keyword_translations` is the archive's controlled vocabulary in five
+   * languages, which is a curatorial decision rather than an output.
+   *
+   * They were added to the schema before they were added here, and a backup
+   * that quietly stops covering a table is worse than one that was never
+   * claimed to: this list is the whole of what "backed up" means.
+   */
+  'archive_languages',
+  'item_translations',
+  'keyword_translations',
 ] as const;
 
 const ROOT = 'backups';
