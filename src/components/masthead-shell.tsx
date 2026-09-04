@@ -95,7 +95,7 @@ export function MastheadShell({
         aria-controls="masthead-bar"
         aria-label={open ? 'Close the menu' : 'Open the menu'}
         onClick={() => setPinned((v) => !v)}
-        className="flex h-11 w-full items-center justify-between gap-3 bg-paper/90 px-6 backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9"
+        className="flex h-11 w-full items-center justify-between gap-3 bg-paper/90 pl-6 pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9"
       >
         <span className="flex items-center gap-2.5">
           {mark}
@@ -125,13 +125,19 @@ export function MastheadShell({
       </button>
 
       {/*
-        Its own island inside the header.
+        Its own island inside the header, in space the strip reserves for it.
+
+        It was absolutely positioned over the strip, and the strip's own
+        right-hand padding did not know about it: MENU and the language mark
+        overlapped by about a dozen pixels. The button carries the room on its
+        padding now, so the two are laid out beside each other rather than on
+        top of each other, at every width.
         Reaching for the language control should not also unfold the whole
         navigation bar over the page — the header opens on hover and on focus,
         and both events pass through here on their way up. Stopped at the door.
       */}
       <div
-        className="absolute right-[4.75rem] top-1.5 z-10 sm:top-0.5"
+        className="absolute right-5 top-1.5 z-10 sm:top-0.5"
         onPointerEnter={(e) => e.stopPropagation()}
         onFocus={(e) => e.stopPropagation()}
       >

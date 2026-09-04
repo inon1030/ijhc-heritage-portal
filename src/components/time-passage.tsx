@@ -15,6 +15,15 @@ import { createPortal } from 'react-dom';
  *
  * Four things it is careful about.
  *
+ * **It happens on the page's own paper.** An earlier build ran it on ink,
+ * because a faded scan washes out on cream and the dark made it read. It also
+ * made the passage a separate thing that ended and handed over to a website.
+ * On paper it *is* the website, and what a visitor watches is the front page
+ * being assembled out of the archive rather than a title sequence played
+ * before one. A light print is made legible on a light ground by its mount and
+ * its shadow, the way a print in a room is legible on a wall of its own
+ * colour — not by darkening everything behind it.
+ *
  * **The photographs are the archive's own.** Not stock, not a mood board — the
  * same published records the home page already fades behind its headline, from
  * the same query. Every one was cleared by a volunteer before it could appear
@@ -183,6 +192,16 @@ export function TimePassage({
   const dismiss = useCallback(() => {
     if (done.current) return;
     done.current = true;
+    /*
+     * Ask the page to arrive.
+     *
+     * Changing the animation *name* is what restarts a CSS animation, so this
+     * one attribute makes the headline, the two doors and the counts rise out
+     * of the settling photographs instead of being revealed already sitting
+     * there. See `[data-passage='arriving']` in globals.css for why they
+     * cannot simply be held back until now.
+     */
+    document.documentElement.dataset.passage = 'arriving';
     setPhase('leaving');
     window.setTimeout(() => setPhase(null), LEAVE_MS);
   }, []);
@@ -296,6 +315,15 @@ export function TimePassage({
     return () => window.clearTimeout(timer);
   }, [phase, dismiss]);
 
+  /* The attribute outlives the overlay by exactly one animation, then goes. */
+  useEffect(() => {
+    if (phase !== null) return;
+    const timer = window.setTimeout(() => {
+      delete document.documentElement.dataset.passage;
+    }, 1200);
+    return () => window.clearTimeout(timer);
+  }, [phase]);
+
   if (!phase) return null;
 
   const { travel, cues } = passageCues(frames.length);
@@ -387,9 +415,6 @@ export function TimePassage({
       <div aria-hidden className="passage-mark">
         {mark}
       </div>
-
-      {/* Daylight. Above the corridor, below the rule — see below. */}
-      <div aria-hidden className="passage-dawn" />
 
       {/*
         The rule sits over the daylight, not under it, so the last thing on
