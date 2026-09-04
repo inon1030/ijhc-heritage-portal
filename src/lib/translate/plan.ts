@@ -143,3 +143,27 @@ export interface LanguageName {
   code: string;
   labelEn: string;
 }
+
+/** The free tier's per-minute allowance is gone. Not a fault, and not a wait. */
+export class QuotaExhausted extends Error {
+  constructor(readonly retryAfterMs: number) {
+    super('the model’s quota is exhausted');
+    this.name = 'QuotaExhausted';
+  }
+}
+
+/**
+ * How long Google says to wait, when it says.
+ *
+ * A 429 from `generativelanguage` carries the answer in its own message —
+ * "Please retry in 33.471908418s" — because the free tier's limit is twenty
+ * requests a minute. The first version guessed instead of reading it and
+ * retried after 0.7s and again after 2s: three calls spent to be told the same
+ * thing three times, which is what production did until its own logs were read.
+ *
+ * A minute when it does not say, which is the window the limit is measured over.
+ */
+export function retryAfterMs(message: string): number {
+  const seconds = /retry in ([\d.]+)\s*s/i.exec(message)?.[1];
+  return seconds ? Math.ceil(Number(seconds) * 1000) : 60_000;
+}

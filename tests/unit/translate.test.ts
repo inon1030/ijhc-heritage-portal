@@ -3,6 +3,8 @@ import {
   alreadyInLanguage,
   needsTranslating,
   planTranslation,
+  QuotaExhausted,
+  retryAfterMs,
   sourceHash,
   type CachedTranslation,
   type SourceText,
@@ -129,5 +131,28 @@ describe('a record already in the language being asked for', () => {
     expect(alreadyInLanguage('Judeo-Arabic', HE)).toBe(false);
     expect(alreadyInLanguage(null, HE)).toBe(false);
     expect(alreadyInLanguage('', HE)).toBe(false);
+  });
+});
+
+describe('the free tier runs out, and that is not a fault', () => {
+  it('reads the wait out of the message rather than guessing it', () => {
+    // Google's 429 says exactly how long: "Please retry in 33.471908418s".
+    // The first version guessed and retried after 0.7s and again after 2s —
+    // three calls spent to be told the same thing three times, which is what
+    // production did until its own logs were read.
+    expect(retryAfterMs('… Please retry in 33.471908418s.')).toBe(33_472);
+    expect(retryAfterMs('Please retry in 7s')).toBe(7_000);
+    expect(retryAfterMs('please retry in 12.5 s')).toBe(12_500);
+  });
+
+  it('falls back to the window the limit is measured over', () => {
+    expect(retryAfterMs('quota exceeded')).toBe(60_000);
+    expect(retryAfterMs('')).toBe(60_000);
+  });
+
+  it('carries the wait on the error, so a caller can decide rather than guess', () => {
+    const error = new QuotaExhausted(33_472);
+    expect(error).toBeInstanceOf(Error);
+    expect(error.retryAfterMs).toBe(33_472);
   });
 });

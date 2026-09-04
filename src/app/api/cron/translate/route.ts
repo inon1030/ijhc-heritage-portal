@@ -87,13 +87,32 @@ export async function GET(request: NextRequest) {
     const outstanding = await findOutstanding(admin, languages.map((l) => l.code));
 
     const translated: string[] = [];
+    let stopped: 'finished' | 'budget' | 'quota' | 'cap' = 'finished';
+
     for (const itemId of outstanding) {
-      if (translated.length >= MAX_RECORDS) break;
-      if (Date.now() > deadline) break;
+      if (translated.length >= MAX_RECORDS) {
+        stopped = 'cap';
+        break;
+      }
+      if (Date.now() > deadline) {
+        stopped = 'budget';
+        break;
+      }
 
       try {
-        await translateRecord(itemId, { deadline });
-        translated.push(itemId);
+        const sweep = await translateRecord(itemId, { deadline });
+        if (sweep.made.length) translated.push(itemId);
+        /*
+         * The free tier allows twenty model calls a minute, and a record is one
+         * call per language. When that runs out, everything after it is refused
+         * for the next half minute — so the run ends rather than spending its
+         * remaining budget being told no. What was not reached is still
+         * outstanding, and tomorrow's run starts with it.
+         */
+        if (sweep.quota) {
+          stopped = 'quota';
+          break;
+        }
       } catch (error) {
         // One bad record does not end the run — the next one may be fine, and
         // this one is still outstanding tomorrow.
@@ -104,6 +123,7 @@ export async function GET(request: NextRequest) {
     return ok({
       translated: translated.length,
       remaining: Math.max(0, outstanding.length - translated.length),
+      stopped,
       languages: languages.map((l) => l.code),
       ms: Date.now() - started,
     });

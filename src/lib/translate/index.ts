@@ -6,6 +6,8 @@ import { createServerSupabase } from '@/lib/supabase/server';
 import {
   alreadyInLanguage,
   planTranslation,
+  QuotaExhausted,
+  retryAfterMs,
   TRANSLATABLE_FIELDS,
   type CachedTranslation,
   type SourceText,
@@ -72,6 +74,9 @@ export interface Rendered {
    * record has no description.
    */
   unavailable?: boolean;
+  /** The allowance is gone. Distinct from "it failed", because it will fail
+   *  again for the next thirty seconds too. */
+  quota?: boolean;
 }
 
 interface Translatable {
@@ -164,8 +169,9 @@ export async function translateItem(
     // Measured in the first live run: the model answered 503 "high demand", and
     // a reader asking for Hebrew got a 500 instead of a record. Whatever is
     // already stored is still good, and the rest is shown in the original.
-    console.error('[translate] the translator could not be reached', error);
-    return { lang, values: plan.ready, machine: false, unavailable: true };
+    const quota = error instanceof QuotaExhausted;
+    if (!quota) console.error('[translate] the translator could not be reached', error);
+    return { lang, values: plan.ready, machine: false, unavailable: true, quota };
   }
 
   const rows = plan.translate
@@ -217,12 +223,20 @@ export async function translateItem(
  * picked up by the next sweep. Never throws: nothing here is worth failing a
  * volunteer's review over.
  */
+export interface Sweep {
+  made: string[];
+  /** True when the run stopped because the allowance ran out, not because it
+   *  finished. The caller should stop too — everything after this would be
+   *  refused for the next half minute. */
+  quota: boolean;
+}
+
 export async function translateItemEverywhere(
   item: Translatable,
   { skipSource = true, deadline }: { skipSource?: boolean; deadline?: number } = {},
-): Promise<{ lang: string; made: boolean }[]> {
+): Promise<Sweep> {
   const languages = await listLanguages().catch(() => []);
-  const results: { lang: string; made: boolean }[] = [];
+  const made: string[] = [];
 
   for (const language of languages) {
     if (skipSource && language.is_source) continue;
@@ -239,14 +253,17 @@ export async function translateItemEverywhere(
     if (deadline && Date.now() > deadline) break;
     try {
       const rendered = await translateItem(item, language.code, { deadline });
-      results.push({ lang: language.code, made: !rendered.unavailable });
+      if (!rendered.unavailable) made.push(language.code);
+      // The allowance is gone for the next half minute or so. The remaining
+      // languages would each be refused in turn; they are outstanding, and the
+      // sweep will find them again.
+      if (rendered.quota) return { made, quota: true };
     } catch (error) {
       console.error(`[translate] ${item.id} into ${language.code}`, error);
-      results.push({ lang: language.code, made: false });
     }
   }
 
-  return results;
+  return { made, quota: false };
 }
 
 /**
@@ -261,7 +278,7 @@ export async function translateItemEverywhere(
 export async function translateRecord(
   itemId: string,
   options: { deadline?: number } = {},
-): Promise<{ lang: string; made: boolean }[]> {
+): Promise<Sweep> {
   const admin = createAdminSupabase();
 
   const { data: item, error } = await admin
@@ -272,7 +289,7 @@ export async function translateRecord(
     .maybeSingle();
 
   if (error) throw error;
-  if (!item) return [];
+  if (!item) return { made: [], quota: false };
 
   const { data: analysis } = await admin
     .from('ai_analyses')
@@ -380,13 +397,19 @@ function within<T>(deadline: number | undefined, call: () => Promise<T>): Promis
 }
 
 /**
- * One or two more goes when the model is simply busy.
+ * One or two more goes when the model is busy — and none at all when it is out.
  *
- * `gemini-3.6-flash` answers 503 "high demand" under load — it happened on the
- * very first live call this made, and it has happened to this project before
- * (`gemini-3.7-flash`, in the progress log). It is a queue, not a fault, and a
- * short wait clears it. Only the two statuses that mean "not now" are retried:
- * a 400 will still be a 400 in a second and retrying it would just spend twice.
+ * **503 and 429 are not the same failure.** 503 is "high demand": a queue, which
+ * a second clears, and it happened on the very first live call this made. 429 is
+ * the free tier's allowance gone — twenty requests a minute for
+ * `gemini-3.6-flash` — and it comes with the exact time to wait, thirty-odd
+ * seconds. Retrying that after 0.7s and again after 2s is three calls spent to
+ * be told the same thing three times, and it is what production did until its
+ * own logs were read.
+ *
+ * So a 429 stops immediately and says what it is, and the caller decides: a
+ * reader gets the record in the language it was written in, and the nightly
+ * sweep ends the run rather than spending its remaining budget on refusals.
  */
 async function withRetry<T>(call: () => Promise<T>): Promise<T> {
   const waits = [700, 2000];
@@ -395,7 +418,10 @@ async function withRetry<T>(call: () => Promise<T>): Promise<T> {
       return await call();
     } catch (error) {
       const status = (error as { status?: number })?.status;
-      if (attempt >= waits.length || (status !== 503 && status !== 429)) throw error;
+      if (status === 429) {
+        throw new QuotaExhausted(retryAfterMs((error as { message?: string })?.message ?? ''));
+      }
+      if (attempt >= waits.length || status !== 503) throw error;
       await new Promise((resolve) => setTimeout(resolve, waits[attempt]));
     }
   }
