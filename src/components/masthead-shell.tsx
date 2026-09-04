@@ -29,6 +29,7 @@ import { ChevronDown } from 'lucide-react';
 export function MastheadShell({
   mark,
   rule,
+  language,
   children,
 }: {
   /** The small mark shown on the strip itself, so the archive is still named. */
@@ -39,6 +40,13 @@ export function MastheadShell({
    * edge to sit on.
    */
   rule: React.ReactNode;
+  /**
+   * The language control. A sibling of the strip's button, not a child of it:
+   * a button inside a button is invalid and browsers resolve it by dropping
+   * one of the two. It stays visible when the bar is open, because "what
+   * language am I reading this in" is a question at any moment.
+   */
+  language: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [pinned, setPinned] = useState(false);
@@ -115,6 +123,20 @@ export function MastheadShell({
           <ChevronDown size={16} />
         </span>
       </button>
+
+      {/*
+        Its own island inside the header.
+        Reaching for the language control should not also unfold the whole
+        navigation bar over the page — the header opens on hover and on focus,
+        and both events pass through here on their way up. Stopped at the door.
+      */}
+      <div
+        className="absolute right-[4.75rem] top-1.5 z-10 sm:top-0.5"
+        onPointerEnter={(e) => e.stopPropagation()}
+        onFocus={(e) => e.stopPropagation()}
+      >
+        {language}
+      </div>
 
       {rule}
 

@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { Logo, hasSuppliedLogo } from '@/components/logo';
+import { LanguagePicker } from '@/components/language-picker';
 import { MastheadShell } from '@/components/masthead-shell';
 import { SiteNav } from '@/components/site-nav';
 import { StreamRule } from '@/components/stream-rule';
 import { countReviewQueue, getCommunityCounts } from '@/lib/items/queries';
 import { getCurrentProfile } from '@/lib/supabase/server';
+import { listLanguages, requestedLanguage } from '@/lib/translate/languages';
 
 /**
  * The masthead, folded away behind a strip. `MastheadShell` handles the
@@ -18,9 +20,11 @@ import { getCurrentProfile } from '@/lib/supabase/server';
 export async function Masthead() {
   // Renders above every route, including the sign-in page, so it must survive
   // the database being unreachable or not yet configured.
-  const [profile, counts] = await Promise.all([
+  const [profile, counts, languages, reading] = await Promise.all([
     getCurrentProfile().catch(() => null),
     getCommunityCounts().catch(emptyCommunityCounts),
+    listLanguages().catch(() => []),
+    requestedLanguage().catch(() => null),
   ]);
 
   // A pending account has a profile and no rights. Counting its queue would
@@ -33,6 +37,9 @@ export async function Masthead() {
     <MastheadShell
       mark={<Logo variant="mark" size={22} />}
       rule={<StreamRule counts={counts} />}
+      language={
+        <LanguagePicker languages={languages} current={reading?.code ?? languages[0]?.code ?? 'en'} />
+      }
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-5 md:flex-row md:items-start md:gap-8">
         <Link

@@ -3,15 +3,18 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import { FilePreview } from '@/components/file-preview';
+import { TranslationRequest } from '@/components/translation-request';
 import { CommunityMark, Field } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
 import { FIELD_GROUPS, GROUP_ORDER, fieldDef } from '@/lib/fields/registry';
 import { getPublishedItem } from '@/lib/items/queries';
+import { present } from '@/lib/translate/render';
 import { listItemFamilies } from '@/lib/vocabulary/queries';
 import { categoryLabel } from '@/lib/types';
 import { formatBytes, formatDate, formatDuration } from '@/lib/utils';
 
 type Params = Promise<{ id: string }>;
+type Search = Promise<{ original?: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
@@ -28,13 +31,32 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
  * so it can be cited, shared with a family, or linked from a paper. In the demo
  * this was a modal with no address.
  */
-export default async function RecordPage({ params }: { params: Params }) {
+export default async function RecordPage({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams: Search;
+}) {
   const { id } = await params;
   const item = await getPublishedItem(id);
   if (!item) notFound();
 
   const file = item.file;
   const families = await listItemFamilies(id);
+
+  /*
+   * The record in the reader's language, if they asked for one.
+   *
+   * `present` lays the translations over the record and says plainly what it
+   * did; the page draws from `shown` and the note below says where the words
+   * came from. `item` is untouched throughout — the file, the dimensions, the
+   * keywords and the tree fields are the archive's own and are never
+   * translated, and `?original=1` returns the record exactly as it was written.
+   */
+  const { original } = await searchParams;
+  const reading = await present(item, { original: original === '1' });
+  const shown = reading.item;
 
   return (
     <article className="mx-auto max-w-5xl px-6 pt-6 pb-14 sm:pt-10 sm:pb-16">
@@ -75,7 +97,7 @@ export default async function RecordPage({ params }: { params: Params }) {
             dir="auto"
             style={{ '--reveal-delay': '70ms' } as React.CSSProperties}
           >
-            {item.title}
+            {shown.title}
           </h1>
 
           <div
@@ -84,6 +106,45 @@ export default async function RecordPage({ params }: { params: Params }) {
           >
             <CommunityMark community={item.community} />
           </div>
+
+          {/*
+            Where these words came from.
+            A machine translation shown without saying so is the archive
+            telling a reader that a family wrote something it did not write.
+            The original is a link rather than a toggle, so it has an address:
+            somebody citing this record can cite the words actually used.
+          */}
+          {reading.translated && (
+            <p className="machine mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+              <span>Translated into {reading.language.label_en} by machine</span>
+              <Link
+                href={`/portal/${item.id}?original=1`}
+                className="text-accent underline underline-offset-2 hover:text-accent-strong"
+              >
+                Show the record as it was written
+              </Link>
+            </p>
+          )}
+
+          {reading.showingOriginal && (
+            <p className="machine mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+              <span>As it was written</span>
+              <Link
+                href={`/portal/${item.id}`}
+                className="text-accent underline underline-offset-2 hover:text-accent-strong"
+              >
+                Read it in {reading.language.label_en}
+              </Link>
+            </p>
+          )}
+
+          {reading.wanted && (
+            <TranslationRequest
+              itemId={item.id}
+              lang={reading.language.code}
+              label={reading.language.label_en}
+            />
+          )}
 
           {families.length > 0 && (
             <p className="mt-3 flex flex-wrap gap-2">
@@ -98,8 +159,10 @@ export default async function RecordPage({ params }: { params: Params }) {
             </p>
           )}
 
-          {item.description && (
-            <p className="mt-7 leading-relaxed sm:text-lg">{item.description}</p>
+          {shown.description && (
+            <p className="mt-7 leading-relaxed sm:text-lg" dir="auto">
+              {shown.description}
+            </p>
           )}
 
           {item.keywords.length > 0 && (
@@ -118,7 +181,7 @@ export default async function RecordPage({ params }: { params: Params }) {
           <Reveal className="mt-9">
           <dl className="card grid grid-cols-2 gap-x-6 gap-y-6 bg-paper-2/50 p-6">
             <Field label="Provenance">
-              {item.provenance ?? <span className="text-muted italic">Not recorded</span>}
+              {shown.provenance ?? <span className="text-muted italic">Not recorded</span>}
             </Field>
             <Field label="Contributor">
               {item.source ?? <span className="text-muted italic">Not recorded</span>}
