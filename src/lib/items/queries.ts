@@ -76,6 +76,20 @@ function analysisFor(analyses: AiAnalysis[], file: ItemFile | null): AiAnalysis 
   return sorted[0] ?? null;
 }
 
+/**
+ * A search term made safe for `ilike`.
+ *
+ * `%` and `_` are wildcards, so a search for "50%" without this is a search for
+ * "50 followed by anything" — a match-everything. It lives here rather than at
+ * each call site because it was written out twice and the second copy was
+ * wrong: an over-escaped backslash turned it into an escaped dollar sign, so
+ * the escape produced the literal text `${c}` and the two queries no longer
+ * filtered alike. Caught by the linter noticing the argument had gone unused.
+ */
+export function likeTerm(query: string): string {
+  return query.trim().replace(/[%_\\]/g, (character) => '\\' + character);
+}
+
 /** Published items for the public portal. */
 export async function listPublishedItems(filters: PortalFilters = {}): Promise<(Item & { file: ItemFile | null })[]> {
   const supabase = await createServerSupabase();
@@ -94,9 +108,7 @@ export async function listPublishedItems(filters: PortalFilters = {}): Promise<(
   if (filters.category) q = q.eq('category', filters.category);
   if (filters.community) q = q.eq('community', filters.community);
   if (filters.query?.trim()) {
-    // Escape the LIKE wildcards so a search for "50%" is not a match-everything.
-    const term = filters.query.trim().replace(/[%_]/g, (c) => `\\${c}`);
-    q = q.ilike('search_text', `%${term}%`);
+    q = q.ilike('search_text', `%${likeTerm(filters.query)}%`);
   }
 
   const { data, error } = await q;
@@ -155,7 +167,15 @@ export async function getCommunityCounts(): Promise<Record<Community, number>> {
 }
 
 /**
- * How many records are published, counting every one of them.
+ * How many records are published, counting every one of them — and, given
+ * filters, how many match.
+ *
+ * **This is the number a page should show, never the length of a list.**
+ * PostgREST caps a response at a thousand rows and returns `error: null` when
+ * it does: measured on this project, a 2500-row table came back as exactly a
+ * thousand while `count: 'exact'` reported 2500. A page that prints
+ * `items.length` will one day say "1000 records published" about an archive
+ * holding four thousand, and nothing anywhere will look wrong.
  *
  * The front page used to derive this by summing the community counts, which
  * silently excludes a published record whose community is null — and a null
@@ -166,15 +186,23 @@ export async function getCommunityCounts(): Promise<Record<Community, number>> {
  * Counted in the database rather than from `listPublishedItems`, because that
  * call is capped for the wall and its length is not the archive's size.
  */
-export async function countPublishedItems(): Promise<number> {
+export async function countPublishedItems(filters: PortalFilters = {}): Promise<number> {
   const supabase = await createServerSupabase();
-  const { count, error } = await supabase
+  let q = supabase
     .from('items')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'accepted')
     .eq('access', 'public')
     .is('deleted_at', null);
 
+  // The same predicates as `listPublishedItems`, so the two can be compared.
+  if (filters.category) q = q.eq('category', filters.category);
+  if (filters.community) q = q.eq('community', filters.community);
+  if (filters.query?.trim()) {
+    q = q.ilike('search_text', `%${likeTerm(filters.query)}%`);
+  }
+
+  const { count, error } = await q;
   if (error) throw error;
   return count ?? 0;
 }

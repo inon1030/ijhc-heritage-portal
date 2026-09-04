@@ -5,7 +5,7 @@ import { PortalControls } from '@/components/portal-controls';
 import { EmptyState } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
 import { StreamSummary } from '@/components/stream-summary';
-import { getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
+import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { CATEGORIES, COMMUNITIES, type Community, type ItemCategory } from '@/lib/types';
 
@@ -36,12 +36,27 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
     ? (communityParam as Community)
     : undefined;
 
-  const [items, counts] = await Promise.all([
+  /*
+   * The list, and — separately — how many there actually are.
+   *
+   * Deliberately not `items.length`. The portal asks for every matching record
+   * with no limit of its own, but PostgREST caps a response at a thousand rows
+   * and says nothing when it does: measured on this project, a 2500-row table
+   * came back as exactly a thousand with `error: null`. Printing the length of
+   * the list would one day tell a visitor the archive holds a thousand records
+   * when it holds four thousand, and nothing would look wrong.
+   *
+   * So the number on the page is counted in the database, and if the list is
+   * shorter than the count the page says so rather than quietly showing less.
+   */
+  const [items, counts, total] = await Promise.all([
     listPublishedItems({ query, category, community }),
     getCommunityCounts().catch(emptyCommunityCounts),
+    countPublishedItems({ query, category, community }),
   ]);
 
   const filtered = Boolean(query || category || community);
+  const truncated = items.length < total;
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-8 pb-14 sm:pt-12 sm:pb-16">
@@ -76,9 +91,18 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
       </Reveal>
 
       <p className="eyebrow mb-5" aria-live="polite">
-        {items.length} {items.length === 1 ? 'record' : 'records'}
+        {total} {total === 1 ? 'record' : 'records'}
         {filtered ? ' matching' : ' published'}
       </p>
+
+      {/* A ceiling the platform imposes, not the archive. If it is ever
+          reached the visitor is told, because a list that quietly stops is
+          worse than a list that admits where it stopped. */}
+      {truncated && (
+        <p className="machine mb-5 text-sm text-caution">
+          Showing the first {items.length}. Narrow the search to see the rest.
+        </p>
+      )}
 
       {items.length === 0 ? (
         <Reveal>
