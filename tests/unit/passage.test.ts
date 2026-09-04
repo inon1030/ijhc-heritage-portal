@@ -19,18 +19,29 @@ import { passageCues } from '@/components/time-passage';
 
 const COUNTS = [1, 2, 3, 5, 8, 12, 18, 30];
 
+/**
+ * The corridor's length is no longer a constant.
+ *
+ * The whole passage is capped at four seconds, and the beat spent waiting for
+ * photographs comes out of that rather than being added to it — so the corridor
+ * gets whatever is left, between a floor of 2.2 seconds and about 3.5. Every
+ * assertion below therefore has to hold across that range, not at one value.
+ */
+const RUNS = [2200, 2600, 3000, 3520];
+
 describe('the passage lays its photographs out', () => {
-  it('never starts one before the run does', () => {
-    for (const count of COUNTS) {
-      const { cues } = passageCues(count);
-      // Within a millisecond of zero: the first photograph begins exactly as
-      // the run does, and the component rounds to whole milliseconds anyway.
-      expect(cues[0].delay, `${count} photographs`).toBeCloseTo(0, 6);
-    }
+  it('never starts one before the run does, at any length of run', () => {
+    for (const travel of RUNS)
+      for (const count of COUNTS) {
+        const { cues } = passageCues(count, travel);
+        // Within a millisecond of zero: the first photograph begins exactly as
+        // the run does, and the component rounds to whole milliseconds anyway.
+        expect(cues[0].delay, `${count} photographs over ${travel}ms`).toBeCloseTo(0, 6);
+      }
   });
 
   it('gives every one of them the same span, in order', () => {
-    const { cues } = passageCues(9);
+    const { cues } = passageCues(9, 3000);
     const gaps = cues.slice(1).map((cue, i) => cue.delay - cues[i].delay);
 
     for (const gap of gaps) {
@@ -40,16 +51,17 @@ describe('the passage lays its photographs out', () => {
   });
 
   it('reaches the last one before the run ends', () => {
-    for (const count of COUNTS) {
-      const { travel, cues } = passageCues(count);
-      const last = cues[cues.length - 1];
-      expect(last.depth, `${count} photographs`).toBeLessThan(travel);
-    }
+    for (const run of RUNS)
+      for (const count of COUNTS) {
+        const { travel, cues } = passageCues(count, run);
+        const last = cues[cues.length - 1];
+        expect(last.depth, `${count} photographs over ${run}ms`).toBeLessThan(travel);
+      }
   });
 
   it('spaces them out as more are published rather than crowding them', () => {
-    const few = passageCues(4);
-    const many = passageCues(16);
+    const few = passageCues(4, 3000);
+    const many = passageCues(16, 3000);
 
     // A longer corridor, walked in the same four seconds: more photographs
     // means they come faster, not that the introduction gets longer.
@@ -60,11 +72,24 @@ describe('the passage lays its photographs out', () => {
   });
 
   it('copes with an archive that has published one photograph, or none', () => {
-    expect(passageCues(0).cues).toEqual([]);
-    expect(passageCues(0).travel).toBeGreaterThan(0);
+    expect(passageCues(0, 3000).cues).toEqual([]);
+    expect(passageCues(0, 3000).travel).toBeGreaterThan(0);
 
-    const one = passageCues(1);
+    const one = passageCues(1, 3000);
     expect(one.cues).toHaveLength(1);
     expect(Math.round(one.cues[0].delay)).toBe(0);
+  });
+});
+
+describe('a photograph gets a proportion of the corridor, not a fixed span', () => {
+  it('shortens every span when the run is shortened', () => {
+    // The hold spends out of the four seconds, so a slow connection gives a
+    // shorter corridor. A fixed span against a shortened run would put the
+    // whole archive on screen at once.
+    const long = passageCues(10, 3520);
+    const short = passageCues(10, 2200);
+
+    expect(short.frameLife).toBeLessThan(long.frameLife);
+    expect(short.frameLife / 2200).toBeCloseTo(long.frameLife / 3520, 2);
   });
 });

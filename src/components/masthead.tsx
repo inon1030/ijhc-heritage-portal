@@ -35,7 +35,18 @@ export async function Masthead() {
 
   return (
     <MastheadShell
-      mark={<Logo variant="mark" size={22} />}
+      home={
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 rounded-lg transition-opacity duration-200 hover:opacity-70"
+        >
+          <Logo variant="mark" size={22} />
+          <span className="wordmark hidden text-[0.95rem] sm:inline">
+            Indian Jewish Heritage Center
+          </span>
+          <span className="wordmark text-base sm:hidden">IJHC</span>
+        </Link>
+      }
       rule={<StreamRule counts={counts} />}
       language={
         <LanguagePicker languages={languages} current={reading?.code ?? languages[0]?.code ?? 'en'} />

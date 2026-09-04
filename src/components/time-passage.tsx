@@ -37,14 +37,12 @@ import { createPortal } from 'react-dom';
  * wants the passage to be what the front door *is*, so returning to it is
  * returning to the passage.
  *
- * That only works because leaving it is free. It goes on a click, a key, a
- * scroll or a touch — every gesture that means "I want to get on with it" —
- * with a visible control as well, and it never plays at all for somebody who
- * has asked their system to stop moving things. An introduction that repeats
- * and cannot be escaped is a toll gate; one that repeats and yields to the
- * first thing you do is a threshold. The second time a visitor arrives the
- * photographs are already in the browser's cache, so the beat before it moves
- * is gone and it is the four seconds and nothing else.
+ * That only works because it is short and because leaving it is free. Four
+ * seconds, door to door, however slow the connection — and it goes on a click,
+ * a key, a scroll or a touch, every gesture that means "I want to get on with
+ * it". There is no Skip control: a button offering to save you four seconds is
+ * an admission that four seconds was too long. And it never plays at all for
+ * somebody who has asked their system to stop moving things.
  *
  * **Nothing is claimed.** The rule counts a two-thousand-year span and lands on
  * the present year. It is a scale, the way a map's scale bar is a scale. It
@@ -56,11 +54,27 @@ import { createPortal } from 'react-dom';
  * a slow connection gets a short beat on paper rather than a stall.
  */
 
-const TRAVEL_MS = 3800;
-const LEAVE_MS = 560;
+/**
+ * The whole thing, door to door. Four seconds and not a millisecond more.
+ *
+ * **A budget, not a duration.** The passage has three parts — a held beat
+ * while the photographs are fetched, the corridor, and the handover — and the
+ * first of those depends on a network. Adding them up meant a cold visit could
+ * run to six seconds while a warm one ran to four, so the length of the front
+ * door depended on the visitor's connection. Here the hold is spent *out of*
+ * the four seconds rather than added to them: whatever it takes, the corridor
+ * gets what is left, and a visitor with everything already cached simply gets a
+ * longer corridor.
+ */
+const TOTAL_MS = 4000;
+const LEAVE_MS = 480;
+/** Below this the corridor stops being a passage and becomes a flicker. */
+const MIN_TRAVEL_MS = 2200;
+/** A photograph's life on screen, as a share of however long the corridor got. */
+const FRAME_SHARE = 0.4;
 /**
  * How long the photographs are given to arrive before the corridor moves
- * anyway. A ceiling, not a wait.
+ * anyway. A ceiling, and it comes out of the four seconds, not on top of them.
  *
  * Measured on this archive: each image takes 1.1–2.3 seconds, because they are
  * unoptimised masters fetched through the permission check and a signed-URL
@@ -76,7 +90,7 @@ const LEAVE_MS = 560;
  * or click. Thumbnails would remove even that, and would do more for the wall
  * than for this.
  */
-const PRELOAD_CAP_MS = 1800;
+const PRELOAD_CAP_MS = 1000;
 
 /** The corridor's geometry, in the perspective's own units. */
 const GAP = 460; // between one photograph and the next
@@ -91,16 +105,19 @@ const RUN_OUT = 200; // past the last, so the corridor empties before it stops
  * read as photographs.
  */
 const TURN = 83;
-/**
- * How long one photograph is on screen, and the whole trick of the thing.
+/*
+ * A photograph's life on screen is a share of the corridor, not a constant.
  *
- * The camera reaches a photograph's plane at the *end* of its life, so a print
- * grows all the way in and dissolves at its largest rather than swallowing the
- * screen and blotting out the one behind it. Meeting it halfway — the first
- * attempt — left every print at a third of its size and fading while still far
- * off, which read as a slideshow behind fog.
+ * The camera reaches a print's plane at the *end* of its life, so it grows all
+ * the way in and dissolves at its largest rather than swallowing the screen and
+ * blotting out the one behind it. Meeting it halfway — the first attempt — left
+ * every print at a third of its size and fading while still far off, which read
+ * as a slideshow behind fog.
+ *
+ * It is a proportion because the corridor's length now varies with how long the
+ * photographs took to arrive; a fixed life against a shortened run would put
+ * the whole archive on screen at once.
  */
-const FRAME_LIFE = 1500;
 
 /**
  * Where every photograph sits, and when each one appears.
@@ -118,19 +135,23 @@ const FRAME_LIFE = 1500;
  * `tests/unit/passage.test.ts` asserts the invariant directly: no cue starts
  * before the run does.
  */
-export function passageCues(count: number): { travel: number; cues: { depth: number; delay: number }[] } {
+export function passageCues(
+  count: number,
+  travelMs: number,
+): { travel: number; frameLife: number; cues: { depth: number; delay: number }[] } {
+  const frameLife = Math.round(travelMs * FRAME_SHARE);
   const rest = Math.max(0, count - 1) * GAP + RUN_OUT;
-  const lead = (FRAME_LIFE * rest) / (TRAVEL_MS - FRAME_LIFE);
+  const lead = (frameLife * rest) / (travelMs - frameLife);
   const travel = lead + rest;
 
   const cues = Array.from({ length: count }, (_, i) => {
     const depth = lead + i * GAP;
     // The camera reaches this photograph's plane at the end of its life, so it
     // has to have begun a whole life earlier.
-    return { depth, delay: (depth / travel) * TRAVEL_MS - FRAME_LIFE };
+    return { depth, delay: (depth / travel) * travelMs - frameLife };
   });
 
-  return { travel, cues };
+  return { travel, frameLife, cues };
 }
 
 const SPAN_YEARS = 2000;
@@ -167,9 +188,11 @@ export function TimePassage({
    * the run and simply is not there, which nobody can see.
    */
   const [ready, setReady] = useState<Set<string>>(() => new Set());
+  /** Decided when the hold ends: whatever is left of the four seconds. */
+  const [travelMs, setTravelMs] = useState(TOTAL_MS - LEAVE_MS);
+  const heldFrom = useRef(0);
   const yearRef = useRef<HTMLSpanElement>(null);
   const corridorRef = useRef<HTMLDivElement>(null);
-  const skipRef = useRef<HTMLButtonElement>(null);
   const done = useRef(false);
 
   const endYear = new Date().getFullYear();
@@ -212,7 +235,6 @@ export function TimePassage({
 
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    skipRef.current?.focus();
 
     const off = () => dismiss();
     window.addEventListener('keydown', off);
@@ -231,9 +253,31 @@ export function TimePassage({
   useEffect(() => {
     if (phase !== 'holding') return;
     let cancelled = false;
+    heldFrom.current = Date.now();
 
+    /*
+     * Whichever comes first, and only that one.
+     *
+     * Two things call this — the ceiling, and the photographs arriving — and
+     * for a while both did. The ceiling fired at one second, the corridor
+     * started; the images landed at two and a half and started it *again*,
+     * with a fresh duration and a fresh dismissal timer behind it. Measured at
+     * six seconds against a four-second cap, which is the cap not existing.
+     */
+    let started = false;
     const go = () => {
-      if (!cancelled) setPhase('travelling');
+      if (cancelled || started) return;
+      started = true;
+      /*
+       * The corridor gets what the hold did not spend.
+       *
+       * Four seconds is the whole of the front door, so a slow fetch shortens
+       * the journey rather than lengthening the visit — down to a floor, below
+       * which a corridor stops being a passage and becomes a flicker.
+       */
+      const held = Date.now() - heldFrom.current;
+      setTravelMs(Math.max(MIN_TRAVEL_MS, TOTAL_MS - held - LEAVE_MS));
+      setPhase('travelling');
     };
     const cap = window.setTimeout(go, PRELOAD_CAP_MS);
 
@@ -288,7 +332,7 @@ export function TimePassage({
 
     const tick = (now: number) => {
       const elapsed = Number(corridor?.currentTime ?? now - started);
-      const t = Math.min(1, (Number.isFinite(elapsed) ? elapsed : now - started) / TRAVEL_MS);
+      const t = Math.min(1, (Number.isFinite(elapsed) ? elapsed : now - started) / travelMs);
       /*
        * Away fast, and settling on now.
        *
@@ -306,14 +350,14 @@ export function TimePassage({
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [phase, startYear, endYear]);
+  }, [phase, startYear, endYear, travelMs]);
 
   /* The corridor runs out, and hands the page over. */
   useEffect(() => {
     if (phase !== 'travelling') return;
-    const timer = window.setTimeout(dismiss, TRAVEL_MS);
+    const timer = window.setTimeout(dismiss, travelMs);
     return () => window.clearTimeout(timer);
-  }, [phase, dismiss]);
+  }, [phase, dismiss, travelMs]);
 
   /* The attribute outlives the overlay by exactly one animation, then goes. */
   useEffect(() => {
@@ -326,7 +370,7 @@ export function TimePassage({
 
   if (!phase) return null;
 
-  const { travel, cues } = passageCues(frames.length);
+  const { travel, frameLife, cues } = passageCues(frames.length, travelMs);
   const moving = phase !== 'holding';
 
   /*
@@ -339,18 +383,26 @@ export function TimePassage({
    */
   return createPortal(
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Introduction to the archive"
+      /*
+       * Nothing here is for a screen reader.
+       *
+       * It held a Skip button and was a dialog because of it. With the whole
+       * thing capped at four seconds the control is gone, and what is left is
+       * decoration over a page that is already complete underneath — so it is
+       * hidden from assistive technology entirely rather than announced as
+       * something to get out of. It still yields to a click, a key, a scroll or
+       * a touch; those cost nothing and they are what a visitor reaches for.
+       */
+      aria-hidden
       data-phase={phase}
       className="passage"
       onClick={dismiss}
       style={
         {
           '--passage-travel': `${Math.round(travel)}px`,
-          '--passage-duration': `${TRAVEL_MS}ms`,
+          '--passage-duration': `${travelMs}ms`,
           '--passage-leave': `${LEAVE_MS}ms`,
-          '--passage-frame-life': `${FRAME_LIFE}ms`,
+          '--passage-frame-life': `${frameLife}ms`,
         } as React.CSSProperties
       }
     >
@@ -430,9 +482,6 @@ export function TimePassage({
         <span className="passage-ticks" />
       </div>
 
-      <button ref={skipRef} type="button" className="passage-skip" onClick={dismiss}>
-        Skip
-      </button>
     </div>,
     document.body,
   );

@@ -27,13 +27,21 @@ import { ChevronDown } from 'lucide-react';
  * there is a pointer to aim with.
  */
 export function MastheadShell({
-  mark,
+  home,
   rule,
   language,
   children,
 }: {
-  /** The small mark shown on the strip itself, so the archive is still named. */
-  mark: React.ReactNode;
+  /**
+   * The mark and the Center's name on the strip, as a link home.
+   *
+   * A sibling of the toggle rather than a child of it: an anchor inside a
+   * button is invalid, and browsers resolve it by dropping one of the two —
+   * which is why the archive's own mark could not be the way home until now.
+   * It is absolutely positioned into the strip's left, and the button carries
+   * the room for it on its padding.
+   */
+  home: React.ReactNode;
   /**
    * The proportional stream rule. It stays outside the fold: it is four pixels
    * tall, it is the archive's own signature, and it gives the strip a coloured
@@ -95,16 +103,8 @@ export function MastheadShell({
         aria-controls="masthead-bar"
         aria-label={open ? 'Close the menu' : 'Open the menu'}
         onClick={() => setPinned((v) => !v)}
-        className="flex h-11 w-full items-center justify-between gap-3 bg-paper/90 pl-6 pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9"
+        className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pl-[15rem] pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9"
       >
-        <span className="flex items-center gap-2.5">
-          {mark}
-          <span className="wordmark hidden text-[0.95rem] sm:inline">
-            Indian Jewish Heritage Center
-          </span>
-          <span className="wordmark text-base sm:hidden">IJHC</span>
-        </span>
-
         {/*
           The prompt shows only while the bar is shut. Once it is open the bar
           itself is the answer to "what is this", and a CLOSE label on a strip
@@ -136,6 +136,15 @@ export function MastheadShell({
         navigation bar over the page — the header opens on hover and on focus,
         and both events pass through here on their way up. Stopped at the door.
       */}
+      {/* The way home, in space the strip reserves for it on the left. */}
+      <div
+        className="absolute left-6 top-0 flex h-11 items-center sm:h-9"
+        onPointerEnter={(e) => e.stopPropagation()}
+        onFocus={(e) => e.stopPropagation()}
+      >
+        {home}
+      </div>
+
       <div
         className="absolute right-5 top-1.5 z-10 sm:top-0.5"
         onPointerEnter={(e) => e.stopPropagation()}

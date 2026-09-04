@@ -96,15 +96,17 @@ export default async function Home() {
         </div>
       )}
 
-      <div className="mx-auto max-w-5xl px-6 pt-10 pb-16 sm:pt-16 sm:pb-20">
-        <Link
-          href="/portal"
-          className="animate-rise inline-flex items-center gap-3 rounded-xl transition-transform duration-300 hover:-translate-y-0.5"
-        >
-          <Logo variant="lockup" size={54} />
-          <span className="sr-only">Indian Jewish Heritage Center</span>
-        </Link>
+      {/*
+        No lockup above the headline.
 
+        There was one, and it cost the page its two doors: at fifty-four pixels
+        plus its margin it pushed "Explore the archive" and "Add something you
+        kept" off the bottom of a laptop screen, so the front page opened on a
+        headline and nothing to do. The mark is in the strip at the top of every
+        page and it is the link home; repeating it here said the Center's name
+        twice above a headline that is already the Center's own campaign.
+      */}
+      <div className="mx-auto max-w-5xl px-6 pt-14 pb-16 sm:pt-20 sm:pb-20">
         {/*
           The headline, set as the poster sets it: the numeral carrying the
           line and the words stacked tight against its right shoulder. One
@@ -112,7 +114,7 @@ export default async function Home() {
           sentence, and splitting it across two h1s would read as two to
           anything that cannot see the layout.
         */}
-        <h1 className="mt-10 sm:mt-14">
+        <h1>
           <span
             className="animate-rise flex flex-wrap items-end gap-x-4 gap-y-1"
             style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
