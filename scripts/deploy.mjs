@@ -29,7 +29,14 @@ const REQUIRED = [
   'GEMINI_API_KEY',
 ];
 
-const OPTIONAL = ['AI_PROVIDER', 'GEMINI_MODEL', 'NEXT_PUBLIC_ARCHIVE_CONTACT'];
+const OPTIONAL = [
+  'AI_PROVIDER',
+  'GEMINI_MODEL',
+  'NEXT_PUBLIC_ARCHIVE_CONTACT',
+  // Without it in production the nightly translation sweep refuses every
+  // request — which is the safe failure, and a silent one, so it is pushed.
+  'CRON_SECRET',
+];
 
 function readEnvLocal() {
   const file = path.join(ROOT, '.env.local');

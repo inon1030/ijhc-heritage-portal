@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { fail, invalid, ok, unexpected } from '@/lib/api';
@@ -6,6 +6,7 @@ import { ACCESS_LEVELS } from '@/lib/access';
 import { FIELD_KEYS, fieldDef, isValidValue } from '@/lib/fields/registry';
 import { binItem, reviewItem } from '@/lib/items/mutations';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
+import { translateRecord } from '@/lib/translate';
 import { setItemFamilies } from '@/lib/vocabulary/mutations';
 import { readVocabulary } from '@/lib/vocabulary/load';
 import { resolveTerms } from '@/lib/vocabulary/thesaurus';
@@ -93,6 +94,33 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     // After the decision, so a rejected transition does not rewrite the
     // families of a record it did not change.
     if (body.familyIds) await setItemFamilies(id, body.familyIds);
+
+    /*
+     * Published means published in every language.
+     *
+     * `after` runs this once the volunteer already has their response, so the
+     * review does not wait on a translator that takes between two and fifty
+     * seconds — and, more to the point, a review can never fail because Google
+     * is busy. The archive's own material and a volunteer's decision are not
+     * held hostage to a third party.
+     *
+     * Only on acceptance. Translating a rejected record spends five calls on
+     * something nobody will read, and a record still pending is text a
+     * volunteer is in the middle of changing.
+     *
+     * Everything it misses — a record published before this existed, a
+     * correction made later, a language that was refusing at the time — is
+     * picked up by the nightly sweep in /api/cron/translate.
+     */
+    if (body.status === 'accepted') {
+      after(async () => {
+        try {
+          await translateRecord(id);
+        } catch (error) {
+          console.error('[review] translating after publication', error);
+        }
+      });
+    }
 
     revalidatePath('/review');
     revalidatePath('/portal');

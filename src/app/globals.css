@@ -59,7 +59,9 @@
   /* ── structure ──────────────────────────────────────────────────────── */
   --color-rule:        #e6ddcb;  /* warm border, never grey */
   --color-rule-strong: #d8cbb2;
-  --color-muted:       #6b6259;  /* 5.3:1 on paper */
+  /* Was #6b6259 at 5.3:1 — over the AA floor and thin for an older reader on a
+     screen they did not choose. 7.4:1, which is AAA for body text. */
+  --color-muted:       #574f47;
 
   /* ── the streams ────────────────────────────────────────────────────── */
   /* Five hues that stay distinguishable inside one warm family. */
@@ -109,12 +111,19 @@
   html {
     -webkit-text-size-adjust: 100%;
     /*
-     * 17px instead of the browser's 16. Every size and gap is expressed in rem,
+     * 18px instead of the browser's 16. Every size and gap is expressed in rem,
      * so this one line lifts the whole interface — which is what "easier to
      * read" means here. Anyone who has changed their browser's default keeps
      * it: this scales from their setting rather than replacing it.
+     *
+     * It was 17px. The people this archive is for are, in the main, older than
+     * the people who build websites: they are the ones who still have the
+     * photographs, and they are reading long descriptions of them. A point and
+     * a bit is not much, and it is the cheapest accessibility there is —
+     * nothing is repositioned, nothing is redesigned, everything grows
+     * together because every measurement in the system is relative.
      */
-    font-size: 106.25%;
+    font-size: 112.5%;
     scroll-behavior: smooth;
   }
 
@@ -157,11 +166,14 @@
   /* The eyebrow that labels each block of metadata. */
   .eyebrow {
     font-family: var(--font-mono);
-    /* 13.8px at the 17px root. The previous 12.75px was legible on a laptop
-       and hard work on a phone, and these labels carry real information. */
+    /* 14.6px at the 18px root. These labels carry real information — the
+       category of a record, the name of a field — so they are not decoration
+       and they are not allowed to be small. Uppercase mono needs the extra
+       tracking to stay separable at this size, but no more than this: past
+       about 0.1em the words stop reading as words. */
     font-size: 0.8125rem;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
@@ -194,8 +206,10 @@
   /* Machine-written. Anything wearing this came from a model, not a person. */
   .machine {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
-    line-height: 1.7;
+    /* 16.2px at the 18px root. Mono runs small for its nominal size and this
+       is where OCR and machine notes are read, sometimes at length. */
+    font-size: 0.9rem;
+    line-height: 1.75;
   }
 
   /*
@@ -457,6 +471,36 @@
   }
   .passage-frame[data-shape='square'] {
     aspect-ratio: 1 / 1;
+  }
+
+  /*
+   * A plate with nothing hung on it.
+   *
+   * The archive is still collecting, and the wall holds a hundred. Below that
+   * the remainder is filled with these rather than with photographs: a picture
+   * of Indian Jewish life that no family gave the archive is a claim it cannot
+   * make, and a visitor cannot tell a decorative one from a holding. An unhung
+   * mount is honest and says the right thing — the space is waiting for
+   * something somebody still has in a drawer, which is the campaign.
+   */
+  .passage-frame[data-empty] {
+    box-shadow: 0 20px 52px -22px rgb(0 0 0 / 0.7);
+    opacity: 1;
+  }
+
+  .passage-plate {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(150deg, #efe8da 0%, #e4dbc9 55%, #ded4bf 100%);
+    box-shadow: inset 0 0 0 1px rgb(120 100 70 / 0.16);
+  }
+
+  /* The wall's version: paper, at the wall's own opacity, so a half-filled
+     grid reads as fabric rather than as gaps. */
+  .wall-empty {
+    background: linear-gradient(150deg, #ece5d6 0%, #e2d9c6 100%);
+    box-shadow: inset 0 0 0 1px rgb(120 100 70 / 0.1);
   }
 
   .passage-frame img {

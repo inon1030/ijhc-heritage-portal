@@ -11,7 +11,7 @@ import {
   type SourceText,
   type TranslatableField,
 } from './plan';
-import { getLanguage, type ArchiveLanguage } from './languages';
+import { getLanguage, listLanguages, type ArchiveLanguage } from './languages';
 
 /**
  * Reading a record in a language it was not written in.
@@ -118,7 +118,11 @@ export async function readTranslation(itemId: string, lang: string): Promise<Ren
  * Returns everything the reader needs, cached and fresh together. Safe to call
  * repeatedly: with nothing missing it does no work and makes no call.
  */
-export async function translateItem(item: Translatable, lang: string): Promise<Rendered> {
+export async function translateItem(
+  item: Translatable,
+  lang: string,
+  { deadline }: { deadline?: number } = {},
+): Promise<Rendered> {
   const language = await getLanguage(lang);
   if (!language) throw new Error(`Not a language this archive publishes in: ${lang}`);
 
@@ -155,7 +159,7 @@ export async function translateItem(item: Translatable, lang: string): Promise<R
 
   let produced: Partial<Record<TranslatableField, string>>;
   try {
-    produced = await callModel(plan.translate, language, item.language ?? null);
+    produced = await callModel(plan.translate, language, item.language ?? null, deadline);
   } catch (error) {
     // Measured in the first live run: the model answered 503 "high demand", and
     // a reader asking for Hebrew got a 500 instead of a record. Whatever is
@@ -192,6 +196,102 @@ export async function translateItem(item: Translatable, lang: string): Promise<R
   return { lang, values, machine: rows.length > 0 };
 }
 
+
+/**
+ * Every language the archive publishes in, for one record.
+ *
+ * Two things call this and neither has a reader waiting.
+ *
+ * **A volunteer accepting a record.** By the time anybody arrives to read it,
+ * the translations are already there — which is the difference between a
+ * catalogue that is available in five languages and one that is available in
+ * five languages a minute after somebody asks.
+ *
+ * **The nightly sweep**, for everything the first path missed: records
+ * published before this existed, records whose text a volunteer has since
+ * corrected, and anything that was translated while the model was refusing.
+ *
+ * One language at a time rather than one call with five outputs. A single call
+ * would be cheaper and it would also mean one 503 costs all five; done in
+ * sequence, four languages still land when the fifth does not, and the fifth is
+ * picked up by the next sweep. Never throws: nothing here is worth failing a
+ * volunteer's review over.
+ */
+export async function translateItemEverywhere(
+  item: Translatable,
+  { skipSource = true, deadline }: { skipSource?: boolean; deadline?: number } = {},
+): Promise<{ lang: string; made: boolean }[]> {
+  const languages = await listLanguages().catch(() => []);
+  const results: { lang: string; made: boolean }[] = [];
+
+  for (const language of languages) {
+    if (skipSource && language.is_source) continue;
+    /*
+     * Checked here, between languages, and not only between records.
+     *
+     * A record is five sequential calls of up to fifty seconds each, so a
+     * caller working to a budget that only looks up between records can
+     * overrun it by minutes — measured at over ninety seconds on a run that
+     * had budgeted forty-five. On a serverless platform that is not a slow
+     * run, it is a killed one: the work is lost and nothing is reported.
+     * Whatever is not reached stays outstanding and is found again tomorrow.
+     */
+    if (deadline && Date.now() > deadline) break;
+    try {
+      const rendered = await translateItem(item, language.code, { deadline });
+      results.push({ lang: language.code, made: !rendered.unavailable });
+    } catch (error) {
+      console.error(`[translate] ${item.id} into ${language.code}`, error);
+      results.push({ lang: language.code, made: false });
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Fetches a record and translates it into everything. Server-side callers only.
+ *
+ * The transcript comes from `ai_analyses` and is included, because the sweep
+ * and the publish hook both run with the service role — they are the archive
+ * acting on its own material, not a reader asking for it. What that produces is
+ * still volunteer-only when it is read back: `item_translations` keeps its
+ * transcript rows behind `is_volunteer()` (migration 0024).
+ */
+export async function translateRecord(
+  itemId: string,
+  options: { deadline?: number } = {},
+): Promise<{ lang: string; made: boolean }[]> {
+  const admin = createAdminSupabase();
+
+  const { data: item, error } = await admin
+    .from('items')
+    .select('id, language, title, description, provenance, period, origin_place')
+    .eq('id', itemId)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!item) return [];
+
+  const { data: analysis } = await admin
+    .from('ai_analyses')
+    .select('ocr_text, transcript')
+    .eq('item_id', itemId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return translateItemEverywhere(
+    {
+      ...(item as Record<string, unknown>),
+      id: item.id as string,
+      transcript: analysis?.transcript ?? analysis?.ocr_text ?? null,
+    },
+    options,
+  );
+}
+
 /**
  * One call, every field.
  *
@@ -207,6 +307,7 @@ async function callModel(
   jobs: { field: TranslatableField; text: string }[],
   language: ArchiveLanguage,
   sourceLanguage: string | null,
+  deadline?: number,
 ): Promise<Partial<Record<TranslatableField, string>>> {
   const client = new GoogleGenAI({ apiKey: geminiApiKey() });
 
@@ -218,8 +319,9 @@ async function callModel(
     };
   }
 
-  const response = await withRetry(() =>
-    client.models.generateContent({
+  const response = await within(deadline, () =>
+    withRetry(() =>
+      client.models.generateContent({
     model: GEMINI_MODEL,
     contents: [
       {
@@ -235,8 +337,9 @@ async function callModel(
       responseSchema: { type: Type.OBJECT, properties },
       // Translation is not a place for invention.
       temperature: 0,
-    },
-  }),
+      },
+      }),
+    ),
   );
 
   const text = response.text;
@@ -246,6 +349,34 @@ async function callModel(
   } catch {
     return {};
   }
+}
+
+/**
+ * Nothing runs past the caller's deadline.
+ *
+ * The nightly sweep is a serverless function with a hard limit, and a call that
+ * is still going when that limit arrives is not a slow call — it is a killed
+ * function that reports nothing and loses whatever it had done. Bounding the
+ * loop was not enough: measured, a run that budgeted forty seconds took
+ * fifty-seven, because the last language call started just inside the budget
+ * and then ran on. This bounds the call itself to whatever time is actually
+ * left.
+ *
+ * With no deadline — a reader waiting on one record in the background — there
+ * is no cap. A translation there has taken fifty-one seconds and been worth
+ * having; nobody is watching, and abandoning it would mean it is never made.
+ */
+function within<T>(deadline: number | undefined, call: () => Promise<T>): Promise<T> {
+  if (!deadline) return call();
+  const left = deadline - Date.now();
+  if (left <= 0) return Promise.reject(new Error('translation deadline passed'));
+
+  return Promise.race([
+    call(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('translation deadline passed')), left),
+    ),
+  ]);
 }
 
 /**

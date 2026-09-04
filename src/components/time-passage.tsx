@@ -120,8 +120,9 @@ export function passageCues(count: number): { travel: number; cues: { depth: num
 const SPAN_YEARS = 2000;
 
 export interface PassageFrame {
-  id: string;
-  src: string;
+  key: string;
+  /** Null on an empty mount — a plate with nothing hung on it yet. */
+  src: string | null;
 }
 
 type Phase = 'holding' | 'travelling' | 'leaving';
@@ -221,7 +222,7 @@ export function TimePassage({
     const cap = window.setTimeout(go, PRELOAD_CAP_MS);
 
     Promise.all(
-      frames.map(
+      frames.filter((frame) => frame.src).map(
         (frame) =>
           new Promise<void>((resolve) => {
             const img = new window.Image();
@@ -229,7 +230,7 @@ export function TimePassage({
             // A file that will not load is not worth holding the door for.
             img.onerror = () => resolve();
             img.fetchPriority = 'high';
-            img.src = frame.src;
+            img.src = frame.src!;
           }),
       ),
     ).then(() => {
@@ -335,10 +336,13 @@ export function TimePassage({
             const { depth, delay } = cues[i];
             return (
               <figure
-                key={frame.id}
+                key={frame.key}
                 className="passage-frame"
                 data-shape={SHAPES[i % SHAPES.length]}
-                data-ready={ready.has(frame.id) ? '' : undefined}
+                /* An empty mount has nothing to wait for, so it is ready as
+                   soon as it is drawn. */
+                data-empty={frame.src ? undefined : ''}
+                data-ready={!frame.src || ready.has(frame.key) ? '' : undefined}
                 style={{
                   // Centred on the corridor's axis, out along it, around it,
                   // and then turned back upright so it faces the camera square.
@@ -353,14 +357,24 @@ export function TimePassage({
                   animationDelay: moving ? `${Math.round(delay)}ms` : undefined,
                 }}
               >
-                {/* Signed URLs expire, so next/image would cache a dead one. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={frame.src}
-                  alt=""
-                  decoding="async"
-                  onLoad={() => setReady((seen) => (seen.has(frame.id) ? seen : new Set(seen).add(frame.id)))}
-                />
+                {frame.src ? (
+                  <>
+                    {/* Signed URLs expire, so next/image would cache a dead one. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={frame.src}
+                      alt=""
+                      decoding="async"
+                      onLoad={() =>
+                        setReady((seen) => (seen.has(frame.key) ? seen : new Set(seen).add(frame.key)))
+                      }
+                    />
+                  </>
+                ) : (
+                  /* A plate with nothing on it — not a photograph, and not
+                     pretending to be one. See `front-door.ts`. */
+                  <span className="passage-plate" />
+                )}
               </figure>
             );
           })}

@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowRight, Upload } from 'lucide-react';
-import { FilePreview, viewableUrl } from '@/components/file-preview';
 import { Logo } from '@/components/logo';
 import { TimePassage } from '@/components/time-passage';
 import { COMMUNITY_ORDER } from '@/lib/communities';
 import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
+import { frontDoor, WALL } from '@/lib/items/front-door';
 import { COMMUNITY_LABELS } from '@/lib/types';
-import { fileKind } from '@/lib/files/validate';
 
 export const metadata: Metadata = {
   title: 'Indian Jewish Heritage Center',
@@ -42,40 +41,55 @@ export const metadata: Metadata = {
  */
 export default async function Home() {
   const [items, counts, total] = await Promise.all([
-    // The wall shows eighteen. Asking for the whole archive to render eighteen
-    // thumbnails is the kind of query that is invisible at eight records and
-    // painful at eight hundred.
-    listPublishedItems({ limit: 40 }).catch(() => []),
+    /*
+     * Enough to fill the wall with a hundred images, asked for once.
+     *
+     * Over-fetched deliberately: not every published record is a photograph —
+     * there are recordings, captured pages and PDFs in here — so a hundred
+     * records is not a hundred pictures. This asks for a hundred and forty and
+     * takes the first hundred that are images.
+     *
+     * Nothing caches it. The page is server-rendered on every request, so a
+     * record published a minute ago is on the wall, and one taken out of public
+     * view is off it, without anything having to be told.
+     */
+    listPublishedItems({ limit: Math.round(WALL * 1.4) }).catch(() => []),
     getCommunityCounts().catch(() => null),
     countPublishedItems().catch(() => 0),
   ]);
 
-  const wall = items.filter((item) => item.file && fileKind(item.file.mime_type) === 'image').slice(0, 18);
-
-  /*
-   * The passage is drawn from the wall, not from a second query — it is the
-   * same photographs, which is what lets it end by settling into them. Twelve,
-   * because the corridor moves at about one every three hundred milliseconds
-   * and nobody should be held at the door for longer than four seconds.
-   */
-  const passage = wall
-    .slice(0, 12)
-    .map((item) => ({ id: item.id, src: viewableUrl(item.file!) }));
+  // The wall and the corridor, from one query. See `front-door.ts` for why the
+  // corridor is fourteen of the hundred rather than all of them, and why the
+  // padding is empty mounts rather than pictures.
+  const { wall, corridor, real } = frontDoor(items);
 
   return (
     <div className="relative isolate overflow-hidden">
-      <TimePassage frames={passage} mark={<Logo variant="mark" size={44} />} />
+      <TimePassage frames={corridor} mark={<Logo variant="mark" size={44} />} />
 
       {/* The wall. Decorative, so it is hidden from screen readers entirely —
-          it is the same records that are listed properly one click away. */}
-      {wall.length > 0 && (
+          it is the same records that are listed properly one click away. A
+          hundred plates, dense enough that they read as a fabric rather than as
+          a grid of thumbnails; the empty ones are paper. */}
+      {real > 0 && (
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 select-none">
-          <div className="grid h-full w-full grid-cols-4 opacity-[0.13] sm:grid-cols-6 lg:grid-cols-9">
-            {wall.map((item) => (
-              <div key={item.id} className="aspect-square overflow-hidden">
-                <FilePreview file={item.file} alt="" fit="cover" className="grayscale sepia-[0.35]" />
-              </div>
-            ))}
+          <div className="grid h-full w-full grid-cols-6 opacity-[0.13] sm:grid-cols-10 lg:grid-cols-[repeat(14,minmax(0,1fr))]">
+            {wall.map((plate) =>
+              plate.src ? (
+                <div key={plate.key} className="aspect-square overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={plate.src}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full bg-paper-2 object-cover grayscale sepia-[0.35]"
+                  />
+                </div>
+              ) : (
+                <div key={plate.key} className="wall-empty aspect-square" />
+              ),
+            )}
           </div>
           {/* Paper washing up over the wall, so the type never sits on an edge. */}
           <div className="absolute inset-0 bg-gradient-to-b from-paper via-paper/75 to-paper" />
