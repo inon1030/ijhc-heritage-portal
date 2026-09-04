@@ -17,6 +17,10 @@ import { needsTranslating, TRANSLATABLE_FIELDS, sourceHash } from '@/lib/transla
  * - a volunteer accepts a record and it is translated into all of them;
  * - and once a day this finds whatever the other two missed and finishes it.
  *
+ * Scheduled at 20:15 UTC, which is 23:15 in Israel — the end of the Center's
+ * day rather than the end of Greenwich's. Vercel reads cron schedules as UTC
+ * and says so nowhere near the schedule itself, so it is written down here.
+ *
  * What it finds, in practice: records published before any of this existed;
  * records whose description a volunteer has corrected since, so the stored
  * translation no longer matches the text it was made from; and anything that
