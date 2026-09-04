@@ -1,6 +1,6 @@
 import 'server-only';
 import { GoogleGenAI, Type } from '@google/genai';
-import { GEMINI_MODEL, geminiApiKey } from '@/lib/env';
+import { GEMINI_TRANSLATE_MODEL, geminiApiKey } from '@/lib/env';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { createServerSupabase } from '@/lib/supabase/server';
 import {
@@ -182,7 +182,7 @@ export async function translateItem(
       field: job.field,
       value: produced[job.field]!.trim(),
       source: 'machine' as const,
-      model: GEMINI_MODEL,
+      model: GEMINI_TRANSLATE_MODEL,
       source_hash: job.hash,
     }));
 
@@ -339,7 +339,7 @@ async function callModel(
   const response = await within(deadline, () =>
     withRetry(() =>
       client.models.generateContent({
-    model: GEMINI_MODEL,
+    model: GEMINI_TRANSLATE_MODEL,
     contents: [
       {
         role: 'user',

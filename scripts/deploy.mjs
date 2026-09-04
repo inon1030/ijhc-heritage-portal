@@ -32,6 +32,7 @@ const REQUIRED = [
 const OPTIONAL = [
   'AI_PROVIDER',
   'GEMINI_MODEL',
+  'GEMINI_TRANSLATE_MODEL',
   'NEXT_PUBLIC_ARCHIVE_CONTACT',
   // Without it in production the nightly translation sweep refuses every
   // request — which is the safe failure, and a silent one, so it is pushed.

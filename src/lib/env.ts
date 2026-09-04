@@ -36,3 +36,20 @@ export function geminiApiKey(): string {
 // Verified against the live API on 2026-08-19. gemini-2.5-flash is listed by
 // the models endpoint but refuses new API keys, so it is not a safe default.
 export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
+
+/**
+ * A different model for translation, and deliberately so.
+ *
+ * The free tier's quota is **per project per model** — measured: twenty
+ * requests a day, and `gemini-3.6-flash` returning 429 while
+ * `gemini-3.5-flash-lite` answered normally in the same second. Translation on
+ * the same model as cataloguing means the two compete, and the archive would
+ * spend its allowance rendering a description into Marathi instead of reading
+ * the photograph a family just sent. Cataloguing is what the archive is for.
+ *
+ * A lighter model, too, for a lighter task. Reading a scanned Judeo-Arabic
+ * ketubah and deciding what it is needs the better model; turning a finished
+ * English description into Hebrew does not.
+ */
+export const GEMINI_TRANSLATE_MODEL =
+  process.env.GEMINI_TRANSLATE_MODEL ?? 'gemini-3.5-flash-lite';
