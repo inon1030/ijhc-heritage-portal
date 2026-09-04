@@ -23,10 +23,19 @@ import { createPortal } from 'react-dom';
  * it *is* that wall. The crossfade at the end is the same pictures settling out
  * of motion into ground.
  *
- * **It never plays twice in a session,** and never at all for somebody who has
- * asked their system to stop moving things. An introduction you cannot escape
- * is a toll gate. This one goes on a click, a key, a scroll or a touch — every
- * gesture that means "I want to get on with it".
+ * **It plays on every arrival at the front door,** which is the Center's
+ * decision and not an oversight. It was gated to once a session; the archive
+ * wants the passage to be what the front door *is*, so returning to it is
+ * returning to the passage.
+ *
+ * That only works because leaving it is free. It goes on a click, a key, a
+ * scroll or a touch — every gesture that means "I want to get on with it" —
+ * with a visible control as well, and it never plays at all for somebody who
+ * has asked their system to stop moving things. An introduction that repeats
+ * and cannot be escaped is a toll gate; one that repeats and yields to the
+ * first thing you do is a threshold. The second time a visitor arrives the
+ * photographs are already in the browser's cache, so the beat before it moves
+ * is gone and it is the four seconds and nothing else.
  *
  * **Nothing is claimed.** The rule counts a two-thousand-year span and lands on
  * the present year. It is a scale, the way a map's scale bar is a scale. It
@@ -37,9 +46,6 @@ import { createPortal } from 'react-dom';
  * corridor, so the first frames are fetched before anything moves — capped, so
  * a slow connection gets a short beat on paper rather than a stall.
  */
-
-/** Sessions, not visits: a new tab earns it again, a second page load does not. */
-const SEEN_KEY = 'ijhc.passage.seen';
 
 const TRAVEL_MS = 3800;
 const LEAVE_MS = 560;
@@ -54,11 +60,12 @@ const LEAVE_MS = 560;
  * appeared halfway through — which looks like a broken page rather than an
  * introduction.
  *
- * They are not an extra cost: the home page's own wall is the same eighteen
- * files at the same addresses, so this is the page's image load either way.
- * What it does cost is up to 1.8 seconds of held title card on a cold first
- * visit, once per session, escapable by any key or click. Thumbnails would
- * remove it — and would do more for the wall than for this.
+ * They are not an extra cost: the home page's own wall is the same files at the
+ * same addresses, so this is the page's image load either way — and because the
+ * passage now plays on every arrival, the second one costs nothing at all. The
+ * browser has them. The hold is a first-visit cost, once, escapable by any key
+ * or click. Thumbnails would remove even that, and would do more for the wall
+ * than for this.
  */
 const PRELOAD_CAP_MS = 1800;
 
@@ -170,22 +177,12 @@ export function TimePassage({
   useIsomorphicLayoutEffect(() => {
     if (frames.length === 0) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    try {
-      if (sessionStorage.getItem(SEEN_KEY)) return;
-    } catch {
-      // Private browsing can refuse storage. Play it; it is four seconds.
-    }
     setPhase('holding');
   }, [frames.length]);
 
   const dismiss = useCallback(() => {
     if (done.current) return;
     done.current = true;
-    try {
-      sessionStorage.setItem(SEEN_KEY, '1');
-    } catch {
-      /* nothing to remember it with; it plays again next time */
-    }
     setPhase('leaving');
     window.setTimeout(() => setPhase(null), LEAVE_MS);
   }, []);
