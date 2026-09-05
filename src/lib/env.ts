@@ -38,18 +38,37 @@ export function geminiApiKey(): string {
 export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
 
 /**
- * A different model for translation, and deliberately so.
+ * The model that translates. Configurable, and it has been wrong once.
  *
- * The free tier's quota is **per project per model** — measured: twenty
- * requests a day, and `gemini-3.6-flash` returning 429 while
- * `gemini-3.5-flash-lite` answered normally in the same second. Translation on
- * the same model as cataloguing means the two compete, and the archive would
- * spend its allowance rendering a description into Marathi instead of reading
- * the photograph a family just sent. Cataloguing is what the archive is for.
+ * It was `gemini-3.5-flash-lite`, split off from cataloguing because the free
+ * tier's quota is **per project per model** — measured at twenty requests a day,
+ * with `gemini-3.6-flash` returning 429 while the lite model answered in the
+ * same second. The reasoning was that a lighter task deserves a lighter model:
+ * reading a scanned Judeo-Arabic ketubah needs the better one, turning a
+ * finished English description into Hebrew does not.
  *
- * A lighter model, too, for a lighter task. Reading a scanned Judeo-Arabic
- * ketubah and deciding what it is needs the better model; turning a finished
- * English description into Hebrew does not.
+ * **That last part is false, and Malayalam is where it shows.** The same
+ * prompt, put to both models with the same schema and temperature 0:
+ *
+ * - `gemini-3.6-flash` — 5.9s, `finishReason: STOP`, clean Malayalam.
+ * - `gemini-3.5-flash-lite` — once `finishReason: RECITATION` after **142
+ *   seconds** with no text at all; once text that decayed mid-word into
+ *   Cyrillic and then an English apology: `തിരശ്ശീലাйбх - sorry, correcting
+ *   Malayalam`.
+ * - `gemini-flash-lite-latest` — Malayalam sliding into Gurmukhi and Devanagari
+ *   inside a single word.
+ *
+ * Malayalam writes a consonant and its vowel as one cluster, so a model that is
+ * merely approximating the script produces something that looks like writing
+ * and is not. Nobody on this side of the archive reads it well enough to
+ * notice — which is exactly why it cannot be left to the cheaper model. A
+ * Cochin family opening their grandmother's photograph in Malayalam is the
+ * whole point of publishing in Malayalam.
+ *
+ * So cataloguing and translation share a model again. If that turns out to
+ * cost the archive its cataloguing allowance, the answer is the paid tier or a
+ * different translator — not quietly worse Malayalam. Set
+ * `GEMINI_TRANSLATE_MODEL` to move it without a deploy.
  */
 export const GEMINI_TRANSLATE_MODEL =
-  process.env.GEMINI_TRANSLATE_MODEL ?? 'gemini-3.5-flash-lite';
+  process.env.GEMINI_TRANSLATE_MODEL ?? 'gemini-3.6-flash';

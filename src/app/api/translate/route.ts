@@ -44,6 +44,25 @@ const Body = z.object({
   lang: z.string().min(2).max(12),
 });
 
+/**
+ * A reader is waiting, so this one has a clock.
+ *
+ * It had none: `translateItem` was called with no deadline, on the reasoning
+ * that nobody is watching a background fetch and a translation worth 51 seconds
+ * is worth having. Measured against production, that reasoning met a model that
+ * spent **2 minutes 23 seconds** deciding to answer `RECITATION` and return no
+ * text. Whatever is on the other end of that request is a browser, and a
+ * browser gives up long before the archive does.
+ *
+ * Twenty seconds against a twenty-five second `maxDuration`, on the same
+ * pattern as the nightly sweep: the bound is handed down to the model call, so
+ * a call that starts inside it cannot run past it. What does not finish is not
+ * lost — it stays outstanding, and the sweep finds it tonight.
+ */
+const BUDGET_MS = 20_000;
+
+export const maxDuration = 25;
+
 export async function POST(request: NextRequest) {
   try {
     const limit = rateLimit(`translate:${clientKey(request)}`, { limit: 30, windowMs: 60_000 });
@@ -90,6 +109,7 @@ export async function POST(request: NextRequest) {
         transcript: analysis?.transcript ?? analysis?.ocr_text ?? null,
       },
       language.code,
+      { deadline: Date.now() + BUDGET_MS },
     );
 
     return ok(rendered);

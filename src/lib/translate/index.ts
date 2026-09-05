@@ -5,6 +5,7 @@ import { createAdminSupabase } from '@/lib/supabase/admin';
 import { createServerSupabase } from '@/lib/supabase/server';
 import {
   alreadyInLanguage,
+  isPlausiblyIn,
   planTranslation,
   QuotaExhausted,
   retryAfterMs,
@@ -374,13 +375,59 @@ async function callModel(
     ),
   );
 
+  /*
+   * A model that answered with nothing is a failure, and it says so.
+   *
+   * Both of these used to `return {}`, which the caller could not tell apart
+   * from "there was nothing to translate": the record was counted as done, no
+   * rows were written, and the next sweep found it outstanding and spent the
+   * allowance on it again. Measured on production before this: a reader asking
+   * for Malayalam waited 2m23s and was answered `{"values":{},"machine":false}`
+   * with `ok: true` — the archive reporting success for work it had not done.
+   *
+   * The finish reason is carried into the message because it is the whole
+   * diagnosis and it appears nowhere else. `RECITATION` is the one seen in the
+   * wild: the model declining to emit text it takes for something memorised.
+   */
   const text = response.text;
-  if (!text) return {};
-  try {
-    return JSON.parse(text) as Partial<Record<TranslatableField, string>>;
-  } catch {
-    return {};
+  if (!text) {
+    const reason = response.candidates?.[0]?.finishReason ?? 'no reason given';
+    throw new Error(`The translator returned nothing into ${language.label_en} (${reason})`);
   }
+
+  let produced: Partial<Record<TranslatableField, string>>;
+  try {
+    produced = JSON.parse(text) as Partial<Record<TranslatableField, string>>;
+  } catch {
+    throw new Error(`The translator answered with something that is not JSON into ${language.label_en}`);
+  }
+
+  /*
+   * And what it wrote has to be in the script it was asked for.
+   *
+   * Measured, from the lite model: Malayalam that ran into Cyrillic and then an
+   * English apology, and Malayalam that turned into Gurmukhi mid-word. Stored,
+   * that reads as a translation to everyone who cannot read the script — which
+   * on this side of the archive is everyone. A wrong translation is worse than
+   * an absent one, because nothing about it asks to be checked.
+   */
+  for (const [field, value] of Object.entries(produced)) {
+    /*
+     * Except the transcript, which is allowed to be in several scripts at once
+     * because the document is. Checking it rejected a *correct* translation:
+     * the Hindi transcript of a 1940s Ajmer playbill legitimately carries the
+     * Urdu of the poster itself — `yahoodi-ki-larki یهودی کی لڑکی` — because
+     * the poster is bilingual and a transcription that dropped one half would
+     * be the thing that was wrong. The other fields are prose the model wrote;
+     * this one is a document quoted back.
+     */
+    if (field === 'transcript') continue;
+    if (typeof value === 'string' && !isPlausiblyIn(value, { code: language.code, labelEn: language.label_en })) {
+      throw new Error(`The translator's ${field} is not written in ${language.label_en}`);
+    }
+  }
+
+  return produced;
 }
 
 /**

@@ -167,3 +167,55 @@ export function retryAfterMs(message: string): number {
   const seconds = /retry in ([\d.]+)\s*s/i.exec(message)?.[1];
   return seconds ? Math.ceil(Number(seconds) * 1000) : 60_000;
 }
+
+/**
+ * The script each language is actually written in.
+ *
+ * Only what the archive publishes in, and a code that is not here is not
+ * checked at all — adding Judeo-Arabic as a row in `archive_languages` must
+ * not start rejecting its own translations because nobody updated a constant.
+ */
+const SCRIPTS: Record<string, RegExp> = {
+  he: /\p{Script=Hebrew}/u,
+  hi: /\p{Script=Devanagari}/u,
+  mr: /\p{Script=Devanagari}/u,
+  ml: /\p{Script=Malayalam}/u,
+};
+
+/**
+ * Letters that belong in any translation, whatever the target script.
+ *
+ * Latin, because the archive keeps names in it deliberately: the stored
+ * Malayalam for a Calcutta portrait reads `കൊൽക്കത്തയിലെ (Calcutta) Sir David
+ * Ezra…`, and that is right — a family searching for the name should find it
+ * spelled the way it is spelled on the photograph.
+ */
+const ALWAYS = /[\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u;
+
+/**
+ * Whether a translation is written in the script it was asked for.
+ *
+ * Not a quality judgement — no test here can tell good Marathi from clumsy
+ * Marathi. It catches one specific failure that was measured and that nothing
+ * else would catch: a model approximating a script it cannot really write and
+ * sliding out of it mid-word. The lite model produced Malayalam that ran into
+ * Cyrillic and then wrote `- sorry, correcting Malayalam` in the middle of a
+ * title, and Malayalam that became Gurmukhi partway through a word.
+ *
+ * The rule is only that no *third* script appears: the target's own, plus
+ * Latin, digits and punctuation. Anything else means the model lost the thread,
+ * and a lost translation must not be stored — on this side of the archive
+ * nobody reads Malayalam well enough to catch it later, which is precisely why
+ * it has to be caught here.
+ */
+export function isPlausiblyIn(value: string, language: LanguageName): boolean {
+  const script = SCRIPTS[language.code];
+  if (!script) return true;
+
+  for (const character of value) {
+    if (!/\p{Letter}/u.test(character)) continue;
+    if (ALWAYS.test(character)) continue;
+    if (!script.test(character)) return false;
+  }
+  return true;
+}
