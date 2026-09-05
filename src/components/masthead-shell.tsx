@@ -40,6 +40,16 @@ export function MastheadShell({
    * which is why the archive's own mark could not be the way home until now.
    * It is absolutely positioned into the strip's left, and the button carries
    * the room for it on its padding.
+   *
+   * That room is reserved **only from `sm:` up**, and the reason is measured.
+   * The label is `justify-end`, so the left padding never actually holds it off
+   * the mark — it only sets the button's minimum width. At 375px that minimum
+   * was 15rem + 7.25rem + the label: 401px inside a 375px viewport, and the
+   * whole page scrolled sideways on a phone. Measured on the phone the mark
+   * ends at 100px and the language picker begins at 289px, while the label
+   * needs 65px; without the left reserve it sits at 194–259 and touches
+   * neither. The right reserve stays at both sizes, because that is the one
+   * that keeps MENU off the language picker.
    */
   home: React.ReactNode;
   /**
@@ -103,7 +113,7 @@ export function MastheadShell({
         aria-controls="masthead-bar"
         aria-label={open ? 'Close the menu' : 'Open the menu'}
         onClick={() => setPinned((v) => !v)}
-        className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pl-[15rem] pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9"
+        className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9 sm:pl-[15rem]"
       >
         {/*
           The prompt shows only while the bar is shut. Once it is open the bar
