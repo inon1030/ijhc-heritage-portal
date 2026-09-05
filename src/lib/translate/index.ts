@@ -217,11 +217,19 @@ export async function translateItem(
  * published before this existed, records whose text a volunteer has since
  * corrected, and anything that was translated while the model was refusing.
  *
- * One language at a time rather than one call with five outputs. A single call
- * would be cheaper and it would also mean one 503 costs all five; done in
- * sequence, four languages still land when the fifth does not, and the fifth is
- * picked up by the next sweep. Never throws: nothing here is worth failing a
- * volunteer's review over.
+ * One call per language rather than one call with five outputs. A single call
+ * would be cheaper and it would also mean one 503 costs all five; kept apart,
+ * four languages still land when the fifth does not, and the fifth is picked up
+ * by the next sweep.
+ *
+ * The four go **at once**, because they are four independent calls that share
+ * nothing — each reads its own cached rows and writes its own `lang`. Run in
+ * sequence they were the reason the nightly sweep could not finish: measured
+ * against production, a record took the whole forty-five second budget and the
+ * run ended having translated one, with six still outstanding. The isolation
+ * that made them separate calls is untouched; only the waiting is shared.
+ *
+ * Never throws: nothing here is worth failing a volunteer's review over.
  */
 export interface Sweep {
   made: string[];
@@ -235,35 +243,42 @@ export async function translateItemEverywhere(
   item: Translatable,
   { skipSource = true, deadline }: { skipSource?: boolean; deadline?: number } = {},
 ): Promise<Sweep> {
-  const languages = await listLanguages().catch(() => []);
-  const made: string[] = [];
+  const languages = (await listLanguages().catch(() => [])).filter(
+    (language) => !(skipSource && language.is_source),
+  );
 
-  for (const language of languages) {
-    if (skipSource && language.is_source) continue;
-    /*
-     * Checked here, between languages, and not only between records.
-     *
-     * A record is five sequential calls of up to fifty seconds each, so a
-     * caller working to a budget that only looks up between records can
-     * overrun it by minutes — measured at over ninety seconds on a run that
-     * had budgeted forty-five. On a serverless platform that is not a slow
-     * run, it is a killed one: the work is lost and nothing is reported.
-     * Whatever is not reached stays outstanding and is found again tomorrow.
-     */
-    if (deadline && Date.now() > deadline) break;
-    try {
-      const rendered = await translateItem(item, language.code, { deadline });
-      if (!rendered.unavailable) made.push(language.code);
-      // The allowance is gone for the next half minute or so. The remaining
-      // languages would each be refused in turn; they are outstanding, and the
-      // sweep will find them again.
-      if (rendered.quota) return { made, quota: true };
-    } catch (error) {
-      console.error(`[translate] ${item.id} into ${language.code}`, error);
-    }
-  }
+  /*
+   * The budget is checked once, before starting, and then trusted.
+   *
+   * It used to be checked between languages as well, because a record was five
+   * sequential calls of up to fifty seconds each and a caller that only looked
+   * up between records could overrun by minutes — ninety seconds measured on a
+   * run that had budgeted forty-five. Started together, the record costs one
+   * call's worth of waiting rather than five, and each of those calls is itself
+   * bounded by the time left; there is no longer a gap between languages for a
+   * deadline to pass in.
+   */
+  if (deadline && Date.now() > deadline) return { made: [], quota: false };
 
-  return { made, quota: false };
+  const results = await Promise.all(
+    languages.map(async (language) => {
+      try {
+        const rendered = await translateItem(item, language.code, { deadline });
+        return { code: language.code, made: !rendered.unavailable, quota: rendered.quota === true };
+      } catch (error) {
+        console.error(`[translate] ${item.id} into ${language.code}`, error);
+        return { code: language.code, made: false, quota: false };
+      }
+    }),
+  );
+
+  // Any one of them hitting the day's allowance means the allowance is gone for
+  // all of them. The caller stops; what was not made is still outstanding, and
+  // the next sweep starts with it.
+  return {
+    made: results.filter((r) => r.made).map((r) => r.code),
+    quota: results.some((r) => r.quota),
+  };
 }
 
 /**

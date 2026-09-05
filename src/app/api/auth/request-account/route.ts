@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 
@@ -26,7 +26,7 @@ const Body = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const parsed = Body.safeParse(await request.json());
+    const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     // Limit after validating, not before. A malformed body is rejected without

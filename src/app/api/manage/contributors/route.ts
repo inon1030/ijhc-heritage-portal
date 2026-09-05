@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import {
   eraseContributor,
   findOrCreateContributor,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       return fail(401, 'unauthorised', 'Sign in as a volunteer to manage contributors.');
     }
 
-    const parsed = Link.safeParse(await request.json());
+    const parsed = Link.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     const contributor = await findOrCreateContributor(
@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest) {
       return fail(401, 'unauthorised', 'Sign in as a volunteer to correct a name.');
     }
 
-    const parsed = Amend.safeParse(await request.json());
+    const parsed = Amend.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     if (parsed.data.fullName !== undefined) {

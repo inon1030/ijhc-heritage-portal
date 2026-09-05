@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { getCurrentAdmin, getCurrentVolunteer } from '@/lib/supabase/server';
 import { COMMUNITIES } from '@/lib/types';
 import { addFamily, deleteFamily } from '@/lib/vocabulary/mutations';
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const volunteer = await getCurrentVolunteer();
     if (!volunteer) return fail(401, 'unauthorised', 'Sign in as a volunteer to add a family.');
 
-    const parsed = Create.safeParse(await request.json());
+    const parsed = Create.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     const family = await addFamily(

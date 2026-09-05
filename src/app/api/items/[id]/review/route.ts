@@ -1,7 +1,7 @@
 import { NextRequest, after } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { ACCESS_LEVELS } from '@/lib/access';
 import { FIELD_KEYS, fieldDef, isValidValue } from '@/lib/fields/registry';
 import { binItem, reviewItem } from '@/lib/items/mutations';
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     const { id } = await context.params;
-    const parsed = Body.safeParse(await request.json());
+    const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     const body = parsed.data;

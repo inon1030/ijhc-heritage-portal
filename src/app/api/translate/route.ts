@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getLanguage } from '@/lib/translate/languages';
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       return fail(429, 'rate_limited', `Too many translations at once. Try again in ${limit.retryAfterSeconds} seconds.`);
     }
 
-    const parsed = Body.safeParse(await request.json());
+    const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     const language = await getLanguage(parsed.data.lang);

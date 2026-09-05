@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { getCurrentAdmin } from '@/lib/supabase/server';
 import { declineAccount, setAccountRole } from '@/lib/vocabulary/mutations';
 
@@ -24,7 +24,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return fail(409, 'self_change', 'Ask another administrator to change your own role.');
     }
 
-    const parsed = Body.safeParse(await request.json());
+    const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     await setAccountRole(id, parsed.data.role, admin.id);

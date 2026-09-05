@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { getAIProvider } from '@/lib/ai';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { resolveMimeType } from '@/lib/files/detect';
 import { readImageDimensions } from '@/lib/files/dimensions';
 import { validateFile } from '@/lib/files/validate';
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       return fail(429, 'rate_limited', `Too many readings. Try again in ${limit.retryAfterSeconds} seconds.`);
     }
 
-    const parsed = Body.safeParse(await request.json());
+    const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     if (!verifyGrant(parsed.data.path, parsed.data.expiresAt, parsed.data.grant)) {

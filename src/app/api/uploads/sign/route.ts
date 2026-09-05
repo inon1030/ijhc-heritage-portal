@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { fail, invalid, ok, unexpected } from '@/lib/api';
+import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { issueGrant } from '@/lib/files/grant';
 import { buildStoragePath, isValidStorageKey } from '@/lib/files/paths';
 import { MAX_FILE_BYTES, validateFile } from '@/lib/files/validate';
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       return fail(429, 'rate_limited', `Too many uploads. Try again in ${limit.retryAfterSeconds} seconds.`);
     }
 
-    const parsed = Body.safeParse(await request.json());
+    const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     const rejection = validateFile(parsed.data);
