@@ -594,6 +594,17 @@ export const en = {
   'flow.needFile': 'Add a file or a link first.',
   'flow.needConsent': 'Tick the box to confirm you may share this material.',
 
+  // ── the filter bar ────────────────────────────────────────────────────────
+  'filters.all': 'All',
+  'filters.stream': 'Stream',
+  'filters.type': 'Type',
+  'filters.text': 'Title or place',
+  'filters.contributor': 'Contributor email',
+  'filters.clear': 'Clear filters',
+  'filters.showing': 'Showing {shown} of {total}',
+  'filters.more': 'More filters',
+  'filters.fewer': 'Fewer filters',
+
   // ── the language picker ───────────────────────────────────────────────────
   'language.reading': 'Reading in {language}. Choose a language.',
   'language.prompt': 'Read the archive in',

@@ -12,11 +12,22 @@ export function FilePreview({
   alt,
   className,
   fit = 'cover',
+  still = false,
 }: {
   file: ItemFile | null;
   alt: string;
   className?: string;
   fit?: 'cover' | 'contain';
+  /**
+   * A still, not a player.
+   *
+   * The portal grid is a wall of photographs, and a `<video controls>` in it
+   * draws a black scrubber, a volume slider and an overflow menu inside a
+   * frame the size of a postcard — the one tile that looks like a browser
+   * chrome bug rather than a holding. A recording still deserves a plate on
+   * the wall; it does not deserve to be playable from it.
+   */
+  still?: boolean;
 }) {
   const t = useMessages();
   if (!file) {
@@ -51,6 +62,29 @@ export function FilePreview({
   }
 
   if (kind === 'video') {
+    if (still) {
+      // `preload="metadata"` gives the browser the first frame to paint, so a
+      // recording shows itself rather than a grey box — and with no controls
+      // and no pointer events it reads as a picture, which on this page it is.
+      return (
+        <span className={cn('relative block h-full w-full overflow-hidden bg-ink', className)}>
+          <video
+            preload="metadata"
+            muted
+            playsInline
+            tabIndex={-1}
+            aria-hidden
+            src={src}
+            className="pointer-events-none h-full w-full object-cover"
+          />
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paper/85 shadow-soft backdrop-blur-sm">
+              <Video size={18} className="text-ink" aria-hidden />
+            </span>
+          </span>
+        </span>
+      );
+    }
     return <video controls preload="metadata" src={src} className={cn('h-full w-full bg-ink', className)} />;
   }
 
