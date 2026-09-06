@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { GEMINI_MODEL, geminiApiKey } from '@/lib/env';
+import { GEMINI_FALLBACK_MODELS, GEMINI_MODEL, geminiApiKey } from '@/lib/env';
 import { MODEL_FIELDS, fieldDef } from '@/lib/fields/registry';
 import { communityOrCatchAll } from './community';
 import {
@@ -143,6 +143,57 @@ function floorConfidence(suggestions: FieldSuggestion[]): number {
   return Math.min(...suggestions.map((s) => s.confidence));
 }
 
+/**
+ * Ask the preferred model; on a *quota* refusal, ask the next one.
+ *
+ * ── 429 and 503 are not the same failure, and neither is a bug here ─────────
+ *
+ * **429** is the day's allowance for that model, gone. It will still be gone in
+ * a second and in a minute, so retrying the same model is calls spent hearing
+ * the same answer — but the allowance is **per model**, so the next model has
+ * its own and answering with it costs nothing.
+ *
+ * **503** is "high demand": a queue, which a moment clears. Seen on production
+ * within three minutes of the 429s on 06.09.2026. That one is worth one short
+ * wait on the same model before moving on, because the preferred model is
+ * preferred for a reason.
+ *
+ * Anything else — a malformed request, a bad key, a file the model refuses —
+ * is not something a different model fixes, so it is thrown straight out. A
+ * fallback that swallowed real errors would turn one broken upload into three
+ * wasted calls and the same failure.
+ */
+async function withFallback(
+  client: GoogleGenAI,
+  request: (model: string) => Parameters<GoogleGenAI['models']['generateContent']>[0],
+): Promise<{ response: Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>; model: string }> {
+  const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS.filter((m) => m !== GEMINI_MODEL)];
+  let lastQuotaError: unknown = null;
+
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        return { response: await client.models.generateContent(request(model)), model };
+      } catch (error) {
+        const status = (error as { status?: number })?.status;
+        const message = String((error as { message?: string })?.message ?? '');
+
+        if (status === 429 || /RESOURCE_EXHAUSTED/.test(message)) {
+          lastQuotaError = error;
+          break; // this model is out for the day; the next one is not
+        }
+        if ((status === 503 || /UNAVAILABLE/.test(message)) && attempt === 0) {
+          await new Promise((r) => setTimeout(r, 900));
+          continue; // a queue, not a wall
+        }
+        throw error;
+      }
+    }
+  }
+
+  throw lastQuotaError ?? new Error('No model was able to answer.');
+}
+
 export function createGeminiProvider(): AIProvider {
   const client = new GoogleGenAI({ apiKey: geminiApiKey() });
 
@@ -168,8 +219,8 @@ export function createGeminiProvider(): AIProvider {
         ),
       ];
 
-      const response = await client.models.generateContent({
-        model: GEMINI_MODEL,
+      const { response, model: usedModel } = await withFallback(client, (model) => ({
+        model,
         contents: [
           {
             role: 'user',
@@ -187,7 +238,7 @@ export function createGeminiProvider(): AIProvider {
           responseSchema: responseSchema(allowed),
           temperature: 0.2,
         },
-      });
+      }));
 
       const text = response.text;
       if (!text) throw new Error('Gemini returned an empty response.');
@@ -214,7 +265,11 @@ export function createGeminiProvider(): AIProvider {
 
       return {
         provider: 'gemini',
-        model: GEMINI_MODEL,
+        // The model that actually answered, not the one that was asked first.
+        // `ai_analyses.model` is how a volunteer knows what read their record,
+        // and recording the preferred model after the fallback did the work
+        // would make the archive wrong about its own provenance.
+        model: usedModel,
         summary: nonEmpty(parsed.summary) ?? '',
         newTerms: Array.isArray(parsed.newTerms)
           ? (parsed.newTerms as { term?: unknown; branchKey?: unknown }[])

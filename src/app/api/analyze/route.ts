@@ -36,6 +36,19 @@ export const maxDuration = 60;
  * Technical metadata in the response is measured from the bytes, never
  * produced by the model.
  */
+/**
+ * Whether the model refused for want of allowance rather than for a fault.
+ *
+ * Read off the error rather than guessed: a 429 from `generativelanguage`
+ * carries `RESOURCE_EXHAUSTED` and the quota that was hit, and a contributor
+ * deserves the difference between "broken" and "full".
+ */
+function outOfAllowance(error: unknown): boolean {
+  const status = (error as { status?: number })?.status;
+  const message = String((error as { message?: string })?.message ?? '');
+  return status === 429 || /RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message);
+}
+
 export async function POST(request: NextRequest) {
   try {
     /*
@@ -187,7 +200,20 @@ export async function POST(request: NextRequest) {
         // analysis still leaves the contributor looking at their own scan.
         previewPath,
         previewUrl,
-        error: 'The analysis service did not respond. You can still submit and describe the item yourself.',
+        /*
+         * Two different sentences, because they are two different situations
+         * and the contributor can act on one of them.
+         *
+         * "Did not respond" was what this said for everything, and on
+         * 06.09.2026 it said it while the service was answering perfectly
+         * well and saying *no*: the day's allowance was gone. Telling somebody
+         * a thing is broken when it is merely full is the same fault this
+         * archive keeps finding in itself — a system reporting a state it is
+         * not in.
+         */
+        error: outOfAllowance(analysisError)
+          ? 'The archive has used its reading allowance for today. Your file is safely uploaded — describe it yourself below, or come back tomorrow and it will be read then.'
+          : 'The analysis service did not respond. You can still submit and describe the item yourself.',
         metadata: { mimeType, byteSize: bytes.byteLength, ...(dimensions ?? decodedSize ?? {}) },
       });
     }

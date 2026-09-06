@@ -38,6 +38,35 @@ export function geminiApiKey(): string {
 export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
 
 /**
+ * What cataloguing falls back to when the day's allowance on the first model
+ * is gone.
+ *
+ * The free tier's quota is **per model** — `quotaValue: 20`, per project, per
+ * model, per day. Since decision 19 put translation back on the cataloguing
+ * model, the two share those twenty, and on 06.09.2026 they ran out in the
+ * afternoon: a contributor uploading a photograph was told "the analysis
+ * service did not respond" while the service was answering perfectly well and
+ * saying *no*.
+ *
+ * Falling back is safe **here** in a way it explicitly was not for translation.
+ * The lite model's failure mode is that it cannot hold a script it does not
+ * really know — it produced Malayalam that decayed into Cyrillic mid-word.
+ * Cataloguing does not ask it to write Malayalam: it reads a document and
+ * describes it in English, and every field it proposes is gated at 70%
+ * confidence and then read by a volunteer before it can reach a record.
+ *
+ * A record catalogued a little less well, that a person then corrects, is worth
+ * more than no reading at all — which is what the alternative is once the first
+ * model is out.
+ */
+export const GEMINI_FALLBACK_MODELS = (
+  process.env.GEMINI_FALLBACK_MODELS ?? 'gemini-3.5-flash-lite,gemini-flash-lite-latest'
+)
+  .split(',')
+  .map((m) => m.trim())
+  .filter(Boolean);
+
+/**
  * The model that translates. Configurable, and it has been wrong once.
  *
  * It was `gemini-3.5-flash-lite`, split off from cataloguing because the free
