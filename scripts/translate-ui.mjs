@@ -265,6 +265,12 @@ async function main() {
 
     const ordered = Object.fromEntries(keys.filter((k) => existing[k]).map((k) => [k, existing[k]]));
     fs.writeFileSync(file, JSON.stringify(ordered, null, 2) + '\n', 'utf8');
+    // The branch that actually translates has to stamp too. It did not: the
+    // only `stamp()` was on the early return for an already-complete
+    // language, so every newly made translation went in with no recorded
+    // source and could never be found stale. Caught by the test, not by the
+    // run — which is the whole reason the test exists.
+    stamp();
     console.log(`  ${language.code}  +${added}  (${Object.keys(ordered).length}/${keys.length})${rejected.length ? `  rejected ${rejected.length}` : ''}`);
     for (const [key, value] of rejected) console.log(`      ✗ ${key}: ${value.slice(0, 90)}`);
   }

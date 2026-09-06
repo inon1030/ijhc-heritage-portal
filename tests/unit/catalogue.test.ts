@@ -121,12 +121,17 @@ describe('the record of what each translation was made from', () => {
   });
 
   it.each(codes)('%s has a recorded source for every string it holds', (code) => {
-    const unstamped = Object.keys(catalogue(code)).filter((key) => !sources[code]?.[key]);
+    const table = catalogue(code);
+    const unstamped = Object.keys(table).filter((key) => !sources[code]?.[key]);
     expect(unstamped).toEqual([]);
   });
 
   it.each(codes)('%s records nothing for a string it does not hold', (code) => {
-    const orphaned = Object.keys(sources[code] ?? {}).filter((key) => !catalogue(code)[key]);
+    // `catalogue()` reads and parses the file, so it is called once here and
+    // not once per key — the first version did the latter and timed out at
+    // five seconds on a 437-key catalogue.
+    const table = catalogue(code);
+    const orphaned = Object.keys(sources[code] ?? {}).filter((key) => !table[key]);
     expect(orphaned).toEqual([]);
   });
 });

@@ -51,6 +51,11 @@ export interface PreReviewEntry {
   durationMs: number | null;
 }
 
+export interface OfferedTerm {
+  term: string;
+  variants: string[];
+}
+
 export function PreReview({
   entries,
   drafts,
@@ -62,6 +67,7 @@ export function PreReview({
   onSubmit,
   submitting,
   blocked,
+  vocabulary,
 }: {
   entries: PreReviewEntry[];
   drafts: Record<string, Draft>;
@@ -75,6 +81,8 @@ export function PreReview({
   submitting: boolean;
   /** The terms have not been agreed to yet. */
   blocked: boolean;
+  /** The archive's own tag list. Contributors may pick from it, not add to it. */
+  vocabulary: OfferedTerm[];
 }) {
   const t = useMessages();
   const submitButton = (
@@ -141,6 +149,7 @@ export function PreReview({
 
         {entries.map((entry, index) => (
           <EntryPanel
+              vocabulary={vocabulary}
             key={entry.id}
             entry={entry}
             index={index}
@@ -182,6 +191,7 @@ function EntryPanel({
   onChange,
   showTitle,
   showFields,
+  vocabulary,
 }: {
   entry: PreReviewEntry;
   index: number;
@@ -191,17 +201,11 @@ function EntryPanel({
   showTitle: boolean;
   /** Only when each file is its own record. Otherwise the sheet sits above. */
   showFields: boolean;
+  vocabulary: OfferedTerm[];
 }) {
   const t = useMessages();
-  const [newKeyword, setNewKeyword] = useState('');
   const { analysis } = entry;
 
-  function addKeyword() {
-    const term = newKeyword.trim();
-    if (!term || draft.keywords.includes(term)) return;
-    onChange({ ...draft, keywords: [...draft.keywords, term] });
-    setNewKeyword('');
-  }
 
   return (
     <article className={total > 1 ? 'border-l-2 border-rule pl-5' : undefined}>
@@ -273,53 +277,12 @@ function EntryPanel({
           {(
             <div className="mb-5">
               <p className="eyebrow mb-1.5">{t('prereview.yourTags')}</p>
-              <ul className="flex flex-wrap items-center gap-2">
-                {draft.keywords.map((term) => (
-                  <li
-                    key={term}
-                    className="flex items-center gap-1 rounded-full border border-rule bg-paper py-1.5 pe-1.5 ps-3.5 text-sm"
-                  >
-                    {term}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onChange({ ...draft, keywords: draft.keywords.filter((k) => k !== term) })
-                      }
-                      className="rounded-full p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
-                    >
-                      <X size={13} />
-                      <span className="sr-only">Remove {term}</span>
-                    </button>
-                  </li>
-                ))}
-                <li className="flex items-center gap-1">
-                  <input
-                    value={newKeyword}
-                    onChange={(e) => setNewKeyword(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addKeyword();
-                      }
-                    }}
-                    maxLength={60}
-                    placeholder={t('prereview.addTag')}
-                    className="h-11 w-40 rounded-lg border border-rule bg-paper px-3.5 text-sm focus:border-accent-strong focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={addKeyword}
-                    disabled={!newKeyword.trim()}
-                    className="rounded p-2 text-muted transition-colors hover:bg-paper-3 hover:text-ink disabled:opacity-40"
-                  >
-                    <Plus size={16} />
-                    <span className="sr-only">{t('prereview.addTagAction')}</span>
-                  </button>
-                </li>
-              </ul>
-              <p className="mt-1.5 text-sm text-muted">
-                {t('prereview.vocabularyNote')}
-              </p>
+              <TagPicker
+                chosen={draft.keywords}
+                offered={vocabulary}
+                suggested={analysis.keywords}
+                onChange={(keywords) => onChange({ ...draft, keywords })}
+              />
             </div>
           )}
 
@@ -412,6 +375,160 @@ function Suggested({
         {t('prereview.useThis')}
       </button>
     </span>
+  );
+}
+
+/**
+ * Tags, from the archive's own list and nowhere else.
+ *
+ * A contributor used to type whatever they liked here. That is generous and it
+ * is how a catalogue stops being one: "Bombay", "bombay", "Mumbai" and "Bombay
+ * (Mumbai)" become four different things nobody can search across, and the
+ * knowledge manager spends their time merging spellings instead of reading
+ * material.
+ *
+ * So this offers what already exists — the same list the review workbench binds
+ * to, managed at /manage/vocabulary — and nothing else. The list is public to
+ * read, so an anonymous contributor sees every term a volunteer would.
+ *
+ * **What is not here is not lost.** A term the archive has never used is a real
+ * thing somebody knows and the vocabulary does not, so the note points at the
+ * description: written there, it reaches a person who can add the term properly
+ * rather than being filed under a spelling only this record will ever use.
+ *
+ * Variants are matched but never stored. Somebody typing "Bombay" finds the
+ * term whose preferred spelling the archive settled on, and the record carries
+ * the preferred one — which is the whole point of a thesaurus.
+ */
+function TagPicker({
+  chosen,
+  offered,
+  suggested,
+  onChange,
+}: {
+  chosen: string[];
+  offered: { term: string; variants: string[] }[];
+  suggested: string[];
+  onChange: (keywords: string[]) => void;
+}) {
+  const t = useMessages();
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+
+  const add = (term: string) => {
+    if (!chosen.includes(term)) onChange([...chosen, term]);
+    setQuery('');
+  };
+
+  /*
+   * Only terms the archive actually holds, and only ones not already chosen.
+   * Matched on the preferred spelling *and* on every variant, so the person who
+   * knows it as Bombay finds it without knowing what the archive calls it.
+   */
+  const needle = query.trim().toLowerCase();
+  const matches = offered
+    .filter((term) => !chosen.includes(term.term))
+    .filter(
+      (term) =>
+        !needle ||
+        term.term.toLowerCase().includes(needle) ||
+        term.variants.some((v) => v.toLowerCase().includes(needle)),
+    )
+    .slice(0, 40);
+
+  // A model suggestion is only offered if it is a term that exists. One that is
+  // not in the list is not a tag, whatever the model thought.
+  const known = new Set(offered.map((term) => term.term));
+  const suggestions = suggested.filter((term) => known.has(term) && !chosen.includes(term));
+
+  return (
+    <div>
+      <ul className="flex flex-wrap items-center gap-2">
+        {chosen.map((term) => (
+          <li
+            key={term}
+            className="flex items-center gap-1 rounded-full border border-rule bg-paper py-1.5 pe-1.5 ps-3.5 text-sm"
+          >
+            {term}
+            <button
+              type="button"
+              onClick={() => onChange(chosen.filter((k) => k !== term))}
+              className="rounded-full p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
+            >
+              <X size={13} />
+              <span className="sr-only">Remove {term}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="relative mt-2">
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+          placeholder={t('prereview.addTag')}
+          maxLength={60}
+          className="h-11 w-full rounded-lg border border-rule bg-paper px-3.5 text-sm focus:border-accent-strong focus:outline-none"
+        />
+
+        {open && (
+          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-rule bg-paper shadow-lift">
+            {matches.length === 0 ? (
+              <p className="px-3.5 py-3 text-sm text-muted">{t('prereview.tagsNoMatch')}</p>
+            ) : (
+              <ul>
+                {matches.map((term) => (
+                  <li key={term.term}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => add(term.term)}
+                      className="flex w-full items-baseline gap-2 px-3.5 py-2 text-start text-sm transition-colors hover:bg-paper-2"
+                    >
+                      <span>{term.term}</span>
+                      {needle &&
+                        !term.term.toLowerCase().includes(needle) &&
+                        term.variants.some((v) => v.toLowerCase().includes(needle)) && (
+                          <span className="text-xs text-muted">
+                            {term.variants.find((v) => v.toLowerCase().includes(needle))}
+                          </span>
+                        )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      {suggestions.length > 0 && (
+        <div className="mt-2.5">
+          <p className="eyebrow mb-1.5 text-[0.7rem]">{t('prereview.tagsSuggested')}</p>
+          <ul className="flex flex-wrap gap-2">
+            {suggestions.map((term) => (
+              <li key={term}>
+                <button
+                  type="button"
+                  onClick={() => add(term)}
+                  className="flex items-center gap-1 rounded-full border border-dashed border-rule-strong px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent-strong hover:bg-accent-wash hover:text-ink"
+                >
+                  <Plus size={13} />
+                  {term}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p className="mt-2 text-sm leading-relaxed text-muted">{t('prereview.tagsFromList')}</p>
+    </div>
   );
 }
 

@@ -240,7 +240,12 @@ export const en = {
   'prereview.machineReading': 'The machine’s reading',
   'prereview.yourDescription': 'Your description',
   'prereview.yourTags': 'Your tags',
-  'prereview.addTag': 'Add a tag',
+  'prereview.addTag': 'Search the archive’s tags',
+  'prereview.tagsFromList':
+    'Tags come from the archive’s own list, so the same thing is filed under the same word everywhere. If what you want is not here, say it in the description and the knowledge manager can add it.',
+  'prereview.tagsSuggested': 'Suggested for this item',
+  'prereview.tagsNoMatch': 'No tag matches that.',
+  'prereview.tagsAll': 'Browse all tags',
   'prereview.addTagAction': 'Add tag',
   'prereview.submit': 'Submit for review',
   'prereview.submitMany': 'Submit {count} items',

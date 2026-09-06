@@ -172,7 +172,7 @@
     "prereview.machineReading": "f3108da41585571e",
     "prereview.yourDescription": "bf3a2be349f58b2a",
     "prereview.yourTags": "b0e1a3cbc428026c",
-    "prereview.addTag": "acfd447bab4b395d",
+    "prereview.addTag": "1c864eea7c5ea3e3",
     "prereview.addTagAction": "3e10b08cc8745141",
     "prereview.submit": "40447e4493fb3832",
     "prereview.submitMany": "9434a867d1e3c39a",
@@ -432,7 +432,11 @@
     "translation.showTranslation": "d7e58f523e38b38e",
     "translation.inProgress": "b695b4182c7bb37d",
     "translation.unavailable": "2bde787fb61025bd",
-    "translation.original": "438cdc9508d533fd"
+    "translation.original": "438cdc9508d533fd",
+    "prereview.tagsFromList": "304fa5ea9bdf5483",
+    "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
+    "prereview.tagsNoMatch": "f091d8bdb39a4e34",
+    "prereview.tagsAll": "f02f8f59e52bfac8"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -607,7 +611,7 @@
     "prereview.machineReading": "f3108da41585571e",
     "prereview.yourDescription": "bf3a2be349f58b2a",
     "prereview.yourTags": "b0e1a3cbc428026c",
-    "prereview.addTag": "acfd447bab4b395d",
+    "prereview.addTag": "1c864eea7c5ea3e3",
     "prereview.addTagAction": "3e10b08cc8745141",
     "prereview.submit": "40447e4493fb3832",
     "prereview.submitMany": "9434a867d1e3c39a",
@@ -867,7 +871,11 @@
     "translation.showTranslation": "d7e58f523e38b38e",
     "translation.inProgress": "b695b4182c7bb37d",
     "translation.unavailable": "2bde787fb61025bd",
-    "translation.original": "438cdc9508d533fd"
+    "translation.original": "438cdc9508d533fd",
+    "prereview.tagsFromList": "304fa5ea9bdf5483",
+    "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
+    "prereview.tagsNoMatch": "f091d8bdb39a4e34",
+    "prereview.tagsAll": "f02f8f59e52bfac8"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -1042,7 +1050,7 @@
     "prereview.machineReading": "f3108da41585571e",
     "prereview.yourDescription": "bf3a2be349f58b2a",
     "prereview.yourTags": "b0e1a3cbc428026c",
-    "prereview.addTag": "acfd447bab4b395d",
+    "prereview.addTag": "1c864eea7c5ea3e3",
     "prereview.addTagAction": "3e10b08cc8745141",
     "prereview.submit": "40447e4493fb3832",
     "prereview.submitMany": "9434a867d1e3c39a",
@@ -1302,7 +1310,11 @@
     "translation.showTranslation": "d7e58f523e38b38e",
     "translation.inProgress": "b695b4182c7bb37d",
     "translation.unavailable": "2bde787fb61025bd",
-    "translation.original": "438cdc9508d533fd"
+    "translation.original": "438cdc9508d533fd",
+    "prereview.tagsFromList": "304fa5ea9bdf5483",
+    "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
+    "prereview.tagsNoMatch": "f091d8bdb39a4e34",
+    "prereview.tagsAll": "f02f8f59e52bfac8"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -1477,7 +1489,7 @@
     "prereview.machineReading": "f3108da41585571e",
     "prereview.yourDescription": "bf3a2be349f58b2a",
     "prereview.yourTags": "b0e1a3cbc428026c",
-    "prereview.addTag": "acfd447bab4b395d",
+    "prereview.addTag": "1c864eea7c5ea3e3",
     "prereview.addTagAction": "3e10b08cc8745141",
     "prereview.submit": "40447e4493fb3832",
     "prereview.submitMany": "9434a867d1e3c39a",
@@ -1737,6 +1749,10 @@
     "translation.showTranslation": "d7e58f523e38b38e",
     "translation.inProgress": "b695b4182c7bb37d",
     "translation.unavailable": "2bde787fb61025bd",
-    "translation.original": "438cdc9508d533fd"
+    "translation.original": "438cdc9508d533fd",
+    "prereview.tagsFromList": "304fa5ea9bdf5483",
+    "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
+    "prereview.tagsNoMatch": "f091d8bdb39a4e34",
+    "prereview.tagsAll": "f02f8f59e52bfac8"
   }
 }

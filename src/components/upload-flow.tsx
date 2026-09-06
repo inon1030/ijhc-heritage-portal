@@ -7,7 +7,7 @@ import { ConsentBlock } from '@/components/consent-block';
 import { RingMark, buttonClass } from '@/components/primitives';
 import { FilePicker, type PickedFile } from '@/components/file-picker';
 import { LinkInput, type CapturedLink } from '@/components/link-input';
-import { PreReview, type Draft } from '@/components/pre-review';
+import { PreReview, type Draft, type OfferedTerm } from '@/components/pre-review';
 import { CONSENT_VERSION } from '@/lib/consent';
 import { useMessages } from '@/lib/i18n/provider';
 import { mergeSuggestions } from '@/lib/fields/suggestions';
@@ -70,7 +70,7 @@ interface Analysed {
 type Grouping = 'one' | 'separate';
 type Phase = 'describe' | 'analysing' | 'reviewing' | 'submitting' | 'done';
 
-export function UploadFlow() {
+export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
   const t = useMessages();
   const [files, setFiles] = useState<PickedFile[]>([]);
   const [captured, setCaptured] = useState<CapturedLink | null>(null);
@@ -784,6 +784,7 @@ export function UploadFlow() {
               onSubmit={submit}
               submitting={phase === 'submitting'}
               blocked={!agreed}
+              vocabulary={vocabulary}
             />
           </div>
 
