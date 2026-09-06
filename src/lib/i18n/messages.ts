@@ -504,7 +504,7 @@ export const en = {
   'consent.c3.p1':
     'Both are optional. Leaving them blank does not change how your contribution is treated.',
   'consent.c3.p2':
-    'Neither is published, and the address is not an account: it grants no access to anything, and nobody can retrieve your uploads by typing it.',
+    'Neither is published as part of a record. The address is not an account and grants no access to anything — but anyone who knows it can type it into the portal and see the records you sent that are already public. It reveals nothing that is not already on the site; it groups what is. Material still in review, or not accepted, is never shown this way.',
   'consent.c3.p3':
     'The volunteers who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a volunteer records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
   'consent.c3.p4':
@@ -549,10 +549,13 @@ export const en = {
     'You can also ask to be forgotten without withdrawing what you sent. Your name and address are erased and the material stays in the archive, no longer linked to a person. The two are separate requests and you can make either one.',
 
   // ── finding what one person sent (volunteers only) ────────────────────────
-  'contributor.search': 'Find everything one contributor sent',
+  'contributor.search': 'Find what someone contributed',
   'contributor.placeholder': 'their email address',
   'contributor.find': 'Find',
-  'contributor.volunteersOnly': 'Volunteers only. Contributors are told their address cannot be used to look up their uploads by anyone else.',
+  'contributor.publicOnly':
+    'Shows only records that are already published. Anything still being reviewed stays private.',
+  'contributor.asVolunteer':
+    'You are signed in, so this also shows what is still in review, held back, or declined.',
   'contributor.none': 'Nothing has been sent from that address.',
   'contributor.found': 'Everything sent from {email}',
   'contributor.clear': 'Back to the archive',

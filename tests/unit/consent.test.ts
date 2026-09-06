@@ -40,14 +40,40 @@ describe('the handling notice', () => {
     expect(headings).toContain('What the Center may do without asking you');
   });
 
-  it('says plainly that an email grants no access', () => {
+  /**
+   * This clause has now been reversed twice, and both times by this test.
+   *
+   * It used to end "nobody can retrieve your uploads by typing it", and the
+   * comment beside it said: *there is no lookup by email anywhere in the
+   * codebase, and adding one would make this sentence false.* On 06.09.2026 a
+   * lookup by email was added to the portal, and this test failed before the
+   * feature shipped — which is the entire reason it was written that way.
+   *
+   * So the promise changed rather than quietly becoming untrue, and the
+   * version changed with it (`2026-09-06`). What it now has to say is the pair
+   * of facts that actually hold: a public record CAN be found from the address,
+   * and anything not yet published CANNOT.
+   */
+  it('is honest about what an address can now be used to find', () => {
     const emailClause = CONSENT_CLAUSES.find((c) => c.heading.startsWith('Your name and email'))!;
     const text = emailClause.body.join(' ');
-    // The security property this promises is real: there is no lookup by email
-    // anywhere in the codebase, and adding one would make this sentence false.
-    expect(text).toMatch(/Neither is published/i);
+
+    expect(text).toMatch(/Neither is published as part of a record/i);
     expect(text).toMatch(/grants no access/i);
-    expect(text).toMatch(/retrieve your uploads/i);
+
+    // The half that is newly permitted, said out loud rather than left for
+    // somebody to discover.
+    expect(text).toMatch(/anyone who knows it/i);
+    expect(text).toMatch(/already public/i);
+
+    // And the half that is not. `listItemsByContributor` filters to
+    // status=accepted, access=public for anyone who is not a volunteer; if that
+    // filter is ever dropped, this sentence becomes the lie the old one was.
+    expect(text).toMatch(/review|not accepted/i);
+    expect(text).toMatch(/never shown/i);
+
+    // The retired promise must not survive anywhere in the clause.
+    expect(text).not.toMatch(/nobody can retrieve/i);
   });
 
   it('says who can see a contributor address, and is right about it', () => {

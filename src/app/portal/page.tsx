@@ -35,13 +35,15 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
   const contributor = one(params.contributor)?.trim();
 
   /*
-   * Looking somebody up by their address is a volunteer's question, not a
-   * visitor's, and the terms they ticked say so in as many words. The control
-   * is only drawn for a volunteer and the query refuses without one — the
-   * second is what actually enforces it, since a hidden control is not a lock.
+   * Open to anyone, and bounded by what is already public.
+   *
+   * A visitor searching an address gets back only records that are already
+   * published — the same rows they could reach by scrolling. A volunteer gets
+   * the rest as well. `listItemsByContributor` draws that line, not this page:
+   * a hidden control is not a permission.
    */
   const volunteer = Boolean(await getCurrentVolunteer());
-  const sent = volunteer && contributor ? await listItemsByContributor(contributor) : null;
+  const sent = contributor ? await listItemsByContributor(contributor) : null;
 
   const category = CATEGORIES.includes(categoryParam as ItemCategory)
     ? (categoryParam as ItemCategory)
@@ -98,11 +100,9 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
         </p>
       </header>
 
-      {volunteer && (
-        <div className="mb-8">
-          <ContributorSearch current={contributor ?? ''} />
-        </div>
-      )}
+      <div className="mb-8">
+        <ContributorSearch current={contributor ?? ''} volunteer={volunteer} />
+      </div>
 
       {sent !== null ? (
         <section>

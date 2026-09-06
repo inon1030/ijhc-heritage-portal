@@ -2,6 +2,7 @@ import 'server-only';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getContributor } from '@/lib/contributors';
+import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { REVIEW_QUEUE_STATUSES } from './status';
 import { inTreeOrder } from '@/lib/fields/registry';
@@ -28,21 +29,7 @@ export interface PortalFilters {
   query?: string;
   category?: ItemCategory;
   community?: Community;
-  /**
-   * Everything one person sent, found by the address they left.
-   *
-   * **Volunteer-only, and it has to stay that way.** The terms every
-   * contributor ticks say the address "is not an account: it grants no access
-   * to anything, and nobody can retrieve your uploads by typing it." A public
-   * search box over this column would make that sentence false — anyone could
-   * confirm whether a given person had sent anything, and see what.
-   *
-   * So it is enforced twice: `contributors` is behind
-   * `contributors_volunteer_select`, so an anonymous caller resolves no
-   * addresses at all, and `listItemsByContributor` refuses outright without a
-   * volunteer session rather than quietly returning an empty list — an empty
-   * result and a refusal mean different things and only one of them is true.
-   */
+  /** Everything one person sent. See `listItemsByContributor`. */
   contributorEmail?: string;
   /** Caps the rows fetched. The portal wants all of them; the front page does not. */
   limit?: number;
@@ -108,28 +95,44 @@ export function likeTerm(query: string): string {
 }
 
 /**
- * Everything one contributor sent, whatever state it is in.
+ * Everything one contributor sent, found by the address they left.
  *
- * Not filtered to published: the point of asking is to see the whole of what
- * somebody sent — what is out, what is still in the queue, what was declined —
- * because the question that prompts it is almost always a person writing in to
- * ask what happened to their material.
+ * ── open to anyone, and bounded by what is already public ───────────────────
  *
- * Returns null for anyone who is not an approved volunteer. Null rather than
- * `[]`, so a caller cannot mistake "you may not ask" for "they sent nothing".
+ * A visitor sees **only records that are already published and public** — the
+ * same rows the portal shows anyone who scrolls. So this reveals nothing new;
+ * it groups what is already there by the person who sent it, which is what
+ * makes it useful to a family who contributed a dozen photographs and wants to
+ * find them again without an account.
+ *
+ * What it does newly reveal is *that a given address contributed at all*, and
+ * that is why the terms changed with it: version `2026-09-06` says plainly
+ * that anyone who knows the address can look up the public records sent from
+ * it. The previous wording promised the opposite, and a promise the code
+ * contradicts is worse than either.
+ *
+ * **A volunteer sees more**, and only a volunteer: material still in review,
+ * held back from public view, or declined. That distinction is the whole
+ * safety of this — an unpublished contribution is family material a person has
+ * not yet had a decision about, and it stays invisible to everyone but the
+ * archive.
+ *
+ * The address itself is resolved through `contributors`, which RLS restricts to
+ * volunteers, so the lookup runs with the service role for the public path and
+ * returns **only** the id. No address is ever read back out to a visitor.
  */
 export async function listItemsByContributor(
   email: string,
-): Promise<(Item & { file: ItemFile | null })[] | null> {
-  if (!(await getCurrentVolunteer())) return null;
-
-  const supabase = await createServerSupabase();
+): Promise<(Item & { file: ItemFile | null })[]> {
   const address = email.trim().toLowerCase();
   if (!address) return [];
 
-  // Resolved through `contributors`, which RLS already restricts, so this is
-  // the second lock rather than the only one.
-  const { data: contributor, error: lookupError } = await supabase
+  const volunteer = Boolean(await getCurrentVolunteer());
+
+  // The service role resolves the address to an id and nothing else. Doing it
+  // as the caller would return nothing for a visitor — `contributors` is
+  // volunteer-only and stays that way — and the id is not the address.
+  const { data: contributor, error: lookupError } = await createAdminSupabase()
     .from('contributors')
     .select('id')
     .ilike('email', likeTerm(address))
@@ -137,13 +140,23 @@ export async function listItemsByContributor(
   if (lookupError) throw lookupError;
   if (!contributor) return [];
 
-  const { data, error } = await supabase
+  const supabase = await createServerSupabase();
+  let q = supabase
     .from('items')
     .select('*, item_files(*)')
     .eq('contributor_id', contributor.id)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
+  // The gate. Everything a visitor gets back is a row they could already have
+  // reached from the portal; RLS would refuse the rest anyway, and saying so
+  // here as well is the archive's rule about enforcing permission in more than
+  // one place.
+  if (!volunteer) {
+    q = q.eq('status', 'accepted').eq('access', 'public');
+  }
+
+  const { data, error } = await q;
   if (error) throw error;
   return (data ?? []).map(({ item_files, ...item }) => ({
     ...(item as Item),

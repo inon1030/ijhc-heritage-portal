@@ -373,7 +373,7 @@
     "consent.c2.p4": "281c05d7f856b5b0",
     "consent.c3.heading": "2e830732eb1a05c7",
     "consent.c3.p1": "3e9de4ee9752ac28",
-    "consent.c3.p2": "94b7b1b48fc6f4c8",
+    "consent.c3.p2": "1bf1505d3d5767fc",
     "consent.c3.p3": "29e03b5be5855a80",
     "consent.c3.p4": "790fce04359e3be2",
     "consent.c3.p5": "88016c6ed78a1c2b",
@@ -395,10 +395,9 @@
     "consent.c8.heading": "3aa95e4c746fd54c",
     "consent.c8.p1": "e2f38a1692ee4f55",
     "consent.c8.p2": "5986566898bb00b5",
-    "contributor.search": "552d8972a1282ca7",
+    "contributor.search": "b4ebb359f63d4d76",
     "contributor.placeholder": "be7120c07fa32ce4",
     "contributor.find": "822b2ae4542bc74b",
-    "contributor.volunteersOnly": "20a4217a45f6812f",
     "contributor.none": "8a69ceb444619983",
     "contributor.found": "021ea616a7196e6a",
     "contributor.clear": "90cd9d016fbfc7f8",
@@ -436,7 +435,9 @@
     "prereview.tagsFromList": "304fa5ea9bdf5483",
     "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
     "prereview.tagsNoMatch": "f091d8bdb39a4e34",
-    "prereview.tagsAll": "f02f8f59e52bfac8"
+    "prereview.tagsAll": "f02f8f59e52bfac8",
+    "contributor.publicOnly": "4739bfeac51a75f0",
+    "contributor.asVolunteer": "3f082bb5166a7928"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -812,7 +813,7 @@
     "consent.c2.p4": "281c05d7f856b5b0",
     "consent.c3.heading": "2e830732eb1a05c7",
     "consent.c3.p1": "3e9de4ee9752ac28",
-    "consent.c3.p2": "94b7b1b48fc6f4c8",
+    "consent.c3.p2": "1bf1505d3d5767fc",
     "consent.c3.p3": "29e03b5be5855a80",
     "consent.c3.p4": "790fce04359e3be2",
     "consent.c3.p5": "88016c6ed78a1c2b",
@@ -834,10 +835,9 @@
     "consent.c8.heading": "3aa95e4c746fd54c",
     "consent.c8.p1": "e2f38a1692ee4f55",
     "consent.c8.p2": "5986566898bb00b5",
-    "contributor.search": "552d8972a1282ca7",
+    "contributor.search": "b4ebb359f63d4d76",
     "contributor.placeholder": "be7120c07fa32ce4",
     "contributor.find": "822b2ae4542bc74b",
-    "contributor.volunteersOnly": "20a4217a45f6812f",
     "contributor.none": "8a69ceb444619983",
     "contributor.found": "021ea616a7196e6a",
     "contributor.clear": "90cd9d016fbfc7f8",
@@ -875,7 +875,9 @@
     "prereview.tagsFromList": "304fa5ea9bdf5483",
     "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
     "prereview.tagsNoMatch": "f091d8bdb39a4e34",
-    "prereview.tagsAll": "f02f8f59e52bfac8"
+    "prereview.tagsAll": "f02f8f59e52bfac8",
+    "contributor.publicOnly": "4739bfeac51a75f0",
+    "contributor.asVolunteer": "3f082bb5166a7928"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -1251,7 +1253,7 @@
     "consent.c2.p4": "281c05d7f856b5b0",
     "consent.c3.heading": "2e830732eb1a05c7",
     "consent.c3.p1": "3e9de4ee9752ac28",
-    "consent.c3.p2": "94b7b1b48fc6f4c8",
+    "consent.c3.p2": "1bf1505d3d5767fc",
     "consent.c3.p3": "29e03b5be5855a80",
     "consent.c3.p4": "790fce04359e3be2",
     "consent.c3.p5": "88016c6ed78a1c2b",
@@ -1273,10 +1275,9 @@
     "consent.c8.heading": "3aa95e4c746fd54c",
     "consent.c8.p1": "e2f38a1692ee4f55",
     "consent.c8.p2": "5986566898bb00b5",
-    "contributor.search": "552d8972a1282ca7",
+    "contributor.search": "b4ebb359f63d4d76",
     "contributor.placeholder": "be7120c07fa32ce4",
     "contributor.find": "822b2ae4542bc74b",
-    "contributor.volunteersOnly": "20a4217a45f6812f",
     "contributor.none": "8a69ceb444619983",
     "contributor.found": "021ea616a7196e6a",
     "contributor.clear": "90cd9d016fbfc7f8",
@@ -1314,7 +1315,9 @@
     "prereview.tagsFromList": "304fa5ea9bdf5483",
     "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
     "prereview.tagsNoMatch": "f091d8bdb39a4e34",
-    "prereview.tagsAll": "f02f8f59e52bfac8"
+    "prereview.tagsAll": "f02f8f59e52bfac8",
+    "contributor.publicOnly": "4739bfeac51a75f0",
+    "contributor.asVolunteer": "3f082bb5166a7928"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -1690,7 +1693,7 @@
     "consent.c2.p4": "281c05d7f856b5b0",
     "consent.c3.heading": "2e830732eb1a05c7",
     "consent.c3.p1": "3e9de4ee9752ac28",
-    "consent.c3.p2": "94b7b1b48fc6f4c8",
+    "consent.c3.p2": "1bf1505d3d5767fc",
     "consent.c3.p3": "29e03b5be5855a80",
     "consent.c3.p4": "790fce04359e3be2",
     "consent.c3.p5": "88016c6ed78a1c2b",
@@ -1712,10 +1715,9 @@
     "consent.c8.heading": "3aa95e4c746fd54c",
     "consent.c8.p1": "e2f38a1692ee4f55",
     "consent.c8.p2": "5986566898bb00b5",
-    "contributor.search": "552d8972a1282ca7",
+    "contributor.search": "b4ebb359f63d4d76",
     "contributor.placeholder": "be7120c07fa32ce4",
     "contributor.find": "822b2ae4542bc74b",
-    "contributor.volunteersOnly": "20a4217a45f6812f",
     "contributor.none": "8a69ceb444619983",
     "contributor.found": "021ea616a7196e6a",
     "contributor.clear": "90cd9d016fbfc7f8",
@@ -1753,6 +1755,8 @@
     "prereview.tagsFromList": "304fa5ea9bdf5483",
     "prereview.tagsSuggested": "94dd12c3dc0d6ed4",
     "prereview.tagsNoMatch": "f091d8bdb39a4e34",
-    "prereview.tagsAll": "f02f8f59e52bfac8"
+    "prereview.tagsAll": "f02f8f59e52bfac8",
+    "contributor.publicOnly": "4739bfeac51a75f0",
+    "contributor.asVolunteer": "3f082bb5166a7928"
   }
 }

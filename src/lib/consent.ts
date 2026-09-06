@@ -31,7 +31,16 @@
  *    one do so. Noted in `../PILOT WITH EREZ/09 — Open Questions.md`.
  */
 
-export const CONSENT_VERSION = '2026-09-03';
+/*
+ * Bumped for the contributor search.
+ *
+ * The previous wording promised "nobody can retrieve your uploads by typing
+ * it", and the portal now lets anyone do exactly that for records that are
+ * already public. A version is never edited in place — a contributor who
+ * ticked `2026-09-03` agreed to the old sentence and the archive has to keep
+ * saying so — so this is a new one.
+ */
+export const CONSENT_VERSION = '2026-09-06';
 
 /**
  * The address someone writes to in order to withdraw material or ask what is
@@ -88,7 +97,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     heading: 'Your name and email address, if you give them',
     body: [
       'Both are optional. Leaving them blank does not change how your contribution is treated.',
-      'Neither is published, and the address is not an account: it grants no access to anything, and nobody can retrieve your uploads by typing it.',
+      'Neither is published as part of a record. The address is not an account and grants no access to anything — but anyone who knows it can type it into the portal and see the records you sent that are already public. It reveals nothing that is not already on the site; it groups what is. Material still in review, or not accepted, is never shown this way.',
       'The volunteers who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a volunteer records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
       'A family name recorded against your address is not published by that alone. Family names appear on a record only when a volunteer decides the family belongs on it.',
       'Neither is used for a newsletter, passed to anyone outside the Center, or sold.',

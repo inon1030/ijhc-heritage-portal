@@ -8,13 +8,26 @@ import { useMessages } from '@/lib/i18n/provider';
 /**
  * Everything one person sent, found by the address they left.
  *
- * Drawn only for a volunteer, and the query behind it refuses without one —
- * because a control that is merely hidden is not a permission. The note under
- * the box is not decoration either: every contributor ticks a box saying their
- * address cannot be used to look up their uploads, and the volunteer using
- * this should know that promise is what bounds it.
+ * Open to anyone, and it returns only what is already public — the same rows a
+ * visitor could reach by scrolling, grouped by who sent them. That is what
+ * makes it useful to a family who contributed a dozen photographs and has no
+ * account to find them with.
+ *
+ * A volunteer gets more: material still in review, held back, or declined. The
+ * server decides that, not this component — a control that is merely hidden is
+ * not a permission.
+ *
+ * The note under the box says which of the two you are getting, because the
+ * difference matters and the box looks identical either way.
  */
-export function ContributorSearch({ current }: { current: string }) {
+export function ContributorSearch({
+  current,
+  volunteer,
+}: {
+  current: string;
+  /** Only changes the note. What is actually returned is decided on the server. */
+  volunteer: boolean;
+}) {
   const t = useMessages();
   const router = useRouter();
   const [email, setEmail] = useState(current);
@@ -57,7 +70,9 @@ export function ContributorSearch({ current }: { current: string }) {
           </button>
         )}
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-muted">{t('contributor.volunteersOnly')}</p>
+      <p className="mt-2 text-xs leading-relaxed text-muted">
+        {volunteer ? t('contributor.asVolunteer') : t('contributor.publicOnly')}
+      </p>
     </div>
   );
 }
