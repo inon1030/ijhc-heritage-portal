@@ -1,5 +1,8 @@
+'use client';
+
 import { FileText, Music, Video } from 'lucide-react';
 import { fileKind } from '@/lib/files/validate';
+import { useMessages } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import type { ItemFile } from '@/lib/types';
 
@@ -33,8 +36,9 @@ export function FilePreview({
   className?: string;
   fit?: 'cover' | 'contain';
 }) {
+  const t = useMessages();
   if (!file) {
-    return <Placeholder icon={<FileText size={22} />} label="No file attached" className={className} />;
+    return <Placeholder icon={<FileText size={22} />} label={t('file.none')} className={className} />;
   }
 
   const kind = fileKind(file.mime_type);
@@ -74,7 +78,7 @@ export function FilePreview({
     return (
       <Placeholder
         icon={<FileText size={22} />}
-        label="Captured page text"
+        label={t('file.capturedPage')}
         href={src}
         className={className}
       />
@@ -85,7 +89,7 @@ export function FilePreview({
     return (
       <Placeholder
         icon={<FileText size={22} />}
-        label="PDF document"
+        label={t('file.pdf')}
         href={src}
         className={className}
       />
@@ -106,13 +110,14 @@ function Placeholder({
   href?: string;
   className?: string;
 }) {
+  const t = useMessages();
   const content = (
     <>
       <span className="text-muted" aria-hidden>
         {icon}
       </span>
       <span className="eyebrow">{label}</span>
-      {href && <span className="text-xs text-accent underline underline-offset-2">Open file</span>}
+      {href && <span className="text-xs text-accent underline underline-offset-2">{t('file.open')}</span>}
     </>
   );
 

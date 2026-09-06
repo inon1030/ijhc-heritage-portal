@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useMessages } from '@/lib/i18n/provider';
 import type { PickedFile } from '@/components/file-picker';
 import { fileKind } from '@/lib/files/validate';
 import { formatBytes } from '@/lib/utils';
@@ -26,6 +27,7 @@ export function Lightbox({
   onIndex: (index: number) => void;
   onClose: () => void;
 }) {
+  const t = useMessages();
   const closeButton = useRef<HTMLButtonElement>(null);
   const current = files[index];
 
@@ -82,7 +84,7 @@ export function Lightbox({
           className="rounded-md p-2.5 transition-colors hover:bg-paper/10"
         >
           <X size={22} />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t('file.close')}</span>
         </button>
       </header>
 
@@ -123,7 +125,7 @@ export function Lightbox({
           {kind === 'audio' && <audio src={url} controls className="w-full max-w-xl" />}
           {kind === 'video' && <video src={url} controls className="max-h-[78vh] max-w-full" />}
           {kind === 'other' && (
-            <p className="text-paper/70">This file type cannot be previewed in the browser.</p>
+            <p className="text-paper/70">{t('file.noPreview')}</p>
           )}
         </div>
 
@@ -148,6 +150,7 @@ function Arrow({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const t = useMessages();
   const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
   return (
     <button
@@ -157,7 +160,7 @@ function Arrow({
       className="shrink-0 rounded-full p-3 text-paper transition-colors hover:bg-paper/10 disabled:opacity-25"
     >
       <Icon size={26} />
-      <span className="sr-only">{direction === 'left' ? 'Previous file' : 'Next file'}</span>
+      <span className="sr-only">{direction === 'left' ? t('file.previous') : t('file.next')}</span>
     </button>
   );
 }

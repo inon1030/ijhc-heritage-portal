@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { StreamSummary } from '@/components/stream-summary';
 import { en } from '@/lib/i18n/messages';
-import { reader } from '@/lib/i18n';
 import type { Community } from '@/lib/types';
 
 /*

@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { COMMUNITY_COLORS } from '@/lib/communities';
 import { cn } from '@/lib/utils';
 import { STATUS_LABELS, type ItemStatus } from '@/lib/types';
 

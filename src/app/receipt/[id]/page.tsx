@@ -6,8 +6,12 @@ import { verifyReceipt } from '@/lib/items/receipt';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import type { ItemFile } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+import { getMessages } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Your contribution', robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t('receipt.title'), robots: { index: false } };
+}
 export const dynamic = 'force-dynamic';
 
 /**
@@ -32,14 +36,15 @@ export default async function ReceiptPage({
 }) {
   const { id } = await params;
   const { t } = await searchParams;
+  const { t: say } = await getMessages();
 
   if (!verifyReceipt(id, t)) {
     return (
       <Wrapper>
         <EmptyState
-          title="That link is not right"
+          title={say('receipt.badLink')}
           body="Contribution links are long and are easily broken by an email client or a chat app. Copy the whole address, including everything after the question mark."
-          action={{ href: '/upload', label: 'Contribute something' }}
+          action={{ href: '/upload', label: say('receipt.contributeSomething') }}
         />
       </Wrapper>
     );
@@ -55,20 +60,20 @@ export default async function ReceiptPage({
     return (
       <Wrapper>
         <EmptyState
-          title="This contribution is no longer held"
+          title={say('receipt.gone')}
           body="The archive no longer has a record under this link. If that is unexpected, get in touch and quote the reference below."
-          action={{ href: '/portal', label: 'Browse the archive' }}
+          action={{ href: '/portal', label: say('footer.browse') }}
         />
       </Wrapper>
     );
   }
 
   const files = ((data.item_files ?? []) as ItemFile[]).slice(0, 4);
-  const state = stateOf(data.status, data.access, data.deleted_at);
+  const state = stateOf(data.status, data.access, data.deleted_at, say);
 
   return (
     <Wrapper>
-      <p className="eyebrow animate-rise">Your contribution</p>
+      <p className="eyebrow animate-rise">{say('receipt.title')}</p>
       <h1 className="animate-rise mt-2 font-display text-3xl leading-tight sm:text-4xl">
         {data.title}
       </h1>
@@ -123,12 +128,16 @@ export default async function ReceiptPage({
  * archive's scope, not about them, and there is no reason for the word to land
  * the way it lands in the database.
  */
-function stateOf(status: string, access: string, deletedAt: string | null) {
+type Say = (key: never, vars?: Record<string, string | number>) => string;
+
+function stateOf(status: string, access: string, deletedAt: string | null, t: Say) {
+  const say = t as unknown as (key: string) => string;
+
   if (deletedAt) {
     return {
       tone: 'muted',
-      title: 'Withdrawn',
-      body: 'This contribution has been taken out of the archive. If you did not ask for that and it looks wrong, get in touch.',
+      title: say('receipt.withdrawn'),
+      body: say('receipt.withdrawnBody'),
       published: false,
     };
   }
@@ -136,8 +145,8 @@ function stateOf(status: string, access: string, deletedAt: string | null) {
   if (status === 'accepted' && access === 'public') {
     return {
       tone: 'positive',
-      title: 'Published',
-      body: 'A volunteer checked it and it is in the public archive.',
+      title: say('receipt.published'),
+      body: say('receipt.publishedBody'),
       published: true,
     };
   }
@@ -145,8 +154,8 @@ function stateOf(status: string, access: string, deletedAt: string | null) {
   if (status === 'accepted' || status === 'shadow_gallery') {
     return {
       tone: 'accent-strong',
-      title: 'Kept, but not public',
-      body: 'A volunteer catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
+      title: say('receipt.keptNotPublic'),
+      body: say('receipt.keptNotPublicBody'),
       published: false,
     };
   }
@@ -154,16 +163,16 @@ function stateOf(status: string, access: string, deletedAt: string | null) {
   if (status === 'rejected') {
     return {
       tone: 'muted',
-      title: 'Not added to the archive',
-      body: 'A volunteer looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
+      title: say('receipt.notAdded'),
+      body: say('receipt.notAddedBody'),
       published: false,
     };
   }
 
   return {
     tone: 'accent-strong',
-    title: 'Waiting for a volunteer',
-    body: 'It has arrived safely. Volunteers check each contribution against the original before anything is published, and they are people with day jobs, so this can take a while.',
+    title: say('receipt.waiting'),
+    body: say('receipt.waitingBody'),
     published: false,
   };
 }

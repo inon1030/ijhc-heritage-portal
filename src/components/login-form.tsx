@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, Loader2 } from 'lucide-react';
+import { useMessages } from '@/lib/i18n/provider';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 
 /**
@@ -17,6 +18,7 @@ import { createBrowserSupabase } from '@/lib/supabase/browser';
 type Mode = 'sign-in' | 'request';
 
 export function LoginForm() {
+  const t = useMessages();
   const router = useRouter();
   const params = useSearchParams();
   // The top bar offers "Create an account" as its own entry, so the link has
@@ -35,7 +37,7 @@ export function LoginForm() {
 
     if (signInError) {
       // Deliberately vague: a precise message tells an attacker which half was right.
-      setError('That email and password do not match an account.');
+      setError(t('login.badCredentials'));
       setBusy(false);
       return;
     }
@@ -54,7 +56,7 @@ export function LoginForm() {
 
     if (!response.ok) {
       const body = await response.json().catch(() => null);
-      setError(body?.error?.message ?? 'The request did not go through. Try again shortly.');
+      setError(body?.error?.message ?? t('login.requestFailed'));
       setBusy(false);
       return;
     }
@@ -110,7 +112,7 @@ export function LoginForm() {
       <form onSubmit={submit} className="mt-6 space-y-4">
         {mode === 'request' && (
           <label className="block">
-            <span className="eyebrow mb-1.5 block">Your name</span>
+            <span className="eyebrow mb-1.5 block">{t('login.yourName')}</span>
             <input
               required
               autoComplete="name"
@@ -123,7 +125,7 @@ export function LoginForm() {
         )}
 
         <label className="block">
-          <span className="eyebrow mb-1.5 block">Email</span>
+          <span className="eyebrow mb-1.5 block">{t('login.email')}</span>
           <input
             type="email"
             required
@@ -135,7 +137,7 @@ export function LoginForm() {
         </label>
 
         <label className="block">
-          <span className="eyebrow mb-1.5 block">Password</span>
+          <span className="eyebrow mb-1.5 block">{t('login.password')}</span>
           <input
             type="password"
             required
@@ -146,7 +148,7 @@ export function LoginForm() {
             className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
           {mode === 'request' && (
-            <span className="mt-1.5 block text-xs text-muted">At least ten characters.</span>
+            <span className="mt-1.5 block text-xs text-muted">{t('login.passwordHint')}</span>
           )}
         </label>
 
@@ -162,13 +164,13 @@ export function LoginForm() {
           className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ink font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink-2 hover:shadow-lift disabled:pointer-events-none disabled:opacity-60"
         >
           {busy && <Loader2 size={16} className="animate-spin" />}
-          {mode === 'sign-in' ? (busy ? 'Signing in…' : 'Sign in') : busy ? 'Sending…' : 'Send the request'}
+          {mode === 'sign-in' ? (busy ? t('login.signingIn') : 'Sign in') : busy ? t('login.sending') : t('login.sendRequest')}
         </button>
 
         <p className="text-sm leading-relaxed text-muted">
           {mode === 'sign-in'
-            ? 'Browsing and contributing need no account. Reviewing does.'
-            : 'An administrator approves each request. Until then the account can sign in and see only what any visitor sees.'}
+            ? t('login.noAccountNeeded')
+            : t('login.approvalNote')}
         </p>
       </form>
     </>

@@ -7,14 +7,19 @@ import { getItemDetail, listItemEvents } from '@/lib/items/queries';
 import { listFamilies, listItemFamilyIds } from '@/lib/vocabulary/queries';
 import { readVocabulary } from '@/lib/vocabulary/load';
 import { formatDate } from '@/lib/utils';
+import { getMessages } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Review' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t('nav.review') };
+}
 export const dynamic = 'force-dynamic';
 
 type Params = Promise<{ id: string }>;
 
 export default async function ReviewItemPage({ params }: { params: Params }) {
   const { id } = await params;
+  const { t } = await getMessages();
   const item = await getItemDetail(id);
   if (!item) notFound();
 
@@ -28,7 +33,7 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
       <Link href="/review" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
-        <ArrowLeft size={14} /> Back to the queue
+        <ArrowLeft size={14} /> {t('review.backToQueue')}
       </Link>
 
       <ReviewWorkbench
@@ -40,7 +45,7 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
 
       {events.length > 0 && (
         <section className="mt-12 border-t border-rule pt-6">
-          <h2 className="eyebrow mb-3">History</h2>
+          <h2 className="eyebrow mb-3">{t('review.history')}</h2>
           <ol className="space-y-1.5">
             {events.map((event) => (
               <li key={event.id} className="machine text-muted">

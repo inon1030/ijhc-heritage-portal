@@ -7,6 +7,7 @@ import { EvidenceLedger } from '@/components/evidence-ledger';
 import { FieldSheet } from '@/components/field-sheet';
 import { FilePreview } from '@/components/file-preview';
 import { SimulatedNotice, StatusPill } from '@/components/primitives';
+import { TranslationDeck } from '@/components/translation-deck';
 import { ACCESS_OPTIONS, accessOption } from '@/lib/access';
 import { COMMUNITY_COLORS } from '@/lib/communities';
 import { fieldDef, type FieldColumn, type FieldValue } from '@/lib/fields/registry';
@@ -576,6 +577,16 @@ export function ReviewWorkbench({
             {error}
           </p>
         )}
+
+        {/*
+          Directly above the decision, and deliberately so. Publishing sends
+          this record out in five languages; the last thing a volunteer reads
+          before pressing Publish should be the five languages it will go out
+          in, not the English they have already been through field by field.
+        */}
+        <div className="mt-8 border-t border-rule pt-6">
+          <TranslationDeck itemId={item.id} />
+        </div>
 
         <div className="mt-8 flex flex-wrap gap-3 border-t border-rule pt-6">
           {transitions.includes('accepted') && (

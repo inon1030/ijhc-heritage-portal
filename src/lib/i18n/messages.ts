@@ -204,6 +204,109 @@ export const en = {
   'upload.error.save': 'The submission did not save. Try again.',
   'upload.error.page': 'That page could not be read.',
 
+  // ── the review workbench ──────────────────────────────────────────────────
+  'review.languagesHeading': 'Every language this will be published in',
+  'review.languagesNote':
+    'The archive publishes each record in five languages. Read them here before you approve — what you correct is kept, and the translator will not overwrite it.',
+  'review.translateMissing': 'Translate what is missing',
+  'review.translating': 'Translating…',
+  'review.loadingLanguages': 'Loading the languages…',
+  'review.byHand': 'corrected by hand',
+  'review.byMachine': 'machine',
+  'review.stale': 'made from older text',
+  'review.missing': 'not translated yet',
+  'review.notTranslatedYet': 'Not translated yet',
+  'review.saveCorrection': 'Save correction',
+  'review.saving': 'Saving…',
+  'review.discard': 'Discard',
+  'review.quotaGone':
+    'The day’s translation allowance is gone. What is missing will be made overnight.',
+  'review.field.title': 'Title',
+  'review.field.description': 'Description',
+  'review.field.provenance': 'Provenance',
+  'review.field.period': 'Period',
+  'review.field.originPlace': 'Place of origin',
+  'review.backToQueue': 'Back to the queue',
+  'review.history': 'History',
+
+  // ── the pre-review panel a contributor edits ──────────────────────────────
+  'prereview.heading': 'What the archive found',
+  'prereview.hide': 'Hide this panel',
+  'prereview.titleForItem': 'Title for this item',
+  'prereview.machineReading': 'The machine’s reading',
+  'prereview.yourDescription': 'Your description',
+  'prereview.yourTags': 'Your tags',
+  'prereview.addTag': 'Add a tag',
+  'prereview.addTagAction': 'Add tag',
+  'prereview.submit': 'Submit for review',
+  'prereview.size': 'Size',
+  'prereview.dimensions': 'Dimensions',
+  'prereview.type': 'Type',
+  'prereview.duration': 'Duration',
+  'prereview.textFound': 'Text found in the item',
+  'prereview.transcript': 'Transcript',
+
+  // ── files ─────────────────────────────────────────────────────────────────
+  'file.none': 'No file attached',
+  'file.capturedPage': 'Captured page text',
+  'file.pdf': 'PDF document',
+  'file.open': 'Open file',
+  'file.close': 'Close',
+  'file.noPreview': 'This file type cannot be previewed in the browser.',
+  'file.previous': 'Previous file',
+  'file.next': 'Next file',
+
+  // ── signing in ────────────────────────────────────────────────────────────
+  'login.yourName': 'Your name',
+  'login.email': 'Email',
+  'login.password': 'Password',
+  'login.passwordHint': 'At least ten characters.',
+  'login.signingIn': 'Signing in…',
+  'login.sending': 'Sending…',
+  'login.sendRequest': 'Send the request',
+  'login.noAccountNeeded': 'Browsing and contributing need no account. Reviewing does.',
+  'login.approvalNote':
+    'An administrator approves each request. Until then the account can sign in and see only what any visitor sees.',
+  'login.badCredentials': 'That email and password do not match an account.',
+  'login.requestFailed': 'The request did not go through. Try again shortly.',
+  'login.awaitingApproval': 'Your account is waiting for approval',
+  'login.awaitingBody':
+    '{email} is registered, and an administrator has to approve it before the review queue opens. Nothing else is needed from you.',
+  'login.browseMeanwhile': 'Browse the archive in the meantime',
+
+  // ── the receipt a contributor keeps ───────────────────────────────────────
+  'receipt.title': 'Your contribution',
+  'receipt.badLink': 'That link is not right',
+  'receipt.contributeSomething': 'Contribute something',
+  'receipt.gone': 'This contribution is no longer held',
+  'receipt.withdrawn': 'Withdrawn',
+  'receipt.withdrawnBody':
+    'This contribution has been taken out of the archive. If you did not ask for that and it looks wrong, get in touch.',
+  'receipt.published': 'Published',
+  'receipt.keptNotPublic': 'Kept, but not public',
+  'receipt.notAdded': 'Not added to the archive',
+  'receipt.waiting': 'Waiting for a volunteer',
+  'receipt.badLinkBody': 'This address does not match a contribution. Check the link you were given, or contribute something new.',
+  'receipt.goneBody': 'The record this receipt pointed at is no longer held in the archive.',
+  'receipt.publishedBody': 'A volunteer checked it and it is in the public archive.',
+  'receipt.keptNotPublicBody':
+    'A volunteer catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
+  'receipt.notAddedBody':
+    'A volunteer looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
+  'receipt.waitingBody':
+    'It has arrived safely. Volunteers check each contribution against the original before anything is published, and they are people with day jobs, so this can take a while.',
+
+  // ── the review queue ──────────────────────────────────────────────────────
+  'queue.title': 'Review queue',
+  'queue.volunteersOnly': 'Volunteers only',
+  'queue.clear': 'The queue is clear',
+  'queue.openPortal': 'Open the portal',
+
+  // ── when something breaks ─────────────────────────────────────────────────
+  'error.label': 'Error',
+  'error.unreachable': 'The archive could not be reached',
+  'error.tryAgain': 'Try again',
+
   // ── the language picker ───────────────────────────────────────────────────
   'language.reading': 'Reading in {language}. Choose a language.',
   'language.prompt': 'Read the archive in',
