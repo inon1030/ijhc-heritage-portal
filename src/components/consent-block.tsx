@@ -128,15 +128,19 @@ export function ConsentBlock({
         >
           <span className="eyebrow mb-3 block">Terms · version {CONSENT_VERSION}</span>
 
-          {CONSENT_CLAUSES.map((clause) => (
-            <span key={clause.heading} className="mb-3.5 block last:mb-0">
-              <span className="block font-medium text-ink">{clause.heading}</span>
-              {clause.body.map((paragraph) => (
+          {CONSENT_CLAUSES.map((clause, index) => (
+            <span key={clause.key} className="mb-3.5 block last:mb-0">
+              <span className="block font-medium text-ink">
+                {t(`${clause.key}.heading` as never)}
+              </span>
+              {clause.body.map((paragraph, n) => (
                 <span key={paragraph} className="mt-1 block leading-relaxed text-muted">
-                  {paragraph}
+                  {t(`${clause.key}.p${n + 1}` as never)}
                 </span>
               ))}
-              {clause.heading === 'Changing your mind' && (
+              {/* By position. The English heading stopped being a reliable
+                  match the moment the heading could be in Hebrew. */}
+              {index === CONSENT_CLAUSES.length - 1 && (
                 <span className="mt-1 block leading-relaxed text-muted">{contactSentence()}</span>
               )}
             </span>

@@ -51,12 +51,22 @@ export const CONSENT_SUMMARY =
   'I may share this material with the Indian Jewish Heritage Center, and I agree to how it will be handled.';
 
 export interface ConsentClause {
+  /**
+   * The catalogue prefix for this clause: `<key>.heading`, `<key>.p1`, `<key>.p2`.
+   *
+   * The English below stays the version of record. It is what `consentVersion`
+   * on a submission points at, and what a translated page links back to; the
+   * keys exist only so a contributor can read the terms in a language they
+   * actually read before ticking the box.
+   */
+  key: string;
   heading: string;
   body: string[];
 }
 
 export const CONSENT_CLAUSES: ConsentClause[] = [
   {
+    key: 'consent.c1',
     heading: 'What happens to what you send',
     body: [
       'A volunteer reads it and checks it against the file before anything appears in public. Until then it is visible only to volunteers of the Heritage Center.',
@@ -64,6 +74,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c2',
     heading: 'The machine reading',
     body: [
       'An automated system reads the file and suggests a description, a period, a place, and keywords. Everything it produces is a suggestion. A person decides what becomes the record.',
@@ -73,6 +84,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c3',
     heading: 'Your name and email address, if you give them',
     body: [
       'Both are optional. Leaving them blank does not change how your contribution is treated.',
@@ -83,6 +95,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c4',
     heading: 'Names of people',
     body: [
       'Family names attached to a record are published with it — that is what makes a heritage archive usable, and it means the surnames of living relatives can appear in public.',
@@ -90,6 +103,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c5',
     heading: 'Rights in the material',
     body: [
       'Sending something here does not transfer its ownership. You are confirming that it is yours to share, or that you have permission from whoever it belongs to.',
@@ -97,6 +111,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c6',
     heading: 'Following what you sent',
     body: [
       'At the end of an upload you are given a link, one for each contribution. It shows you whether a volunteer has published it yet, and it does not expire.',
@@ -105,6 +120,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c7',
     heading: 'What the Center may do without asking you',
     body: [
       'The Heritage Center decides what the archive holds. It may decline your contribution, take a published record out of public view, or remove material entirely, at its own discretion and without telling you first.',
@@ -114,6 +130,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
+    key: 'consent.c8',
     heading: 'Changing your mind',
     body: [
       'You can ask for material to be taken down, or ask what is held about you, at any time.',

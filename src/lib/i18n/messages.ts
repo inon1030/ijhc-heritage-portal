@@ -461,6 +461,84 @@ export const en = {
   'login.requestInBody': 'An administrator has to approve',
   'login.askForAccount': 'Ask for an account',
 
+  // ── the terms a contributor agrees to ─────────────────────────
+  // Translated like everything else, and marked as a translation wherever it
+  // is shown. The English stays the version of record, because the English is
+  // what `consentVersion` on every submission points at — but a contributor
+  // who cannot read the terms they are agreeing to is the worse failure of
+  // the two. So: translated, and told plainly which one binds.
+  'consent.machineNotice':
+    'This page is a machine translation. The English version is the one you are agreeing to.',
+  'consent.readEnglish': 'Read the terms in English',
+  'handling.standfirst':
+    'Plain terms, and the ones actually shown to you before you send anything. Every clause describes something the archive does rather than something it reserves the right to do.',
+  'handling.versionNote':
+    'The version above is recorded on every record at the moment it is submitted, so a contribution is always tied to the wording that was actually on the screen. Earlier versions are never rewritten.',
+
+  'consent.c1.heading': 'What happens to what you send',
+  'consent.c1.p1':
+    'A volunteer reads it and checks it against the file before anything appears in public. Until then it is visible only to volunteers of the Heritage Center.',
+  'consent.c1.p2':
+    'If it is accepted, the material and the description are published on this site under the Center’s name, and anyone can see them. If it is not accepted, it normally stays in the archive as an unpublished record rather than being deleted, so that a decision can be revisited — but see what the Center may do without asking you, below.',
+
+  'consent.c2.heading': 'The machine reading',
+  'consent.c2.p1':
+    'An automated system reads the file and suggests a description, a period, a place, and keywords. Everything it produces is a suggestion. A person decides what becomes the record.',
+  'consent.c2.p2':
+    'To do that, the file is sent to Google’s Gemini service, outside the Center.',
+  'consent.c2.p3':
+    'The archive currently uses that service on its free tier. Under Google’s terms for unpaid use, material sent there may be reviewed by people at Google and used to improve their products. A paid account carries the opposite undertaking.',
+  'consent.c2.p4':
+    'So: if the material is private, or shows a living person, or you would rather it were not seen outside the Center, do not upload it here. Contact the Center and it will be taken in by hand.',
+
+  'consent.c3.heading': 'Your name and email address, if you give them',
+  'consent.c3.p1':
+    'Both are optional. Leaving them blank does not change how your contribution is treated.',
+  'consent.c3.p2':
+    'Neither is published, and the address is not an account: it grants no access to anything, and nobody can retrieve your uploads by typing it.',
+  'consent.c3.p3':
+    'The volunteers who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a volunteer records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
+  'consent.c3.p4':
+    'A family name recorded against your address is not published by that alone. Family names appear on a record only when a volunteer decides the family belongs on it.',
+  'consent.c3.p5':
+    'Neither is used for a newsletter, passed to anyone outside the Center, or sold.',
+
+  'consent.c4.heading': 'Names of people',
+  'consent.c4.p1':
+    'Family names attached to a record are published with it — that is what makes a heritage archive usable, and it means the surnames of living relatives can appear in public.',
+  'consent.c4.p2':
+    'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a volunteer will hold it rather than publish it.',
+
+  'consent.c5.heading': 'Rights in the material',
+  'consent.c5.p1':
+    'Sending something here does not transfer its ownership. You are confirming that it is yours to share, or that you have permission from whoever it belongs to.',
+  'consent.c5.p2':
+    'You are giving the Heritage Center permission to keep it, describe it, and publish it as part of the archive.',
+
+  'consent.c6.heading': 'Following what you sent',
+  'consent.c6.p1':
+    'At the end of an upload you are given a link, one for each contribution. It shows you whether a volunteer has published it yet, and it does not expire.',
+  'consent.c6.p2':
+    'It needs no account and no password, so keep it somewhere you will find it — the Center cannot send you another unless it has your address.',
+  'consent.c6.p3':
+    'Anyone holding that link can see the same page, so treat it the way you would treat the material itself.',
+
+  'consent.c7.heading': 'What the Center may do without asking you',
+  'consent.c7.p1':
+    'The Heritage Center decides what the archive holds. It may decline your contribution, take a published record out of public view, or remove material entirely, at its own discretion and without telling you first.',
+  'consent.c7.p2':
+    'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Volunteers are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
+  'consent.c7.p3':
+    'What is kept is a note that the item existed, so the same thing is not accepted again later by mistake.',
+  'consent.c7.p4':
+    'This does not affect the two requests below. Those are yours to make, and the Center answers them.',
+
+  'consent.c8.heading': 'Changing your mind',
+  'consent.c8.p1':
+    'You can ask for material to be taken down, or ask what is held about you, at any time.',
+  'consent.c8.p2':
+    'You can also ask to be forgotten without withdrawing what you sent. Your name and address are erased and the material stays in the archive, no longer linked to a person. The two are separate requests and you can make either one.',
+
   // ── the language picker ───────────────────────────────────────────────────
   'language.reading': 'Reading in {language}. Choose a language.',
   'language.prompt': 'Read the archive in',

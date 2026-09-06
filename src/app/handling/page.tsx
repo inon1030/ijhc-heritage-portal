@@ -21,8 +21,16 @@ export const metadata: Metadata = {
  * two can never disagree. This page exists so the terms can be read without
  * being in the middle of contributing, and linked to from the footer.
  */
-export default async function HandlingPage() {
-  const { t } = await getMessages();
+export default async function HandlingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ original?: string }>;
+}) {
+  const { t, language } = await getMessages();
+  // `?original=1` is the address of the terms as written — the same pattern a
+  // record page uses for the words a family actually used. It has to be a
+  // link rather than a toggle so somebody can cite it.
+  const english = language.is_source || (await searchParams).original === '1';
   return (
     <article className="mx-auto max-w-2xl px-6 py-12">
       <Link
@@ -36,21 +44,42 @@ export default async function HandlingPage() {
       <h1 className="mt-2 font-display text-3xl leading-tight sm:text-4xl">
         {t('handling.title')}
       </h1>
-      <p className="mt-4 leading-relaxed text-muted sm:text-lg">
-        Plain terms, and the ones actually shown to you before you send anything. Every clause
-        describes something the archive does rather than something it reserves the right to do.
-      </p>
+      <p className="mt-4 leading-relaxed text-muted sm:text-lg">{t('handling.standfirst')}</p>
+
+      {/*
+        Said before the terms, not after them.
+
+        The clauses below are translated like everything else, because a
+        contributor who cannot read what they are agreeing to has not agreed to
+        anything. But `consentVersion` on every submission points at the
+        English, and the English is what an earlier version is compared against
+        — so the page says which one binds, and links to it, before the reader
+        starts reading rather than after.
+      */}
+      {!language.is_source && (
+        <p className="machine mt-6 rounded-lg border-s-[3px] border-caution bg-caution/8 px-4 py-3 text-sm leading-relaxed">
+          {t('consent.machineNotice')}{' '}
+          <Link href="/handling?original=1" className="underline underline-offset-2">
+            {t('consent.readEnglish')}
+          </Link>
+        </p>
+      )}
 
       <div className="mt-10 space-y-9">
-        {CONSENT_CLAUSES.map((clause) => (
-          <section key={clause.heading}>
-            <h2 className="font-display text-xl sm:text-2xl">{clause.heading}</h2>
-            {clause.body.map((paragraph) => (
+        {CONSENT_CLAUSES.map((clause, index) => (
+          <section key={clause.key}>
+            <h2 className="font-display text-xl sm:text-2xl">
+              {english ? clause.heading : t(`${clause.key}.heading` as never)}
+            </h2>
+            {clause.body.map((paragraph, n) => (
               <p key={paragraph} className="mt-3 leading-relaxed">
-                {paragraph}
+                {english ? paragraph : t(`${clause.key}.p${n + 1}` as never)}
               </p>
             ))}
-            {clause.heading === 'Changing your mind' && (
+            {/* Matched on position, not on the English heading — comparing
+                against 'Changing your mind' stopped being true the moment the
+                heading could be in Hebrew. */}
+            {index === CONSENT_CLAUSES.length - 1 && (
               <p className="mt-3 leading-relaxed">{contactSentence()}</p>
             )}
           </section>
@@ -58,9 +87,7 @@ export default async function HandlingPage() {
       </div>
 
       <p className="mt-12 border-t border-rule pt-6 text-sm leading-relaxed text-muted">
-        The version above is recorded on every record at the moment it is submitted, so a
-        contribution is always tied to the wording that was actually on the screen. Earlier versions
-        are never rewritten.
+        {t('handling.versionNote')}
       </p>
     </article>
   );
