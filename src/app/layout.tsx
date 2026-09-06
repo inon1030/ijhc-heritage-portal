@@ -2,12 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import {
+  Assistant,
+  Frank_Ruhl_Libre,
   IBM_Plex_Mono,
   IBM_Plex_Sans,
-  Noto_Sans_Arabic,
+  Noto_Naskh_Arabic,
   Noto_Sans_Devanagari,
-  Noto_Sans_Hebrew,
   Noto_Sans_Malayalam,
+  Noto_Serif_Devanagari,
+  Noto_Serif_Malayalam,
   Spectral,
 } from 'next/font/google';
 import { Masthead } from '@/components/masthead';
@@ -58,36 +61,93 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
-/*
- * One weight each. These render transcriptions and place names, not headlines,
- * and a second weight would double a download most visitors never make.
+/**
+ * ── the other four scripts, and why they needed rebuilding ──────────────────
+ *
+ * They used to be one face at one weight each: Noto Sans, 400, for every
+ * script the archive is not written in. Measured on the deployed Hebrew page,
+ * that produced two faults that do not exist in English.
+ *
+ * **No hierarchy.** `--font-display` resolved Spectral → *Spectral has no
+ * Hebrew* → Noto Sans Hebrew. `--font-sans` resolved Plex Sans → *no Hebrew* →
+ * Noto Sans Hebrew. Headline and body came out as the same face. The whole
+ * design rests on a serif display against a sans interface, and in four of the
+ * five languages that distinction simply did not exist.
+ *
+ * **No bold.** `document.fonts.check('500 45px "Noto Sans Hebrew"')` returned
+ * false: only 400 was loaded, so every heading weight was **synthesised** — the
+ * browser smearing a regular to fake a medium. Faux bold is the single thing
+ * that most makes type look like a word processor rather than a design.
+ *
+ * So each script now gets what Latin gets: a serif for display, a sans for
+ * interface, and the same three real weights. Chosen per script rather than
+ * taken from one family, because a heritage archive is the wrong place for the
+ * face whose entire design brief was "neutral fallback".
+ *
+ * They still cost nothing on a page that does not use them. next/font emits a
+ * `unicode-range` per subset, so a visitor reading English downloads none of
+ * these — which is what makes it affordable to load eight faces instead of four.
  */
-const notoHebrew = Noto_Sans_Hebrew({
+
+/**
+ * Hebrew display. Frank Ruhl, cut in 1908, is *the* Hebrew book face — the one
+ * designed to sit beside a Latin literary serif on a scholarly page, which is
+ * exactly what Spectral is doing on the other side of this archive.
+ */
+const frankRuhl = Frank_Ruhl_Libre({
   subsets: ['hebrew'],
-  weight: ['400'],
-  variable: '--font-hebrew',
+  weight: ['400', '500', '600'],
+  variable: '--font-hebrew-display',
+  display: 'swap',
+});
+
+/** Hebrew interface. A warm humanist sans, and legible small. */
+const assistant = Assistant({
+  subsets: ['hebrew'],
+  weight: ['400', '500', '600'],
+  variable: '--font-hebrew-sans',
   display: 'swap',
 });
 
 /** Marathi and Hindi. */
-const notoDevanagari = Noto_Sans_Devanagari({
+const serifDevanagari = Noto_Serif_Devanagari({
   subsets: ['devanagari'],
-  weight: ['400'],
-  variable: '--font-devanagari',
+  weight: ['400', '500', '600'],
+  variable: '--font-devanagari-display',
   display: 'swap',
 });
 
-const notoMalayalam = Noto_Sans_Malayalam({
+const sansDevanagari = Noto_Sans_Devanagari({
+  subsets: ['devanagari'],
+  weight: ['400', '500', '600'],
+  variable: '--font-devanagari-sans',
+  display: 'swap',
+});
+
+const serifMalayalam = Noto_Serif_Malayalam({
   subsets: ['malayalam'],
-  weight: ['400'],
-  variable: '--font-malayalam',
+  weight: ['400', '500', '600'],
+  variable: '--font-malayalam-display',
   display: 'swap',
 });
 
-/** Judeo-Arabic, which the Baghdadi material is full of. */
-const notoArabic = Noto_Sans_Arabic({
+const sansMalayalam = Noto_Sans_Malayalam({
+  subsets: ['malayalam'],
+  weight: ['400', '500', '600'],
+  variable: '--font-malayalam-sans',
+  display: 'swap',
+});
+
+/**
+ * Judeo-Arabic, which the Baghdadi material is full of.
+ *
+ * Naskh rather than the sans: naskh is the hand Arabic is *read* in at length,
+ * and everything Arabic on this site is quoted source text — a transcription,
+ * a title on an object — never interface.
+ */
+const naskhArabic = Noto_Naskh_Arabic({
   subsets: ['arabic'],
-  weight: ['400'],
+  weight: ['400', '500', '600'],
   variable: '--font-arabic',
   display: 'swap',
 });
@@ -174,10 +234,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         spectral.variable,
         plexSans.variable,
         plexMono.variable,
-        notoHebrew.variable,
-        notoDevanagari.variable,
-        notoMalayalam.variable,
-        notoArabic.variable,
+        frankRuhl.variable,
+        assistant.variable,
+        serifDevanagari.variable,
+        sansDevanagari.variable,
+        serifMalayalam.variable,
+        sansMalayalam.variable,
+        naskhArabic.variable,
       ].join(' ')}>
       <body className="flex min-h-dvh flex-col antialiased">
         <a

@@ -76,24 +76,46 @@
   --color-caution:     #b45309;
   --color-critical:    #b91c1c;
 
-  --font-display: var(--font-spectral), var(--font-scripts), Georgia, serif;
-  --font-sans:    var(--font-plex-sans), var(--font-scripts), system-ui, sans-serif;
+  /*
+   * ── two stacks, and each one reaches its own faces in every script ────────
+   *
+   * A fallback list is consulted **per character**, not per element, so an
+   * English caption carrying one Hebrew word gets Plex for the caption and the
+   * Hebrew face for the word — no markup, no class, no decision for whoever
+   * writes the component. next/font gives each face a `unicode-range`, so a
+   * page with no Hebrew on it downloads no Hebrew.
+   *
+   * The important part is that the two stacks now diverge all the way down.
+   * They used to share one tail — `--font-scripts` — which meant that in
+   * Hebrew, Hindi, Marathi and Malayalam a heading and a paragraph resolved to
+   * the identical face. The archive's whole typographic idea is a book serif
+   * for the things a person wrote and a humanist sans for the things the
+   * interface says, and in four of the five languages it was not happening at
+   * all.
+   *
+   * Spectral, Plex Sans and Plex Mono are all latin-only by subset. That is
+   * deliberate and it is why the script faces sit behind them rather than
+   * beside them: the Latin face wins for Latin text, and hands over cleanly at
+   * the first character it cannot draw.
+   */
+  --font-display: var(--font-spectral),
+                  var(--font-hebrew-display), var(--font-devanagari-display),
+                  var(--font-malayalam-display), var(--font-arabic),
+                  Georgia, serif;
+
+  --font-sans:    var(--font-plex-sans),
+                  var(--font-hebrew-sans), var(--font-devanagari-sans),
+                  var(--font-malayalam-sans), var(--font-arabic),
+                  system-ui, sans-serif;
 
   /*
-   * The scripts this archive actually holds, appended to every stack.
-   *
-   * A fallback list is consulted per character, not per element, so an English
-   * caption carrying one Hebrew word gets Plex for the caption and Noto Sans
-   * Hebrew for the word — no markup, no class, no decision for whoever writes
-   * the component. next/font gives each of these a unicode-range, so a page
-   * with no Hebrew on it downloads no Hebrew.
-   *
-   * Before this, Spectral was loaded latin-only while its own comment claimed
-   * Hebrew, Marathi and Malayalam coverage, and every transcription the model
-   * returned rendered in whatever the browser had lying around.
+   * Monospace is the archive's mark for "a machine produced or measured this",
+   * and no script here has a monospace worth the download. Where a machine
+   * value is in Hebrew or Malayalam it borrows the interface sans, which keeps
+   * it legible; the tracking and the colour still say what it is.
    */
-  --font-scripts: var(--font-hebrew), var(--font-devanagari),
-                  var(--font-malayalam), var(--font-arabic);
+  --font-scripts-sans: var(--font-hebrew-sans), var(--font-devanagari-sans),
+                       var(--font-malayalam-sans), var(--font-arabic);
   --font-mono:    var(--font-plex-mono), ui-monospace, monospace;
 
   --radius-card: 0.75rem;
@@ -177,6 +199,41 @@
     text-transform: uppercase;
     color: var(--color-muted);
   }
+
+  /*
+   * ── the eyebrow, in a script that has no capitals ─────────────────────────
+   *
+   * Uppercase and tracking are a Latin device. `text-transform: uppercase` is
+   * simply inert in Hebrew, Devanagari and Malayalam — none of them has a
+   * second case — but the letter-spacing is not inert, it is wrong.
+   *
+   * Hebrew is not letterspaced. Devanagari and Malayalam are worse than that:
+   * a syllable is a consonant and its vowel drawn as one cluster, sitting
+   * under a shared headline in Devanagari, and 0.08em prises those apart into
+   * pieces that no longer read as the syllable they are. It is the single most
+   * common way a Latin-designed page announces that nobody looked at it in
+   * these scripts.
+   *
+   * So the tracking is removed everywhere it does not belong, and the size
+   * lifted a step to keep the label as prominent as its Latin counterpart
+   * without it. `:lang()` matches the `lang` on <html>, which is the same
+   * value the catalogue was chosen with.
+   */
+  :is(:lang(he), :lang(hi), :lang(mr), :lang(ml)) .eyebrow {
+    letter-spacing: 0;
+    font-size: 0.875rem;
+  }
+
+  /*
+   * The wordmark is negative-tracked to knit the Latin letters together. In
+   * Hebrew that pulls the letters into each other instead — Hebrew already
+   * sets tight — so it goes back to normal.
+   */
+  :is(:lang(he), :lang(hi), :lang(mr), :lang(ml)) .wordmark {
+    letter-spacing: 0;
+  }
+
+
 
   /*
    * The Center's name set as a wordmark.
@@ -270,6 +327,23 @@
    ========================================================================== */
 
 @layer utilities {
+  /*
+   * Display type is tracked in tight for Latin, where large serif letters open
+   * gaps that have to be closed. No script here behaves that way: Hebrew sets
+   * tight already, and a negative track on Devanagari or Malayalam pulls a
+   * consonant into the vowel drawn around it — the cluster stops being one
+   * shape.
+   *
+   * This lives in `utilities` and not with the rest of the language rules,
+   * because `tracking-tight` is a utility and **layer order beats
+   * specificity**. Written in `components` it lost silently: measured,
+   * `letter-spacing` stayed at -1.125px on the Hebrew headline while every
+   * other language rule had taken.
+   */
+  :is(:lang(he), :lang(hi), :lang(mr), :lang(ml)) :is(h1, h2, h3, .font-display) {
+    letter-spacing: normal;
+  }
+
   [data-reveal] {
     opacity: 0;
     transform: translateY(18px);
@@ -834,7 +908,7 @@
      `--font-mono` already ends in `monospace`, which matches every character,
      so expanding it here would put a generic ahead of the Hebrew face and the
      Hebrew face would never be reached. */
-  font-family: var(--font-plex-mono), var(--font-scripts), ui-monospace, monospace;
+  font-family: var(--font-plex-mono), var(--font-scripts-sans), ui-monospace, monospace;
   line-height: 1.7;
   white-space: pre-wrap;
 }
