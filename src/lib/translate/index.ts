@@ -119,6 +119,42 @@ export async function readTranslation(itemId: string, lang: string): Promise<Ren
 }
 
 /**
+ * The same, for a list — in one query rather than one per row.
+ *
+ * The portal renders every matching record, and the front page asks for a
+ * hundred and forty. Calling `readTranslation` per card would be a hundred and
+ * forty round trips to draw one page, and it is the same table with the same
+ * two predicates each time. RLS still decides what comes back: this runs as the
+ * caller, so a translation of an unpublished record is as invisible as the
+ * record.
+ */
+export async function readTranslations(
+  itemIds: string[],
+  lang: string,
+): Promise<Map<string, Rendered>> {
+  const out = new Map<string, Rendered>();
+  if (!itemIds.length) return out;
+
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from('item_translations')
+    .select('item_id, field, value, source')
+    .in('item_id', itemIds)
+    .eq('lang', lang);
+
+  if (error) throw error;
+
+  for (const row of data ?? []) {
+    const id = row.item_id as string;
+    const entry = out.get(id) ?? { lang, values: {}, machine: false };
+    entry.values[row.field as string] = row.value as string;
+    if (row.source === 'machine') entry.machine = true;
+    out.set(id, entry);
+  }
+  return out;
+}
+
+/**
  * Make the missing translations for one record, and store them.
  *
  * Returns everything the reader needs, cached and fresh together. Safe to call

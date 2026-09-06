@@ -6,13 +6,13 @@ import { TimePassage } from '@/components/time-passage';
 import { COMMUNITY_ORDER } from '@/lib/communities';
 import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
 import { frontDoor, WALL } from '@/lib/items/front-door';
-import { COMMUNITY_LABELS } from '@/lib/types';
+import { getMessages } from '@/lib/i18n';
+import { communityKey } from '@/lib/i18n/labels';
 
-export const metadata: Metadata = {
-  title: 'Indian Jewish Heritage Center',
-  description:
-    'Two thousand years of Bene Israel, Cochin, Baghdadi and Bnei Menashe heritage. Browse the archive, or add something your family kept.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t('home.title'), description: t('home.description') };
+}
 
 /**
  * The front door.
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
  * approving an account — lives in the bar at the top, one hover away.
  */
 export default async function Home() {
-  const [items, counts, total] = await Promise.all([
+  const [items, counts, total, { t }] = await Promise.all([
     /*
      * Enough to fill the wall with a hundred images, asked for once.
      *
@@ -56,6 +56,7 @@ export default async function Home() {
     listPublishedItems({ limit: Math.round(WALL * 1.4) }).catch(() => []),
     getCommunityCounts().catch(() => null),
     countPublishedItems().catch(() => 0),
+    getMessages(),
   ]);
 
   // The wall and the corridor, from one query. See `front-door.ts` for why the
@@ -129,11 +130,11 @@ export default async function Home() {
               className="font-display font-semibold leading-[1.02] tracking-tight text-[var(--color-brand-saffron)]"
               style={{ fontSize: 'clamp(1.35rem, 3.6vw, 2.15rem)' }}
             >
-              Years
+              {t('home.years')}
               <br />
-              of our
+              {t('home.ofOur')}
               <br />
-              Heritage
+              {t('home.heritage')}
             </span>
           </span>
 
@@ -146,7 +147,7 @@ export default async function Home() {
               } as React.CSSProperties
             }
           >
-            Save it Now
+            {t('home.saveItNow')}
           </span>
         </h1>
 
@@ -154,8 +155,7 @@ export default async function Home() {
           className="animate-rise mt-7 max-w-xl leading-relaxed text-ink-2 sm:text-lg"
           style={{ '--reveal-delay': '260ms' } as React.CSSProperties}
         >
-          The Bene Israel, Cochin, Baghdadi and Bnei Menashe communities of India, kept together in
-          one place. Everything here was checked by a person before it was published.
+          {t('home.standfirst')}
         </p>
 
         {/* The two doors. Filled is the one the Center wants taken. */}
@@ -167,7 +167,7 @@ export default async function Home() {
             href="/portal"
             className="group inline-flex h-14 items-center justify-center gap-2.5 rounded-full bg-[var(--color-brand-blue)] px-8 text-lg font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-brand-blue-deep)] hover:shadow-lift"
           >
-            Explore the archive
+            {t('home.explore')}
             <ArrowRight
               size={19}
               aria-hidden
@@ -180,7 +180,7 @@ export default async function Home() {
             className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full border-2 border-[var(--color-brand-saffron)] bg-paper px-8 text-lg font-medium text-ink transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-brand-saffron)]/12 hover:shadow-soft"
           >
             <Upload size={19} aria-hidden />
-            Add something you kept
+            {t('home.contribute')}
           </Link>
         </div>
 
@@ -190,7 +190,7 @@ export default async function Home() {
             style={{ '--reveal-delay': '420ms' } as React.CSSProperties}
           >
             <span className="machine">
-              {total} {total === 1 ? 'record' : 'records'} published
+              {t(total === 1 ? 'home.recordPublished' : 'home.recordsPublished', { count: total })}
             </span>
             {COMMUNITY_ORDER.filter((community) => counts[community] > 0).map((community) => (
               <span key={community} className="inline-flex items-center gap-1.5">
@@ -199,7 +199,7 @@ export default async function Home() {
                   className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: `var(--color-${communityToken(community)})` }}
                 />
-                {COMMUNITY_LABELS[community]} · {counts[community]}
+                {t(communityKey(community))} · {counts[community]}
               </span>
             ))}
           </p>

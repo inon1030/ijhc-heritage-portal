@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { COMMUNITY_COLORS } from '@/lib/communities';
 import { cn } from '@/lib/utils';
-import { COMMUNITY_LABELS, STATUS_LABELS, type Community, type ItemStatus } from '@/lib/types';
+import { STATUS_LABELS, type ItemStatus } from '@/lib/types';
 
 const STATUS_STYLES: Record<ItemStatus, string> = {
   pending: 'bg-accent-wash text-caution ring-accent/25',
@@ -60,22 +60,6 @@ export function RingMark({
   );
 }
 
-/** A community's colour and name. The colour is the only place it appears. */
-export function CommunityMark({ community }: { community: Community | null }) {
-  if (!community) {
-    return <span className="text-muted italic">Community not yet identified</span>;
-  }
-  return (
-    <span className="inline-flex items-center gap-2.5 rounded-full bg-paper-2 py-1.5 pr-4 pl-3 font-medium ring-1 ring-rule">
-      <span
-        aria-hidden
-        className="h-3 w-3 shrink-0 rounded-full ring-2 ring-paper"
-        style={{ backgroundColor: COMMUNITY_COLORS[community], boxShadow: `0 0 0 3.5px ${COMMUNITY_COLORS[community]}22` }}
-      />
-      {COMMUNITY_LABELS[community]}
-    </span>
-  );
-}
 
 /** A labelled fact. `machine` marks values a model produced rather than a person. */
 export function Field({

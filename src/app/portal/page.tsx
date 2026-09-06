@@ -8,12 +8,13 @@ import { StreamSummary } from '@/components/stream-summary';
 import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { CATEGORIES, COMMUNITIES, type Community, type ItemCategory } from '@/lib/types';
+import { getMessages } from '@/lib/i18n';
+import { presentMany } from '@/lib/translate/render';
 
-export const metadata: Metadata = {
-  title: 'Heritage Portal',
-  description:
-    'Search verified records from the Bene Israel, Cochin, Baghdadi and Bnei Menashe communities.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t('portal.title'), description: t('portal.description') };
+}
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -49,11 +50,16 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
    * So the number on the page is counted in the database, and if the list is
    * shorter than the count the page says so rather than quietly showing less.
    */
-  const [items, counts, total] = await Promise.all([
+  const [found, counts, total, { t }] = await Promise.all([
     listPublishedItems({ query, category, community }),
     getCommunityCounts().catch(emptyCommunityCounts),
     countPublishedItems({ query, category, community }),
+    getMessages(),
   ]);
+
+  // The cards carry the reader's language too. One query for the whole page —
+  // see `presentMany`, and why it does not ask for what is missing.
+  const { items } = await presentMany(found);
 
   const filtered = Boolean(query || category || community);
   const truncated = items.length < total;
@@ -62,21 +68,20 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
     <div className="mx-auto max-w-6xl px-6 pt-8 pb-14 sm:pt-12 sm:pb-16">
       {/* The thesis, and the shape of the archive under it. */}
       <header className="mb-8 max-w-3xl sm:mb-10">
-        <p className="eyebrow animate-rise">A digital archive of Indian Jewish life</p>
+        <p className="eyebrow animate-rise">{t('portal.eyebrow')}</p>
         <h1
           className="animate-rise mt-3 font-display text-[2.5rem] leading-[1.06] tracking-tight sm:text-5xl md:text-6xl"
           style={{ '--reveal-delay': '80ms' } as React.CSSProperties}
         >
-          Four streams,
+          {t('portal.headline1')}
           <br />
-          <span className="text-accent-strong">one river</span>
+          <span className="text-accent-strong">{t('portal.headline2')}</span>
         </h1>
         <p
           className="animate-rise mt-5 leading-relaxed text-muted sm:text-lg"
           style={{ '--reveal-delay': '160ms' } as React.CSSProperties}
         >
-          Records from the Bene Israel, Cochin, Baghdadi and Bnei Menashe communities. Every
-          description here was read and checked by a person before it was published.
+          {t('portal.standfirst')}
         </p>
       </header>
 
@@ -91,8 +96,16 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
       </Reveal>
 
       <p className="eyebrow mb-5" aria-live="polite">
-        {total} {total === 1 ? 'record' : 'records'}
-        {filtered ? ' matching' : ' published'}
+        {t(
+          filtered
+            ? total === 1
+              ? 'portal.countMatchingOne'
+              : 'portal.countMatching'
+            : total === 1
+              ? 'portal.countPublishedOne'
+              : 'portal.countPublished',
+          { count: total },
+        )}
       </p>
 
       {/* A ceiling the platform imposes, not the archive. If it is ever
@@ -100,16 +113,16 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
           worse than a list that admits where it stopped. */}
       {truncated && (
         <p className="machine mb-5 text-sm text-caution">
-          Showing the first {items.length}. Narrow the search to see the rest.
+          {t('portal.truncated', { count: items.length })}
         </p>
       )}
 
       {items.length === 0 ? (
         <Reveal>
           <EmptyState
-            title="Nothing matches that yet"
-            body="Try a broader search, or clear the filters. If the archive is new, the first records appear here once a volunteer has reviewed them."
-            action={{ href: '/upload', label: 'Contribute an item' }}
+            title={t('portal.emptyTitle')}
+            body={t('portal.emptyBody')}
+            action={{ href: '/upload', label: t('footer.contribute') }}
           />
         </Reveal>
       ) : view === 'grid' ? (

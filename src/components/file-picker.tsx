@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { FileUp, Image as ImageIcon, Music, X } from 'lucide-react';
 import { Lightbox } from '@/components/lightbox';
 import { MAX_FILE_BYTES, ALLOWED_MIME_TYPES, fileKind, validateFile } from '@/lib/files/validate';
+import { useMessages } from '@/lib/i18n/provider';
 import { cn, formatBytes } from '@/lib/utils';
 
 /**
@@ -45,6 +46,7 @@ export function FilePicker({
   onChange: (files: PickedFile[]) => void;
   disabled?: boolean;
 }) {
+  const t = useMessages();
   const inputId = useId();
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -196,7 +198,7 @@ export function FilePicker({
         >
           <FileUp className="mx-auto text-muted" size={22} aria-hidden />
           <span className="mt-3 block font-medium">
-            {files.length > 0 ? 'Add more files' : 'Choose files, drag them here, or paste'}
+            {files.length > 0 ? t('upload.action.addMore') : t('upload.action.choose')}
           </span>
           <span className="mt-1 block text-sm text-muted">
             Images, PDFs, audio and video. Up to {formatBytes(MAX_FILE_BYTES)} each.

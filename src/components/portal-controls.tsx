@@ -4,8 +4,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { LayoutGrid, List, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CATEGORIES, CATEGORY_LABELS, COMMUNITIES, COMMUNITY_LABELS } from '@/lib/types';
+import { CATEGORIES, COMMUNITIES } from '@/lib/types';
 import { COMMUNITY_COLORS } from '@/lib/communities';
+import { useMessages } from '@/lib/i18n/provider';
+import { categoryKey, communityKey } from '@/lib/i18n/labels';
 
 /**
  * Filters live in the URL, so a search is a link: shareable, bookmarkable, and
@@ -39,6 +41,7 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
+  const t = useMessages();
   const hasFilters = Boolean(category || community || params.get('q'));
 
   return (
@@ -54,8 +57,8 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search titles, descriptions, provenance, keywords"
-            aria-label="Search the archive"
+            placeholder={t('controls.searchTitles')}
+            aria-label={t('controls.search')}
             className="h-14 w-full rounded-full card bg-paper-2/60 pr-4 pl-12 placeholder:text-muted/70 focus:border-accent-strong focus:bg-paper focus:outline-none"
           />
         </div>
@@ -63,19 +66,29 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
         <div
           className="flex gap-1 rounded-full card bg-paper-2/60 p-1"
           role="group"
-          aria-label="Layout"
+          aria-label={t('controls.layout')}
         >
-          <ViewToggle current={view} target="grid" onSelect={() => apply({ view: null })}>
+          <ViewToggle
+            current={view}
+            target="grid"
+            label={t('controls.viewNamed', { view: t('controls.grid') })}
+            onSelect={() => apply({ view: null })}
+          >
             <LayoutGrid size={18} />
           </ViewToggle>
-          <ViewToggle current={view} target="list" onSelect={() => apply({ view: 'list' })}>
+          <ViewToggle
+            current={view}
+            target="list"
+            label={t('controls.viewNamed', { view: t('controls.list') })}
+            onSelect={() => apply({ view: 'list' })}
+          >
             <List size={18} />
           </ViewToggle>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="eyebrow mr-1 w-full sm:w-auto">Community</span>
+        <span className="eyebrow mr-1 w-full sm:w-auto">{t('controls.community')}</span>
         {COMMUNITIES.map((c) => (
           <Chip
             key={c}
@@ -83,14 +96,14 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
             color={COMMUNITY_COLORS[c]}
             onClick={() => apply({ community: community === c ? null : c })}
           >
-            {COMMUNITY_LABELS[c]}
+            {t(communityKey(c))}
           </Chip>
         ))}
 
-        <span className="eyebrow mr-1 w-full sm:ml-4 sm:w-auto">Type</span>
+        <span className="eyebrow mr-1 w-full sm:ml-4 sm:w-auto">{t('controls.type')}</span>
         {CATEGORIES.map((c) => (
           <Chip key={c} active={category === c} onClick={() => apply({ category: category === c ? null : c })}>
-            {CATEGORY_LABELS[c]}
+            {t(categoryKey(c))}
           </Chip>
         ))}
 
@@ -102,11 +115,11 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
             }}
             className="ml-2 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-muted transition-colors hover:bg-paper-2 hover:text-critical"
           >
-            <X size={14} /> Clear all
+            <X size={14} /> {t('controls.clearAll')}
           </button>
         )}
 
-        {pending && <span className="eyebrow ml-auto">Updating…</span>}
+        {pending && <span className="eyebrow ml-auto">{t('controls.updating')}</span>}
       </div>
     </div>
   );
@@ -150,11 +163,15 @@ function Chip({
 function ViewToggle({
   current,
   target,
+  label,
   onSelect,
   children,
 }: {
   current: string;
   target: string;
+  /** Already translated by the caller — this is not a place to build a
+      sentence out of a noun and the word "view". */
+  label: string;
   onSelect: () => void;
   children: React.ReactNode;
 }) {
@@ -163,7 +180,7 @@ function ViewToggle({
     <button
       onClick={onSelect}
       aria-pressed={active}
-      aria-label={`${target} view`}
+      aria-label={label}
       className={cn(
         'flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200',
         active ? 'bg-ink text-paper shadow-soft' : 'text-muted hover:bg-paper-3 hover:text-ink',

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Link2, Loader2, Play, X } from 'lucide-react';
 import { cn, formatBytes } from '@/lib/utils';
+import { useMessages } from '@/lib/i18n/provider';
 
 /**
  * Contributing an address instead of a file.
@@ -52,6 +53,7 @@ export function LinkInput({
   onClear: () => void;
   disabled?: boolean;
 }) {
+  const t = useMessages();
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export function LinkInput({
       onCapture(body.data as CapturedLink);
       setUrl('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'That page could not be read.');
+      setError(e instanceof Error ? e.message : t('upload.error.page'));
     } finally {
       setBusy(false);
     }
@@ -91,7 +93,7 @@ export function LinkInput({
           className="absolute top-3 right-3 rounded-full p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
         >
           <X size={16} aria-hidden />
-          <span className="sr-only">Remove this link</span>
+          <span className="sr-only">{t('upload.action.removeLink')}</span>
         </button>
 
         <p className="eyebrow mb-1.5 flex items-center gap-1.5">
@@ -109,7 +111,7 @@ export function LinkInput({
               key={file.path}
               className="rounded-full border border-rule bg-paper px-3 py-1 text-sm text-muted"
             >
-              {file.mimeType.startsWith('image/') ? 'Lead image' : 'Captured text'} ·{' '}
+              {file.mimeType.startsWith('image/') ? t('upload.leadImage') : t('upload.capturedText')} ·{' '}
               {formatBytes(file.byteSize)}
             </li>
           ))}
@@ -143,7 +145,7 @@ export function LinkInput({
             }
           }}
           disabled={disabled || busy}
-          placeholder="https://example.org/an-article"
+          placeholder={t('upload.linkPlaceholder')}
           className="h-13 flex-1 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
         />
         <button
@@ -156,7 +158,7 @@ export function LinkInput({
           )}
         >
           {busy ? <Loader2 size={17} className="animate-spin" /> : <Link2 size={17} />}
-          {busy ? 'Reading…' : 'Read the page'}
+          {busy ? t('upload.action.readingPage') : t('upload.action.readPage')}
         </button>
       </div>
 

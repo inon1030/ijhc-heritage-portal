@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Check, Languages } from 'lucide-react';
+import { useMessages } from '@/lib/i18n/provider';
 
 /**
  * The reader's choice of language.
@@ -17,10 +18,11 @@ import { Check, Languages } from 'lucide-react';
  * the page's — which is precisely the tofu the archive just finished fixing.
  * These are buttons in the document, drawn with the Noto faces the site loads.
  *
- * **It does not translate the interface.** It asks for the *records* in a
- * language. The interface stays English (ADR-009); a reader wanting a Hebrew
- * catalogue entry is not the same request as a reader wanting a Hebrew Submit
- * button, and the archive can do the first honestly today.
+ * **It changes the whole archive, not one panel.** Since decision 25 it moves
+ * the interface and the records together: one cookie, read on the server by
+ * both `getMessages` and `present`. There is no state in which the menu is in
+ * one language and the record under it is in another — which was the reason
+ * this used to say it changed only the records.
  *
  * **It is not in the URL.** A record's address is permanent — it is cited, it is
  * linked, and the receipt a contributor keeps points at one — so the language
@@ -41,6 +43,7 @@ export function LanguagePicker({
   languages: PickableLanguage[];
   current: string;
 }) {
+  const t = useMessages();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -68,7 +71,7 @@ export function LanguagePicker({
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Reading in ${active.label_en}. Choose a language.`}
+        aria-label={t('language.reading', { language: active.label_en })}
         onClick={() => setOpen((v) => !v)}
         className="flex h-8 items-center gap-1.5 rounded-full border border-rule px-2.5 text-muted transition-colors hover:border-accent hover:text-ink"
       >
@@ -82,7 +85,7 @@ export function LanguagePicker({
           className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-xl border border-rule bg-paper shadow-lift"
         >
           <p className="border-b border-rule px-4 py-2.5 text-xs leading-snug text-muted">
-            Read the records in
+            {t('language.prompt')}
           </p>
           {languages.map((language) => {
             const chosen = language.code === active.code;

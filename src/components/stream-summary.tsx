@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { COMMUNITY_COLORS, FOUNDING_STREAMS } from '@/lib/communities';
 import { RingMark } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
-import { COMMUNITY_LABELS, type Community } from '@/lib/types';
+import { type Community } from '@/lib/types';
+import { getMessages } from '@/lib/i18n';
+import { communityKey } from '@/lib/i18n/labels';
 
 /**
  * The four streams, as four counts you can click.
@@ -16,13 +18,14 @@ import { COMMUNITY_LABELS, type Community } from '@/lib/types';
  * one of the four the Center names, so it belongs in the filters rather than in
  * the sentence.
  */
-export function StreamSummary({
+export async function StreamSummary({
   counts,
   active,
 }: {
   counts: Record<Community, number>;
   active?: Community;
 }) {
+  const { t } = await getMessages();
   const total = FOUNDING_STREAMS.reduce((sum, c) => sum + (counts[c] ?? 0), 0);
 
   return (
@@ -52,7 +55,7 @@ export function StreamSummary({
               </RingMark>
 
               <span className="font-display text-lg leading-tight">
-                {COMMUNITY_LABELS[community]}
+                {t(communityKey(community))}
               </span>
 
               {/*
@@ -67,7 +70,7 @@ export function StreamSummary({
                   the filters rather than in the sentence.
               */}
               <span className="eyebrow">
-                {total === 0 ? 'none yet' : `${share}% of the four streams`}
+                {total === 0 ? t('streams.noneYet') : t('streams.share', { share })}
               </span>
             </Link>
           </Reveal>

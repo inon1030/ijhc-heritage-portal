@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useMessages } from '@/lib/i18n/provider';
 
 /**
  * The masthead, folded away until you want it.
@@ -67,6 +68,7 @@ export function MastheadShell({
   language: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const t = useMessages();
   const [pinned, setPinned] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -111,7 +113,7 @@ export function MastheadShell({
         type="button"
         aria-expanded={open}
         aria-controls="masthead-bar"
-        aria-label={open ? 'Close the menu' : 'Open the menu'}
+        aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
         onClick={() => setPinned((v) => !v)}
         className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9 sm:pl-[15rem]"
       >
@@ -129,7 +131,7 @@ export function MastheadShell({
             open ? 'pointer-events-none translate-x-2 opacity-0' : 'opacity-100',
           ].join(' ')}
         >
-          <span className="eyebrow">menu</span>
+          <span className="eyebrow">{t('nav.menu')}</span>
           <ChevronDown size={16} />
         </span>
       </button>

@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { FilePreview } from '@/components/file-preview';
 import { COMMUNITY_COLORS } from '@/lib/communities';
-import { categoryLabel, COMMUNITY_LABELS, type Item, type ItemFile } from '@/lib/types';
+import { type Item, type ItemFile } from '@/lib/types';
+import { getMessages } from '@/lib/i18n';
+import { categoryKey, communityKey } from '@/lib/i18n/labels';
 
 /**
  * A record, as a card.
@@ -11,7 +13,8 @@ import { categoryLabel, COMMUNITY_LABELS, type Item, type ItemFile } from '@/lib
  * hover — the one moving part, because the archive's own idea is that every
  * record belongs to a stream, and a card is where that is worth repeating.
  */
-export function ItemCard({ item }: { item: Item & { file: ItemFile | null } }) {
+export async function ItemCard({ item }: { item: Item & { file: ItemFile | null } }) {
+  const { t } = await getMessages();
   return (
     <Link
       href={`/portal/${item.id}`}
@@ -39,7 +42,7 @@ export function ItemCard({ item }: { item: Item & { file: ItemFile | null } }) {
       </div>
 
       <div className="space-y-2 p-5">
-        <p className="eyebrow">{categoryLabel(item.category)}</p>
+        <p className="eyebrow">{t(categoryKey(item.category))}</p>
         <h3
           dir="auto"
           className="font-display text-xl leading-snug transition-colors group-hover:text-accent"
@@ -59,7 +62,7 @@ export function ItemCard({ item }: { item: Item & { file: ItemFile | null } }) {
               style={{ backgroundColor: COMMUNITY_COLORS[item.community] }}
             />
           )}
-          {item.community ? COMMUNITY_LABELS[item.community] : 'Community not identified'}
+          {item.community ? t(communityKey(item.community)) : t('portal.communityUnknown')}
           {item.source ? ` · ${item.source}` : ''}
         </p>
       </div>
@@ -67,7 +70,8 @@ export function ItemCard({ item }: { item: Item & { file: ItemFile | null } }) {
   );
 }
 
-export function ItemRow({ item }: { item: Item & { file: ItemFile | null } }) {
+export async function ItemRow({ item }: { item: Item & { file: ItemFile | null } }) {
+  const { t } = await getMessages();
   return (
     <Link
       href={`/portal/${item.id}`}
@@ -85,7 +89,7 @@ export function ItemRow({ item }: { item: Item & { file: ItemFile | null } }) {
       </div>
 
       <div className="min-w-0 flex-1 space-y-1 self-center pr-2">
-        <p className="eyebrow">{categoryLabel(item.category)}</p>
+        <p className="eyebrow">{t(categoryKey(item.category))}</p>
         <h3 className="truncate font-display text-xl transition-colors group-hover:text-accent">
           {item.title}
         </h3>

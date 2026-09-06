@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMessages } from '@/lib/i18n/provider';
 
 /**
  * Asks for a translation that does not exist yet, then gets out of the way.
@@ -45,6 +46,7 @@ export function TranslationRequest({
   label: string;
 }) {
   const router = useRouter();
+  const t = useMessages();
   const [state, setState] = useState<'working' | 'unavailable' | 'done'>('working');
   const inflight = useRef<Promise<boolean> | null>(null);
 
@@ -81,8 +83,8 @@ export function TranslationRequest({
   return (
     <p className="mt-4 text-sm text-muted" aria-live="polite">
       {state === 'working'
-        ? `Translating into ${label}…`
-        : `Not available in ${label} yet. Showing the record as it was written.`}
+        ? t('translation.inProgress', { language: label })
+        : t('translation.unavailable', { language: label })}
     </p>
   );
 }

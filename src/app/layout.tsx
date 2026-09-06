@@ -11,6 +11,8 @@ import {
   Spectral,
 } from 'next/font/google';
 import { Masthead } from '@/components/masthead';
+import { getMessages } from '@/lib/i18n';
+import { MessagesProvider } from '@/lib/i18n/provider';
 import './globals.css';
 
 /**
@@ -90,8 +92,14 @@ const notoArabic = Noto_Sans_Arabic({
   display: 'swap',
 });
 
-const DESCRIPTION =
-  'A digital archive of the Bene Israel, Cochin, Baghdadi and Bnei Menashe communities. Four streams, one river.';
+/**
+ * The share card and the page title, in the reader's language.
+ *
+ * `generateMetadata` runs per request and can read the cookie, so the tab title
+ * and the card a link produces in WhatsApp are in the same language as the page
+ * — which is the half of "translate the whole site" that is invisible until
+ * somebody shares a link.
+ */
 
 /**
  * Built per request rather than fixed at build time.
@@ -106,6 +114,7 @@ const DESCRIPTION =
  * should be canonical no matter which host answered.
  */
 export async function generateMetadata(): Promise<Metadata> {
+  const { t, language } = await getMessages();
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
   let base = configured || 'http://localhost:3000';
@@ -121,15 +130,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(base),
     title: {
-      default: 'Indian Jewish Heritage Center',
-      template: '%s · Indian Jewish Heritage Center',
+      default: t('site.name'),
+      template: `%s · ${t('site.name')}`,
     },
-    description: DESCRIPTION,
+    description: t('site.description'),
     openGraph: {
-      title: 'Indian Jewish Heritage Center',
-      description: DESCRIPTION,
-      siteName: 'Indian Jewish Heritage Center',
-      locale: 'en',
+      title: t('site.name'),
+      description: t('site.description'),
+      siteName: t('site.name'),
+      locale: language.code,
       type: 'website',
     },
     twitter: { card: 'summary_large_image' },
@@ -143,9 +152,25 @@ export const viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * `lang` and `dir` are set here and nowhere else.
+ *
+ * `dir="rtl"` on the root is what makes Hebrew work — not a stylesheet. It
+ * flips the whole logical box model at once: `ms-`/`me-`, `start`/`end`,
+ * text alignment, list markers, scrollbar side. Setting it per component, which
+ * is the tempting shortcut, produces a page where half the margins have
+ * mirrored and half have not.
+ *
+ * `lang` matters as much and is easier to forget: it tells a screen reader
+ * which voice to read in, and the browser which hyphenation and font fallback
+ * to apply. A Hebrew page announced by an English voice is unusable in exactly
+ * the way that never shows up in a screenshot.
+ */
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { t, language, dir, catalogue } = await getMessages();
+
   return (
-    <html lang="en" className={[
+    <html lang={language.code} dir={dir} className={[
         spectral.variable,
         plexSans.variable,
         plexMono.variable,
@@ -159,41 +184,40 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:font-medium focus:text-paper focus:shadow-lift"
         >
-          Skip to content
+          {t('site.skipToContent')}
         </a>
-        <Masthead />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
+        <MessagesProvider catalogue={catalogue}>
+          <Masthead />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
         <footer className="mt-24 border-t border-rule bg-paper-2/70">
           <div className="mx-auto max-w-6xl px-6 py-12">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="font-display text-xl">Indian Jewish Heritage Center</p>
-                <p className="mt-1 text-muted">
-                  with the Cochin Jewish Heritage Center · preserving two thousand years
-                </p>
+                <p className="font-display text-xl">{t('site.name')}</p>
+                <p className="mt-1 text-muted">{t('footer.partner')}</p>
               </div>
 
-              <nav aria-label="Footer" className="flex flex-col sm:items-end">
+              <nav aria-label={t('footer.label')} className="flex flex-col sm:items-end">
                 <Link href="/portal" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  Browse the archive
+                  {t('footer.browse')}
                 </Link>
                 <Link href="/upload" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  Contribute an item
+                  {t('footer.contribute')}
                 </Link>
                 <Link href="/handling" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  How your contribution is handled
+                  {t('footer.handling')}
                 </Link>
               </nav>
             </div>
 
             <p className="mt-10 border-t border-rule pt-6 text-sm leading-relaxed text-muted">
-              Every description in this archive was written or checked by a person. Machine
-              suggestions are marked as such and are never published unread.
+              {t('footer.promise')}
             </p>
           </div>
         </footer>
+        </MessagesProvider>
       </body>
     </html>
   );

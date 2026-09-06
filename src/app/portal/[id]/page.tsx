@@ -4,13 +4,15 @@ import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import { FilePreview } from '@/components/file-preview';
 import { TranslationRequest } from '@/components/translation-request';
-import { CommunityMark, Field } from '@/components/primitives';
+import { CommunityMark } from '@/components/community-mark';
+import { Field } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
 import { FIELD_GROUPS, GROUP_ORDER, fieldDef } from '@/lib/fields/registry';
 import { getPublishedItem } from '@/lib/items/queries';
 import { present } from '@/lib/translate/render';
 import { listItemFamilies } from '@/lib/vocabulary/queries';
-import { categoryLabel } from '@/lib/types';
+import { getMessages } from '@/lib/i18n';
+import { categoryKey } from '@/lib/i18n/labels';
 import { formatBytes, formatDate, formatDuration } from '@/lib/utils';
 
 type Params = Promise<{ id: string }>;
@@ -19,7 +21,10 @@ type Search = Promise<{ original?: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
   const item = await getPublishedItem(id).catch(() => null);
-  if (!item) return { title: 'Record not found' };
+  if (!item) {
+    const { t } = await getMessages();
+    return { title: t('record.notFound') };
+  }
   return {
     title: item.title,
     description: item.description ?? undefined,
@@ -56,6 +61,7 @@ export default async function RecordPage({
    */
   const { original } = await searchParams;
   const reading = await present(item, { original: original === '1' });
+  const { t } = await getMessages();
   const shown = reading.item;
 
   return (
@@ -64,7 +70,7 @@ export default async function RecordPage({
         href="/portal"
         className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-all duration-200 hover:-translate-x-0.5 hover:border-accent-strong hover:text-ink"
       >
-        <ArrowLeft size={16} /> Back to the portal
+        <ArrowLeft size={16} /> {t('record.backToPortal')}
       </Link>
 
       <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
@@ -91,7 +97,7 @@ export default async function RecordPage({
         </div>
 
         <div>
-          <p className="eyebrow animate-rise">{categoryLabel(item.category)}</p>
+          <p className="eyebrow animate-rise">{t(categoryKey(item.category))}</p>
           <h1
             className="animate-rise mt-3 font-display text-3xl leading-tight sm:text-4xl"
             dir="auto"
@@ -116,24 +122,24 @@ export default async function RecordPage({
           */}
           {reading.translated && (
             <p className="machine mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-              <span>Translated into {reading.language.label_en} by machine</span>
+              <span>{t('translation.byMachine', { language: reading.language.label_en })}</span>
               <Link
                 href={`/portal/${item.id}?original=1`}
                 className="text-accent underline underline-offset-2 hover:text-accent-strong"
               >
-                Show the record as it was written
+                {t('translation.showOriginal')}
               </Link>
             </p>
           )}
 
           {reading.showingOriginal && (
             <p className="machine mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-              <span>As it was written</span>
+              <span>{t('translation.original')}</span>
               <Link
                 href={`/portal/${item.id}`}
                 className="text-accent underline underline-offset-2 hover:text-accent-strong"
               >
-                Read it in {reading.language.label_en}
+                {t('record.readItIn', { language: reading.language.label_en })}
               </Link>
             </p>
           )}
@@ -180,14 +186,14 @@ export default async function RecordPage({
 
           <Reveal className="mt-9">
           <dl className="card grid grid-cols-2 gap-x-6 gap-y-6 bg-paper-2/50 p-6">
-            <Field label="Provenance">
-              {shown.provenance ?? <span className="text-muted italic">Not recorded</span>}
+            <Field label={t('record.provenance')}>
+              {shown.provenance ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
             </Field>
-            <Field label="Contributor">
-              {item.source ?? <span className="text-muted italic">Not recorded</span>}
+            <Field label={t('record.contributor')}>
+              {item.source ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
             </Field>
             {item.source_url && (
-              <Field label="Captured from" machine>
+              <Field label={t('record.capturedFrom')} machine>
                 {/* rel="noreferrer" and no target: an archive citation is a
                     citation, and it should not hand the source a referrer
                     header naming which record links to it. */}
@@ -200,31 +206,31 @@ export default async function RecordPage({
                 </a>
               </Field>
             )}
-            <Field label="Period">
-              {item.period ?? <span className="text-muted italic">Not recorded</span>}
+            <Field label={t('record.period')}>
+              {item.period ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
             </Field>
-            <Field label="Place of origin">
-              {item.origin_place ?? <span className="text-muted italic">Not recorded</span>}
+            <Field label={t('record.placeOfOrigin')}>
+              {item.origin_place ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
             </Field>
-            <Field label="Language">
-              {item.language ?? <span className="text-muted italic">Not recorded</span>}
+            <Field label={t('record.language')}>
+              {item.language ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
             </Field>
-            <Field label="Added" machine>
+            <Field label={t('record.added')} machine>
               {formatDate(item.created_at)}
             </Field>
 
             {file && (
               <>
-                <Field label="File" machine>
+                <Field label={t('record.file')} machine>
                   {file.mime_type} · {formatBytes(file.byte_size)}
                 </Field>
-                <Field label="Dimensions" machine>
+                <Field label={t('record.dimensions')} machine>
                   {file.width && file.height ? (
                     `${file.width} × ${file.height} px`
                   ) : file.duration_ms ? (
                     formatDuration(file.duration_ms)
                   ) : (
-                    <span className="text-muted">Not measured</span>
+                    <span className="text-muted">{t('record.notMeasured')}</span>
                   )}
                 </Field>
               </>
@@ -287,8 +293,7 @@ export default async function RecordPage({
           )}
 
           <p className="mt-8 text-xs leading-relaxed text-muted">
-            Values in monospace were measured from the file itself. Everything else was written or
-            confirmed by a person before this record was published.
+            {t('record.measuredNote')}
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { StreamRule } from '@/components/stream-rule';
 import { countReviewQueue, getCommunityCounts } from '@/lib/items/queries';
 import { getCurrentProfile } from '@/lib/supabase/server';
 import { listLanguages, requestedLanguage } from '@/lib/translate/languages';
+import { getMessages } from '@/lib/i18n';
 
 /**
  * The masthead, folded away behind a strip. `MastheadShell` handles the
@@ -20,12 +21,14 @@ import { listLanguages, requestedLanguage } from '@/lib/translate/languages';
 export async function Masthead() {
   // Renders above every route, including the sign-in page, so it must survive
   // the database being unreachable or not yet configured.
-  const [profile, counts, languages, reading] = await Promise.all([
+  const [profile, counts, languages, reading, m] = await Promise.all([
     getCurrentProfile().catch(() => null),
     getCommunityCounts().catch(emptyCommunityCounts),
     listLanguages().catch(() => []),
     requestedLanguage().catch(() => null),
+    getMessages(),
   ]);
+  const { t } = m;
 
   // A pending account has a profile and no rights. Counting its queue would
   // return zero anyway — RLS sees to that — but asking at all would imply it
@@ -41,10 +44,8 @@ export async function Masthead() {
           className="flex items-center gap-2.5 rounded-lg transition-opacity duration-200 hover:opacity-70"
         >
           <Logo variant="mark" size={22} />
-          <span className="wordmark hidden text-[0.95rem] sm:inline">
-            Indian Jewish Heritage Center
-          </span>
-          <span className="wordmark text-base sm:hidden">IJHC</span>
+          <span className="wordmark hidden text-[0.95rem] sm:inline">{t('site.name')}</span>
+          <span className="wordmark text-base sm:hidden">{t('site.short')}</span>
         </Link>
       }
       rule={<StreamRule counts={counts} />}
@@ -62,12 +63,10 @@ export async function Masthead() {
               {/* The lockup carries the name inside the artwork, so the name is
                   set only for screen readers. */}
               <Logo variant="lockup" size={58} />
-              <span className="sr-only">Indian Jewish Heritage Center — home</span>
+              <span className="sr-only">{t('site.home')}</span>
               <span className="hidden border-l border-rule pl-4 lg:block">
-                <span className="wordmark block text-lg leading-tight">
-                  Indian Jewish Heritage Center
-                </span>
-                <span className="eyebrow block">Four Streams of History</span>
+                <span className="wordmark block text-lg leading-tight">{t('site.name')}</span>
+                <span className="eyebrow block">{t('masthead.fourStreams')}</span>
               </span>
             </>
           ) : (
@@ -77,10 +76,8 @@ export async function Masthead() {
                 className="text-turquoise transition-colors group-hover:text-accent-strong"
               />
               <span>
-                <span className="wordmark block text-[1.35rem] leading-tight">
-                  Indian Jewish Heritage Center
-                </span>
-                <span className="eyebrow block">Digital Archive · Four Streams of History</span>
+                <span className="wordmark block text-[1.35rem] leading-tight">{t('site.name')}</span>
+                <span className="eyebrow block">{t('masthead.digitalArchive')}</span>
               </span>
             </>
           )}

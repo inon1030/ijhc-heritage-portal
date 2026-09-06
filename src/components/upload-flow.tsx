@@ -10,6 +10,7 @@ import { FilePicker, type PickedFile } from '@/components/file-picker';
 import { LinkInput, type CapturedLink } from '@/components/link-input';
 import { PreReview, type Draft } from '@/components/pre-review';
 import { CONSENT_VERSION } from '@/lib/consent';
+import { useMessages } from '@/lib/i18n/provider';
 import { mergeSuggestions } from '@/lib/fields/suggestions';
 import { measureDuration } from '@/lib/files/measure';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
@@ -71,6 +72,7 @@ type Grouping = 'one' | 'separate';
 type Phase = 'describe' | 'analysing' | 'reviewing' | 'submitting' | 'done';
 
 export function UploadFlow() {
+  const t = useMessages();
   const [files, setFiles] = useState<PickedFile[]>([]);
   const [captured, setCaptured] = useState<CapturedLink | null>(null);
   const [grouping, setGrouping] = useState<Grouping>('one');
@@ -290,7 +292,7 @@ export function UploadFlow() {
       setShowPreReview(true);
       setPhase('reviewing');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+      setError(e instanceof Error ? e.message : t('upload.error.generic'));
       setPhase('describe');
     } finally {
       setProgress(null);
@@ -300,7 +302,7 @@ export function UploadFlow() {
   async function submit() {
     if (!analysed.length) return;
     if (!agreed) {
-      setError('Tick the box above to confirm you may share this material.');
+      setError(t('upload.error.consent'));
       return;
     }
     setError(null);
@@ -383,7 +385,7 @@ export function UploadFlow() {
       setCreated(made);
       setPhase('done');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'The submission did not save. Try again.');
+      setError(e instanceof Error ? e.message : t('upload.error.save'));
       setPhase('reviewing');
     }
   }
@@ -395,7 +397,9 @@ export function UploadFlow() {
           <Check size={28} strokeWidth={2.2} />
         </RingMark>
         <h2 className="mt-4 font-display text-xl sm:text-2xl">
-          {created.length > 1 ? `${created.length} submissions received` : 'Submitted for review'}
+          {created.length > 1
+            ? t('upload.done.many', { count: created.length })
+            : t('upload.done.one')}
         </h2>
         <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted">
           A volunteer checks the description and the suggestions against the original. It appears in
@@ -425,7 +429,7 @@ export function UploadFlow() {
            */
           <div className="mt-7 border-t border-rule pt-6 text-left">
             <p className="font-medium">
-              {created.length > 1 ? 'Keep these links' : 'Keep this link'}
+              {created.length > 1 ? t('upload.done.keepLinks') : t('upload.done.keepLink')}
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               {created.length > 1 ? 'They show you' : 'It shows you'} what happens next —
@@ -455,11 +459,11 @@ export function UploadFlow() {
     <div className="space-y-10 sm:space-y-14">
       <Step
         number="01"
-        title={captured ? 'The page the archive read' : 'Add your files'}
+        title={captured ? t('upload.step.filesRead') : t('upload.step.files')}
         hint={
           captured
             ? 'A copy of the text and the picture is kept here, so the record survives the page coming down.'
-            : 'Choose them, drag them in, or paste an image straight from your clipboard.'
+            : t('upload.step.filesHint')
         }
         done={hasSomething}
       >
@@ -470,7 +474,7 @@ export function UploadFlow() {
 
         {files.length === 0 && (
           <div className={captured ? undefined : 'mt-6 border-t border-rule pt-6'}>
-            {!captured && <p className="eyebrow mb-2.5">Or give it an address</p>}
+            {!captured && <p className="eyebrow mb-2.5">{t('upload.step.orAddress')}</p>}
             <LinkInput
               captured={captured}
               onCapture={setCaptured}
@@ -494,11 +498,11 @@ export function UploadFlow() {
       {many && !captured && (
         <Step
           number="02"
-          title="Are these one item, or several?"
+          title={t('upload.step.grouping')}
           hint={
             analysed.length > 0
-              ? 'Settled — the archive has read them this way. Start again to change it.'
-              : 'Only you can tell.'
+              ? t('upload.step.groupingSettled')
+              : t('upload.step.groupingOpen')
           }
           done
         >
@@ -507,14 +511,14 @@ export function UploadFlow() {
               active={grouping === 'one'}
               onClick={() => setGrouping('one')}
               disabled={busy || analysed.length > 0}
-              label="Pages of one item"
+              label={t('upload.step.onePages')}
               detail={`One record with ${files.length} files — a document scanned page by page, or one object photographed from several sides.`}
             />
             <GroupingChoice
               active={grouping === 'separate'}
               onClick={() => setGrouping('separate')}
               disabled={busy || analysed.length > 0}
-              label="Separate items"
+              label={t('upload.step.separate')}
               detail={`${files.length} records, each reviewed on its own — unrelated photographs or documents from the same collection.`}
             />
           </div>
@@ -523,45 +527,45 @@ export function UploadFlow() {
 
       <Step
         number={many ? '03' : '02'}
-        title="Tell us what you know"
+        title={t('upload.step.tell')}
         hint="Whatever you have. Blanks are fine — a volunteer fills the rest."
         done={agreed}
       >
         <div className="grid gap-5 sm:grid-cols-2">
           {needsTitle && (
             <label className="block">
-              <span className="eyebrow mb-1.5 block">Title</span>
+              <span className="eyebrow mb-1.5 block">{t('upload.field.title')}</span>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={200}
                 disabled={busy}
-                placeholder="Silver Torah pointer, Cochin"
+                placeholder={t('upload.field.titlePlaceholder')}
                 className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
               />
             </label>
           )}
 
           <label className="block">
-            <span className="eyebrow mb-1.5 block">Where it came from</span>
+            <span className="eyebrow mb-1.5 block">{t('upload.field.origin')}</span>
             <input
               value={source}
               onChange={(e) => setSource(e.target.value)}
               maxLength={200}
               disabled={busy}
-              placeholder="The Elias family, Mumbai"
+              placeholder={t('upload.field.originPlaceholder')}
               className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
             />
           </label>
 
           <label className="block">
-            <span className="eyebrow mb-1.5 block">Your name — optional</span>
+            <span className="eyebrow mb-1.5 block">{t('upload.field.yourName')}</span>
             <input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               maxLength={120}
               disabled={busy}
-              placeholder="Ruth Elias"
+              placeholder={t('upload.field.yourNamePlaceholder')}
               className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
             />
             {/* The reason is worth giving, because "why do you want my name"
@@ -576,7 +580,7 @@ export function UploadFlow() {
           </label>
 
           <label className="block">
-            <span className="eyebrow mb-1.5 block">Your email — optional</span>
+            <span className="eyebrow mb-1.5 block">{t('upload.field.yourEmail')}</span>
             <input
               type="email"
               value={email}
@@ -597,7 +601,7 @@ export function UploadFlow() {
         </div>
       </Step>
 
-      <Step number={many ? '04' : '03'} title="Let the archive read it" done={analysed.length > 0}>
+      <Step number={many ? '04' : '03'} title={t('upload.step.read')} done={analysed.length > 0}>
         {/* Agreement sits here rather than at submission, because this is the
             button that sends the file out of the building to Google. */}
         <div className="mb-4">
@@ -617,16 +621,16 @@ export function UploadFlow() {
               <Loader2 size={17} className="animate-spin" />
               {progress && progress.total > 1
                 ? `Reading file ${progress.done + 1} of ${progress.total}…`
-                : 'Reading the file…'}
+                : t('upload.action.reading')}
             </>
           ) : (
             <>
               <Sparkles size={17} />
               {captured
-                ? 'Analyse this page'
+                ? t('upload.action.analysePage')
                 : files.length > 1
                   ? `Analyse ${files.length} files`
-                  : 'Analyse this item'}
+                  : t('upload.action.analyseItem')}
             </>
           )}
         </button>
