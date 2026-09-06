@@ -71,7 +71,7 @@ export function LanguagePicker({
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={t('language.reading', { language: active.label_en })}
+        aria-label={t('language.reading', { language: active.label_native })}
         onClick={() => setOpen((v) => !v)}
         className="flex h-8 items-center gap-1.5 rounded-full border border-rule px-2.5 text-muted transition-colors hover:border-accent hover:text-ink"
       >

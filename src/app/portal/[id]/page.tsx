@@ -122,7 +122,11 @@ export default async function RecordPage({
           */}
           {reading.translated && (
             <p className="machine mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-              <span>{t('translation.byMachine', { language: reading.language.label_en })}</span>
+              {/* The language's own name, not the English one. "Translated
+                  into Hebrew" set in Hebrew reads as half a sentence — the
+                  reader is already in Hebrew, and the word for their language
+                  is not an English word. */}
+              <span>{t('translation.byMachine', { language: reading.language.label_native })}</span>
               <Link
                 href={`/portal/${item.id}?original=1`}
                 className="text-accent underline underline-offset-2 hover:text-accent-strong"
@@ -139,7 +143,7 @@ export default async function RecordPage({
                 href={`/portal/${item.id}`}
                 className="text-accent underline underline-offset-2 hover:text-accent-strong"
               >
-                {t('record.readItIn', { language: reading.language.label_en })}
+                {t('record.readItIn', { language: reading.language.label_native })}
               </Link>
             </p>
           )}
@@ -148,7 +152,7 @@ export default async function RecordPage({
             <TranslationRequest
               itemId={item.id}
               lang={reading.language.code}
-              label={reading.language.label_en}
+              label={reading.language.label_native}
             />
           )}
 
