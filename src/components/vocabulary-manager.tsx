@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMessages } from '@/lib/i18n/provider';
 import { Check, Loader2, Merge, Plus, Trash2, X } from 'lucide-react';
 import { buttonClass } from '@/components/primitives';
 import { COMMUNITY_COLORS, COMMUNITY_ORDER } from '@/lib/communities';
@@ -37,6 +38,7 @@ export function VocabularyManager({
   candidates: KeywordCandidate[];
   isAdmin: boolean;
 }) {
+  const t = useMessages();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [term, setTerm] = useState('');
@@ -108,7 +110,7 @@ export function VocabularyManager({
       <section>
         <form onSubmit={add} className="mb-6 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
           <label>
-            <span className="eyebrow mb-1.5 block">New term</span>
+            <span className="eyebrow mb-1.5 block">{t('vocab.newTerm')}</span>
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
@@ -130,18 +132,18 @@ export function VocabularyManager({
           <label className="sm:col-span-2">
             {/* Required, not optional. A term that subdivides nothing is the
                 thing this screen was rebuilt to stop producing. */}
-            <span className="eyebrow mb-1.5 block">Subdivides</span>
-            <BranchSelect value={branch} onChange={setBranch} placeholder="Choose a branch" />
+            <span className="eyebrow mb-1.5 block">{t('vocab.subdivides')}</span>
+            <BranchSelect value={branch} onChange={setBranch} placeholder={t('vocab.chooseBranch')} />
           </label>
 
           <label className="sm:col-span-2">
-            <span className="eyebrow mb-1.5 block">Offered for</span>
+            <span className="eyebrow mb-1.5 block">{t('vocab.offeredFor')}</span>
             <select
               value={scope}
               onChange={(e) => setScope(e.target.value as Community | '')}
               className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
             >
-              <option value="">Every community</option>
+              <option value="">{t('vocab.everyCommunity')}</option>
               {COMMUNITY_ORDER.map((c) => (
                 <option key={c} value={c}>
                   {COMMUNITY_LABELS[c]}
@@ -175,7 +177,7 @@ export function VocabularyManager({
                   <span className="min-w-[8rem] font-medium">{row.term}</span>
                   <BranchSelect
                     value=""
-                    placeholder="Place it under…"
+                    placeholder={t('vocab.placeUnder')}
                     disabled={busyId === row.id}
                     onChange={(branchKey) =>
                       branchKey && amend({ action: 'place', id: row.id, branchKey }, row.id)
@@ -189,7 +191,7 @@ export function VocabularyManager({
 
         {branches.length === 0 && homeless.length === 0 ? (
           <p className="rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-6 py-10 text-center text-muted">
-            The vocabulary is empty. Until it has terms, records can carry no keywords at all.
+            {t('vocab.empty')}
           </p>
         ) : (
           <div className="space-y-8">
@@ -240,7 +242,7 @@ export function VocabularyManager({
                             setRemoving(null);
                           }}
                           disabled={busyId === row.id}
-                          title="Make this a spelling of another term"
+                          title={t('vocab.makeSpelling')}
                           className="rounded p-1.5 text-muted transition-colors hover:bg-accent-wash hover:text-ink disabled:opacity-40"
                         >
                           <Merge size={15} />
@@ -275,7 +277,7 @@ export function VocabularyManager({
                       {removing === row.id && (
                         <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
                           <p className="text-sm leading-relaxed">
-                            Remove <strong>{row.term}</strong> from the vocabulary? Records already
+                            {t('common.remove')} <strong>{row.term}</strong> from the vocabulary? Records already
                             catalogued with it keep the word, but it can no longer be chosen — and
                             the next review saved on one of those records will drop it.
                             {row.variants.length > 0 ? (
@@ -286,7 +288,7 @@ export function VocabularyManager({
                                 off first if you want to keep them.
                               </>
                             ) : (
-                              <> If it is a duplicate, merge it instead.</>
+                              <> {t('vocab.mergeInstead')}</>
                             )}
                           </p>
                           <div className="mt-2.5 flex gap-2">
@@ -304,7 +306,7 @@ export function VocabularyManager({
                               onClick={() => setRemoving(null)}
                               className="h-10 rounded-full px-3 text-sm text-muted hover:text-ink"
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </button>
                           </div>
                         </div>
@@ -313,7 +315,7 @@ export function VocabularyManager({
                       {merging === row.id && (
                         <div className="mt-3 border-t border-rule pt-3">
                           <p className="mb-2 text-sm leading-relaxed text-muted">
-                            Make <strong>{row.term}</strong> another spelling of a term in this
+                            {t('vocab.make')} <strong>{row.term}</strong> another spelling of a term in this
                             branch. Both spellings keep working; records move to the one you choose.
                           </p>
                           <select
@@ -325,7 +327,7 @@ export function VocabularyManager({
                             }
                             className="h-11 w-full rounded-lg border border-rule-strong bg-paper px-3 focus:border-accent-strong focus:outline-none"
                           >
-                            <option value="">Which term is it a spelling of?</option>
+                            <option value="">{t('vocab.spellingOf')}</option>
                             {group.terms
                               .filter((other) => other.id !== row.id && other.variants.length === 0)
                               .map((other) => (
@@ -346,7 +348,7 @@ export function VocabularyManager({
       </section>
 
       <section>
-        <h2 className="font-display text-xl">Suggested by the model</h2>
+        <h2 className="font-display text-xl">{t('vocab.suggested')}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
           Words the analysis needed that the vocabulary does not hold, each naming the branch it
           would subdivide. The count is how many times it has come up.
@@ -354,7 +356,7 @@ export function VocabularyManager({
 
         {candidates.length === 0 ? (
           <p className="mt-5 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-5 py-8 text-center text-sm text-muted">
-            Nothing waiting.
+            {t('vocab.nothingWaiting')}
           </p>
         ) : (
           <ul className="mt-5 divide-y divide-rule border-y border-rule">
@@ -374,7 +376,7 @@ export function VocabularyManager({
                     type="button"
                     onClick={() => judge(candidate, 'accept')}
                     disabled={busyId === candidate.id}
-                    title="Add to the vocabulary"
+                    title={t('vocab.addToVocabulary')}
                     className="rounded p-2 text-positive transition-colors hover:bg-positive/10 disabled:opacity-40"
                   >
                     <Check size={17} />
@@ -384,7 +386,7 @@ export function VocabularyManager({
                     type="button"
                     onClick={() => judge(candidate, 'decline')}
                     disabled={busyId === candidate.id}
-                    title="Not a term for this archive"
+                    title={t('vocab.notATerm')}
                     className="rounded p-2 text-muted transition-colors hover:bg-paper-3 disabled:opacity-40"
                   >
                     <X size={17} />
@@ -397,7 +399,7 @@ export function VocabularyManager({
         )}
       </section>
 
-      {pending && <span className="sr-only">Saving</span>}
+      {pending && <span className="sr-only">{t('common.saving')}</span>}
     </div>
   );
 }

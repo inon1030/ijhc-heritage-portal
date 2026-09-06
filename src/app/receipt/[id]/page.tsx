@@ -102,7 +102,7 @@ export default async function ReceiptPage({
             href={`/portal/${id}`}
             className="mt-4 inline-flex h-12 items-center rounded-full bg-ink px-6 font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink-2"
           >
-            See it in the archive
+            {say('receipt.seeInArchive')}
           </Link>
         )}
       </div>

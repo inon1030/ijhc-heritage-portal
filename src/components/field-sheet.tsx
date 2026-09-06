@@ -2,6 +2,7 @@
 
 import { useId, useMemo } from 'react';
 import { Eye, HelpCircle, Lightbulb, Pencil, Plus, Undo2, X } from 'lucide-react';
+import { useMessages } from '@/lib/i18n/provider';
 import {
   FIELDS,
   FIELD_GROUPS,
@@ -78,6 +79,7 @@ export function FieldSheet({
    */
   includeBasics?: boolean;
 }) {
+  const t = useMessages();
   const addId = useId();
   const catalogue = includeBasics ? FIELDS : ROW_FIELDS;
 
@@ -126,7 +128,7 @@ export function FieldSheet({
   return (
     <section className="space-y-5">
       <div>
-        <p className="eyebrow">What the archive found</p>
+        <p className="eyebrow">{t('fields.heading')}</p>
         <p className="mt-1 text-sm leading-relaxed text-muted">
           {tone === 'contributor'
             ? present.length > 0
@@ -167,7 +169,7 @@ export function FieldSheet({
         <div className="rounded-xl border border-dashed border-rule-strong bg-paper-2/50 p-4">
           <label htmlFor={addId} className="eyebrow mb-1.5 flex items-center gap-1.5">
             <Plus size={14} aria-hidden />
-            Add a field
+            {t('fields.add')}
           </label>
           <p className="mb-2.5 text-sm text-muted">
             {tone === 'contributor'
@@ -190,7 +192,7 @@ export function FieldSheet({
             }}
             className="h-12 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:outline-none sm:max-w-sm"
           >
-            <option value="">Choose a field…</option>
+            <option value="">{t('fields.choose')}</option>
             {GROUP_ORDER.map((group) => {
               const options = available.filter((field) => field.group === group);
               if (!options.length) return null;
@@ -226,6 +228,7 @@ function FieldRow({
   onRevert: () => void;
   onRemove: () => void;
 }) {
+  const t = useMessages();
   const id = useId();
   const corrected = isCorrected(row);
   const fromMachine = Boolean(row.basis) && !corrected;
@@ -239,7 +242,7 @@ function FieldRow({
         disabled={disabled}
         className="h-12 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
       >
-        <option value="">Not determined</option>
+        <option value="">{t('common.notDetermined')}</option>
         {(def.options ?? []).map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -331,13 +334,14 @@ function FieldRow({
  * about their own family photograph is the most reliable thing on the page.
  */
 function CorrectedMark() {
+  const t = useMessages();
   return (
     <span
-      title="Edited by the contributor"
+      title={t('common.editedByContributor')}
       className="inline-flex translate-y-px items-center text-muted/70"
     >
       <Pencil size={11} strokeWidth={2} aria-hidden />
-      <span className="sr-only">Edited by the contributor</span>
+      <span className="sr-only">{t('common.editedByContributor')}</span>
     </span>
   );
 }

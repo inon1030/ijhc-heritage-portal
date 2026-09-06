@@ -1,4 +1,5 @@
 import { Eye, HelpCircle, Lightbulb } from 'lucide-react';
+import { useMessages } from '@/lib/i18n/provider';
 import { inTreeOrder, fieldDef } from '@/lib/fields/registry';
 import {
   EVIDENCE_BASIS_LABELS,
@@ -43,6 +44,7 @@ export function EvidenceLedger({
   evidence: Ledger | null;
   reasoning: string | null;
 }) {
+  const t = useMessages();
   const rows = inTreeOrder(
     Object.entries(evidence ?? {}).filter(([, entry]) => entry && BASIS_STYLE[entry.basis]),
     ([key]) => key,
@@ -54,7 +56,7 @@ export function EvidenceLedger({
     if (!reasoning) return null;
     return (
       <div>
-        <p className="eyebrow mb-1.5">What this rests on</p>
+        <p className="eyebrow mb-1.5">{t('ledger.heading')}</p>
         <p className="machine text-ink-2">{reasoning}</p>
       </div>
     );
@@ -62,7 +64,7 @@ export function EvidenceLedger({
 
   return (
     <div>
-      <p className="eyebrow mb-2">What each answer rests on</p>
+      <p className="eyebrow mb-2">{t('ledger.each')}</p>
       <ul className="divide-y divide-rule border-y border-rule">
         {rows.map(([key, entry]) => {
           const { icon: Icon, className } = BASIS_STYLE[entry.basis];

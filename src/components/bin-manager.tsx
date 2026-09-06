@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMessages } from '@/lib/i18n/provider';
 import { Loader2, RotateCcw, Trash2 } from 'lucide-react';
 import { EmptyState } from '@/components/primitives';
 import { FilePreview } from '@/components/file-preview';
@@ -21,6 +22,7 @@ type BinnedItem = Item & { file: ItemFile | null };
  * something people click through without reading.
  */
 export function BinManager({ items }: { items: BinnedItem[] }) {
+  const t = useMessages();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
   if (items.length === 0) {
     return (
       <EmptyState
-        title="The bin is empty"
+        title={t('bin.empty')}
         body="Records a volunteer removes land here rather than disappearing. Nothing has been removed yet."
         action={{ href: '/review', label: 'Go to the review queue' }}
       />
@@ -121,7 +123,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
                     className="inline-flex h-10 items-center gap-2 rounded-full border border-critical px-4 text-sm font-medium text-critical transition-all duration-200 hover:-translate-y-0.5 hover:bg-critical/8 disabled:pointer-events-none disabled:opacity-50"
                   >
                     <Trash2 size={15} aria-hidden />
-                    Destroy
+                    {t('bin.destroy')}
                   </button>
                 </div>
               </div>

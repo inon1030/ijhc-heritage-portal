@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMessages } from '@/lib/i18n/provider';
 import { ArrowLeft, Check, EyeOff, Loader2, RotateCcw, Trash2, X } from 'lucide-react';
 import { EvidenceLedger } from '@/components/evidence-ledger';
 import { FieldSheet } from '@/components/field-sheet';
@@ -50,6 +51,7 @@ export function ReviewWorkbench({
   families: Family[];
   selectedFamilyIds: string[];
 }) {
+  const t = useMessages();
   const router = useRouter();
   const analysis = item.analysis;
   const simulated = analysis?.provider === 'mock';
@@ -160,7 +162,7 @@ export function ReviewWorkbench({
       {/* The original */}
       <div className="lg:sticky lg:top-6 lg:self-start">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="eyebrow">The original</h2>
+          <h2 className="eyebrow">{t('wb.original')}</h2>
           <StatusPill status={item.status} />
         </div>
 
@@ -170,7 +172,7 @@ export function ReviewWorkbench({
             of what the archive made of it. */}
         {item.source_url && (
           <p className="mb-3 rounded-lg border-l-[3px] border-cochin bg-turquoise-wash/60 px-3 py-2 text-sm">
-            <span className="eyebrow mr-2">Captured from</span>
+            <span className="eyebrow mr-2">{t('wb.capturedFrom')}</span>
             <a
               href={item.source_url}
               target="_blank"
@@ -213,10 +215,10 @@ export function ReviewWorkbench({
 
         {shown && (
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 card bg-paper-2/50 p-5">
-            <Fact label="File name">{shown.file_name}</Fact>
-            <Fact label="Type">{shown.mime_type}</Fact>
-            <Fact label="Size">{formatBytes(shown.byte_size)}</Fact>
-            <Fact label="Dimensions">
+            <Fact label={t('wb.fileName')}>{shown.file_name}</Fact>
+            <Fact label={t('wb.type')}>{shown.mime_type}</Fact>
+            <Fact label={t('wb.size')}>{formatBytes(shown.byte_size)}</Fact>
+            <Fact label={t('wb.dimensions')}>
               {shown.width && shown.height
                 ? `${shown.width} × ${shown.height} px`
                 : shown.duration_ms
@@ -227,12 +229,12 @@ export function ReviewWorkbench({
         )}
 
         <p className="mt-3 text-xs leading-relaxed text-muted">
-          Measured from the file itself. Nothing above was generated.
+          {t('wb.measured')}
         </p>
 
         {analysis?.ocr_text && (
           <details className="mt-4 card bg-paper-2/50">
-            <summary className="eyebrow cursor-pointer px-4 py-3">Text the model read</summary>
+            <summary className="eyebrow cursor-pointer px-4 py-3">{t('wb.textRead')}</summary>
             {/* `transcription`, not `machine`: the mono stack ends in the
                 generic `monospace`, which matches every character, so a Hebrew
                 or Malayalam transcription never reached a face that could draw
@@ -248,7 +250,7 @@ export function ReviewWorkbench({
 
         {analysis?.transcript && (
           <details className="mt-3 card bg-paper-2/50">
-            <summary className="eyebrow cursor-pointer px-4 py-3">Transcript</summary>
+            <summary className="eyebrow cursor-pointer px-4 py-3">{t('wb.transcript')}</summary>
             {/* `transcription`, not `machine`: the mono stack ends in the
                 generic `monospace`, which matches every character, so a Hebrew
                 or Malayalam transcription never reached a face that could draw
@@ -266,7 +268,7 @@ export function ReviewWorkbench({
       {/* The record */}
       <div>
         <div className="mb-3 flex items-baseline justify-between gap-3">
-          <h2 className="eyebrow">The record</h2>
+          <h2 className="eyebrow">{t('wb.theRecord')}</h2>
           <span className="eyebrow text-right">
             {categoryLabel(item.category)}
             {/* Named up here as well as in the control below, because "who can
@@ -284,7 +286,7 @@ export function ReviewWorkbench({
           corrections.length > 0 ||
           item.consent_version) && (
           <section className="mb-5 rounded-lg border-l-[3px] border-cochin bg-turquoise-wash/60 px-4 py-3.5">
-            <p className="eyebrow mb-1.5">What the contributor said</p>
+            <p className="eyebrow mb-1.5">{t('wb.contributorSaid')}</p>
             {item.contributor_description && (
               <p className="leading-relaxed">{item.contributor_description}</p>
             )}
@@ -299,7 +301,7 @@ export function ReviewWorkbench({
             )}
             {corrections.length > 0 && (
               <div className="mt-3 border-t border-rule pt-3">
-                <p className="eyebrow mb-2">They corrected the archive on</p>
+                <p className="eyebrow mb-2">{t('wb.theyCorrected')}</p>
                 <ul className="space-y-1.5">
                   {corrections.map((row) => {
                     const adopt = ADOPTERS[fieldDef(row.field_key)!.column!];
@@ -314,7 +316,7 @@ export function ReviewWorkbench({
                           onClick={() => adopt({ setCategory, setCommunity, setLanguage, setPeriod, setOriginPlace, setProvenance }, row.value)}
                           className="shrink-0 rounded-full border border-rule bg-paper px-3 py-1 text-xs transition-colors hover:border-accent-strong hover:bg-accent-wash"
                         >
-                          Use this
+                          {t('wb.useThis')}
                         </button>
                       </li>
                     );
@@ -345,7 +347,7 @@ export function ReviewWorkbench({
                 </p>
                 {item.contributor.families.length > 0 && (
                   <p className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <span className="text-sm text-muted">Known family:</span>
+                    <span className="text-sm text-muted">{t('wb.knownFamily')}</span>
                     {item.contributor.families.map((family) => (
                       <span
                         key={family.id}
@@ -383,7 +385,7 @@ export function ReviewWorkbench({
             has to read as a question. */}
         {analysis?.off_topic && !simulated && (
           <section className="mb-5 rounded-lg border-l-[3px] border-caution bg-accent-wash px-4 py-3.5">
-            <p className="eyebrow mb-1">This may not belong to the archive</p>
+            <p className="eyebrow mb-1">{t('wb.mayNotBelong')}</p>
             {analysis.off_topic_reason && (
               <p className="machine leading-relaxed text-ink-2">{analysis.off_topic_reason}</p>
             )}
@@ -397,12 +399,12 @@ export function ReviewWorkbench({
         {simulated && <SimulatedNotice className="mb-5" />}
         {analysis?.status === 'failed' && !simulated && (
           <p className="mb-5 rounded-lg border-l-[3px] border-caution bg-accent-wash px-3 py-2 text-xs text-caution">
-            Analysis did not run for this item. Fill the fields in yourself.
+            {t('wb.noAnalysis')}
           </p>
         )}
 
         <div className="space-y-5">
-          <FieldRow label="Title">
+          <FieldRow label={t('wb.title')}>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -412,7 +414,7 @@ export function ReviewWorkbench({
           </FieldRow>
 
           <FieldRow
-            label="Description"
+            label={t('wb.description')}
             suggestion={analysis?.summary ?? undefined}
             onAdopt={() => setDescription(analysis?.summary ?? '')}
             adopted={description === analysis?.summary}
@@ -422,13 +424,13 @@ export function ReviewWorkbench({
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               maxLength={4000}
-              placeholder="What a visitor should read on the record page."
+              placeholder={t('wb.descriptionHint')}
               className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 text-sm focus:border-accent-strong focus:outline-none"
             />
           </FieldRow>
 
           <FieldRow
-            label="Kind of item"
+            label={t('wb.kind')}
             suggestion={
               analysis?.suggested_category ? CATEGORY_LABELS[analysis.suggested_category] : undefined
             }
@@ -442,7 +444,7 @@ export function ReviewWorkbench({
               onChange={(e) => setCategory(e.target.value as ItemCategory | '')}
               className="w-full rounded-lg border border-rule bg-paper px-4 py-3 focus:border-accent-strong focus:outline-none"
             >
-              <option value="">Not catalogued</option>
+              <option value="">{t('wb.notCatalogued')}</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {CATEGORY_LABELS[c]}
@@ -452,7 +454,7 @@ export function ReviewWorkbench({
           </FieldRow>
 
           <FieldRow
-            label="Community"
+            label={t('wb.community')}
             suggestion={
               analysis?.suggested_community
                 ? COMMUNITY_LABELS[analysis.suggested_community]
@@ -468,7 +470,7 @@ export function ReviewWorkbench({
               onChange={(e) => setCommunity(e.target.value as Community | '')}
               className="w-full rounded-lg border border-rule bg-paper px-4 py-3 focus:border-accent-strong focus:outline-none"
             >
-              <option value="">Not identified</option>
+              <option value="">{t('wb.notIdentified')}</option>
               {COMMUNITIES.map((c) => (
                 <option key={c} value={c}>
                   {COMMUNITY_LABELS[c]}
@@ -477,18 +479,18 @@ export function ReviewWorkbench({
             </select>
           </FieldRow>
 
-          <FieldRow label="Provenance">
+          <FieldRow label={t('wb.provenance')}>
             <input
               value={provenance}
               onChange={(e) => setProvenance(e.target.value)}
               maxLength={2000}
-              placeholder="Who owned it, where it was kept, how it reached the archive"
+              placeholder={t('wb.provenanceHint')}
               className="w-full rounded-lg border border-rule bg-paper px-4 py-3 focus:border-accent-strong focus:outline-none"
             />
           </FieldRow>
 
           <FieldRow
-            label="Language"
+            label={t('wb.language')}
             suggestion={analysis?.language ?? undefined}
             onAdopt={() => setLanguage(analysis?.language ?? '')}
             adopted={Boolean(analysis?.language) && language === analysis?.language}
@@ -497,13 +499,13 @@ export function ReviewWorkbench({
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               maxLength={60}
-              placeholder="Marathi, Malayalam, Judeo-Arabic, Hebrew, English"
+              placeholder={t('wb.languageHint')}
               className="w-full rounded-lg border border-rule bg-paper px-4 py-3 focus:border-accent-strong focus:outline-none"
             />
           </FieldRow>
 
           <FieldRow
-            label="Period"
+            label={t('wb.period')}
             suggestion={analysis?.suggested_period ?? undefined}
             onAdopt={() => setPeriod(analysis?.suggested_period ?? '')}
             adopted={Boolean(analysis?.suggested_period) && period === analysis?.suggested_period}
@@ -518,7 +520,7 @@ export function ReviewWorkbench({
           </FieldRow>
 
           <FieldRow
-            label="Place of origin"
+            label={t('wb.placeOfOrigin')}
             suggestion={analysis?.suggested_origin ?? undefined}
             onAdopt={() => setOriginPlace(analysis?.suggested_origin ?? '')}
             adopted={Boolean(analysis?.suggested_origin) && originPlace === analysis?.suggested_origin}
@@ -527,7 +529,7 @@ export function ReviewWorkbench({
               value={originPlace}
               onChange={(e) => setOriginPlace(e.target.value)}
               maxLength={200}
-              placeholder="Calcutta, India"
+              placeholder={t('wb.placeHint')}
               className="w-full rounded-lg border border-rule bg-paper px-4 py-3 focus:border-accent-strong focus:outline-none"
             />
           </FieldRow>
@@ -597,7 +599,7 @@ export function ReviewWorkbench({
               tone="accept"
               icon={<Check size={15} />}
             >
-              Publish
+              {t('wb.publish')}
             </Decision>
           )}
           {transitions.includes('shadow_gallery') && (
@@ -608,7 +610,7 @@ export function ReviewWorkbench({
               tone="neutral"
               icon={<EyeOff size={15} />}
             >
-              Hold in Shadow Gallery
+              {t('wb.shadowGallery')}
             </Decision>
           )}
           {transitions.includes('rejected') && (
@@ -619,7 +621,7 @@ export function ReviewWorkbench({
               tone="reject"
               icon={<X size={15} />}
             >
-              Reject
+              {t('wb.reject')}
             </Decision>
           )}
           {transitions.includes('pending') && (
@@ -630,7 +632,7 @@ export function ReviewWorkbench({
               tone="neutral"
               icon={<RotateCcw size={15} />}
             >
-              Return to the queue
+              {t('wb.returnToQueue')}
             </Decision>
           )}
           <button
@@ -699,9 +701,10 @@ function AudiencePicker({
   onChange: (value: AccessLevel) => void;
   disabled: boolean;
 }) {
+  const t = useMessages();
   return (
     <fieldset className="rounded-xl border border-rule bg-paper-2/50 p-4">
-      <legend className="eyebrow px-1">Who this is for</legend>
+      <legend className="eyebrow px-1">{t('wb.whoFor')}</legend>
       <div className="mt-1 space-y-1.5">
         {ACCESS_OPTIONS.map((option) => (
           <label
@@ -812,6 +815,7 @@ function VocabularyPicker({
   contributorTerms: string[];
   communityChosen: boolean;
 }) {
+  const t = useMessages();
   const [filter, setFilter] = useState('');
 
   const terms = offered.map((t) => t.term);
@@ -861,7 +865,7 @@ function VocabularyPicker({
   return (
     <div>
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <span className="eyebrow">Keywords</span>
+        <span className="eyebrow">{t('wb.keywords')}</span>
         <span className="machine text-muted">
           {communityChosen ? `${terms.length} offered` : 'choose a community to narrow the list'}
         </span>
@@ -883,7 +887,7 @@ function VocabularyPicker({
             </button>
           </span>
         ))}
-        {keywords.length === 0 && <span className="text-sm text-muted italic">None yet</span>}
+        {keywords.length === 0 && <span className="text-sm text-muted italic">{t('wb.noneYet')}</span>}
       </div>
 
       {available.length > 0 && (
@@ -909,7 +913,7 @@ function VocabularyPicker({
           Not in the vocabulary, so not selectable here:{' '}
           <span className="machine">{notInVocabulary.join(', ')}</span>. They are queued under{' '}
           <a href="/manage/vocabulary" className="underline underline-offset-2 hover:text-accent">
-            Manage
+            {t('wb.manage')}
           </a>
           .
         </p>
@@ -925,7 +929,7 @@ function VocabularyPicker({
           <input
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter the vocabulary"
+            placeholder={t('wb.filterVocabulary')}
             maxLength={60}
             className="mt-3 h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
           />
@@ -952,7 +956,7 @@ function VocabularyPicker({
               </div>
             ))}
             {matching.length === 0 && (
-              <span className="text-sm text-muted italic">Nothing matches that.</span>
+              <span className="text-sm text-muted italic">{t('wb.nothingMatches')}</span>
             )}
           </div>
         </>
@@ -973,16 +977,17 @@ function FamilyPicker({
   onChange: (next: string[]) => void;
   community: Community | null;
 }) {
+  const t = useMessages();
   function toggle(id: string) {
     onChange(selected.includes(id) ? selected.filter((f) => f !== id) : [...selected, id]);
   }
 
   return (
     <div>
-      <span className="eyebrow mb-1.5 block">Families</span>
+      <span className="eyebrow mb-1.5 block">{t('wb.families')}</span>
 
       {!community ? (
-        <p className="text-sm text-muted">Choose a community first — families belong to one.</p>
+        <p className="text-sm text-muted">{t('wb.chooseCommunityFirst')}</p>
       ) : families.length === 0 ? (
         <p className="text-sm text-muted">
           No families registered for {COMMUNITY_LABELS[community]} yet.

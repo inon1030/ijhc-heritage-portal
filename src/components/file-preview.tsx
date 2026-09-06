@@ -62,7 +62,7 @@ export function FilePreview({
       <div className={cn('flex h-full w-full flex-col justify-center gap-3 bg-paper-2 p-6', className)}>
         <Music size={22} className="text-muted" aria-hidden />
         <audio controls preload="none" src={src} className="w-full">
-          Your browser cannot play this recording.
+          {t('file.cannotPlay')}
         </audio>
       </div>
     );

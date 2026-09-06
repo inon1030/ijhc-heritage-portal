@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getMessages } from '@/lib/i18n';
 import { redirect } from 'next/navigation';
 import { BookMarked, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { AwaitingApproval } from '@/components/awaiting-approval';
@@ -13,6 +14,7 @@ import { getCurrentProfile, getCurrentVolunteer } from '@/lib/supabase/server';
  * page enforces — a volunteer who types the URL gets told, not a blank screen.
  */
 export default async function ManageLayout({ children }: { children: React.ReactNode }) {
+  const { t } = await getMessages();
   const volunteer = await getCurrentVolunteer();
 
   if (!volunteer) {
@@ -28,8 +30,8 @@ export default async function ManageLayout({ children }: { children: React.React
   return (
     <div className="mx-auto max-w-6xl px-6 pt-8 pb-14 sm:pt-12 sm:pb-16">
       <header className="mb-9">
-        <p className="eyebrow animate-rise">Archive administration</p>
-        <h1 className="animate-rise mt-2 font-display text-3xl leading-tight sm:text-5xl">Manage</h1>
+        <p className="eyebrow animate-rise">{t('manage.heading')}</p>
+        <h1 className="animate-rise mt-2 font-display text-3xl leading-tight sm:text-5xl">{t('manage.title')}</h1>
         <p
           className="animate-rise mt-4 max-w-2xl leading-relaxed text-muted sm:text-lg"
           style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
@@ -40,10 +42,10 @@ export default async function ManageLayout({ children }: { children: React.React
       </header>
 
       <nav className="mb-10 flex flex-wrap gap-2.5" aria-label="Manage">
-        <Tab href="/manage/vocabulary" icon={<BookMarked size={17} />} label="Vocabulary" />
-        <Tab href="/manage/families" icon={<Users size={17} />} label="Families" />
-        {isAdmin && <Tab href="/manage/accounts" icon={<ShieldCheck size={17} />} label="Accounts" />}
-        {isAdmin && <Tab href="/manage/bin" icon={<Trash2 size={17} />} label="Bin" />}
+        <Tab href="/manage/vocabulary" icon={<BookMarked size={17} />} label={t('manage.vocabulary')} />
+        <Tab href="/manage/families" icon={<Users size={17} />} label={t('manage.families')} />
+        {isAdmin && <Tab href="/manage/accounts" icon={<ShieldCheck size={17} />} label={t('manage.accounts')} />}
+        {isAdmin && <Tab href="/manage/bin" icon={<Trash2 size={17} />} label={t('manage.bin')} />}
       </nav>
 
       {children}

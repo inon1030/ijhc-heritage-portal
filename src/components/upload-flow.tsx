@@ -410,10 +410,10 @@ export function UploadFlow() {
             onClick={reset}
             className={buttonClass('primary')}
           >
-            Contribute another
+            {t('upload.contributeAnother')}
           </button>
           <Link href="/portal" className={buttonClass('quiet')}>
-            Back to the portal
+            {t('common.backToPortal')}
           </Link>
         </div>
         {created.length > 0 && (

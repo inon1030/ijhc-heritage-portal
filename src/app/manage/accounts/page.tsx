@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getMessages } from '@/lib/i18n';
 import { AccountManager } from '@/components/account-manager';
 import { EmptyState } from '@/components/primitives';
 import { getCurrentAdmin } from '@/lib/supabase/server';
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: 'Accounts' };
 export const dynamic = 'force-dynamic';
 
 export default async function AccountsPage() {
+  const { t } = await getMessages();
   const admin = await getCurrentAdmin();
 
   // A volunteer who types the URL is told what is missing rather than being
@@ -15,7 +17,7 @@ export default async function AccountsPage() {
   if (!admin) {
     return (
       <EmptyState
-        title="Administrators only"
+        title={t('manage.administratorsOnly')}
         body="Approving accounts decides who can change the archive, so it is kept to administrators. Ask one to make the change for you."
         action={{ href: '/manage/vocabulary', label: 'Back to the vocabulary' }}
       />

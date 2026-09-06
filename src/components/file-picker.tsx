@@ -201,7 +201,7 @@ export function FilePicker({
             {files.length > 0 ? t('upload.action.addMore') : t('upload.action.choose')}
           </span>
           <span className="mt-1 block text-sm text-muted">
-            Images, PDFs, audio and video. Up to {formatBytes(MAX_FILE_BYTES)} each.
+            {t('file.accepted', { size: formatBytes(MAX_FILE_BYTES) })}
           </span>
         </label>
       </div>
@@ -243,6 +243,7 @@ export function browserCanDraw(mimeType: string): boolean {
 }
 
 function Kind({ mime }: { mime: string }) {
+  const t = useMessages();
   const kind = fileKind(mime);
 
   // Named, not shrugged at. "TIFF" plus a sentence is the difference between
@@ -253,7 +254,7 @@ function Kind({ mime }: { mime: string }) {
         <ImageIcon size={24} className="text-muted" aria-hidden />
         <span className="eyebrow">{mime.replace('image/', '')}</span>
         <span className="text-xs leading-snug text-muted">
-          A viewable copy appears once the archive reads it
+          {t('file.viewableCopy')}
         </span>
       </span>
     );

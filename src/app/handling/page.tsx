@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getMessages } from '@/lib/i18n';
 import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import {
@@ -20,19 +21,20 @@ export const metadata: Metadata = {
  * two can never disagree. This page exists so the terms can be read without
  * being in the middle of contributing, and linked to from the footer.
  */
-export default function HandlingPage() {
+export default async function HandlingPage() {
+  const { t } = await getMessages();
   return (
     <article className="mx-auto max-w-2xl px-6 py-12">
       <Link
         href="/portal"
         className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-all duration-200 hover:-translate-x-0.5 hover:border-accent-strong hover:text-ink"
       >
-        <ArrowLeft size={15} /> Back to the portal
+        <ArrowLeft size={15} /> {t('common.backToPortal')}
       </Link>
 
       <p className="eyebrow">Version {CONSENT_VERSION}</p>
       <h1 className="mt-2 font-display text-3xl leading-tight sm:text-4xl">
-        How your contribution is handled
+        {t('handling.title')}
       </h1>
       <p className="mt-4 leading-relaxed text-muted sm:text-lg">
         Plain terms, and the ones actually shown to you before you send anything. Every clause

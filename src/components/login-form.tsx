@@ -77,10 +77,10 @@ export function LoginForm() {
     return (
       <div className="mt-8 card rounded-xl border-positive/30 bg-sage-wash px-5 py-6">
         <p className="flex items-center gap-2 font-display text-xl text-positive">
-          <Check size={20} /> Your request is in
+          <Check size={20} /> {t('login.requestIn')}
         </p>
         <p className="mt-3 text-sm leading-relaxed">
-          An administrator has to approve <span className="machine">{email}</span> before the review
+          {t('login.requestInBody')} <span className="machine">{email}</span> before the review
           queue opens. You can sign in now — until then you will see the archive exactly as any
           visitor does.
         </p>
@@ -92,7 +92,7 @@ export function LoginForm() {
           }}
           className="mt-5 underline underline-offset-4 hover:text-accent"
         >
-          Sign in
+          {t('login.signIn')}
         </button>
       </div>
     );
@@ -105,7 +105,7 @@ export function LoginForm() {
           Sign in
         </ModeTab>
         <ModeTab active={mode === 'request'} onClick={() => setMode('request')}>
-          Ask for an account
+          {t('login.askForAccount')}
         </ModeTab>
       </div>
 

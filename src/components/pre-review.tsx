@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Eye, Loader2, Plus, X } from 'lucide-react';
 import { EvidenceLedger } from '@/components/evidence-ledger';
+import { useMessages } from '@/lib/i18n/provider';
 import { FieldSheet } from '@/components/field-sheet';
 import { SimulatedNotice } from '@/components/primitives';
 import type { AnalysisResult } from '@/lib/ai/types';
@@ -76,6 +77,7 @@ export function PreReview({
   /** The terms have not been agreed to yet. */
   blocked: boolean;
 }) {
+  const t = useMessages();
   const submitButton = (
     <>
     {blocked && (
@@ -91,12 +93,12 @@ export function PreReview({
     >
       {submitting ? (
         <>
-          <Loader2 size={17} className="animate-spin" /> Submitting…
+          <Loader2 size={17} className="animate-spin" /> {t('prereview.submitting')}
         </>
-      ) : entries.length > 1 ? (
-        `Submit ${perItemTitles ? `${entries.length} items` : 'for review'}`
+      ) : entries.length > 1 && perItemTitles ? (
+        t('prereview.submitMany', { count: entries.length })
       ) : (
-        'Submit for review'
+        t('prereview.submit')
       )}
     </button>
     </>
@@ -111,7 +113,7 @@ export function PreReview({
           className="flex h-12 items-center gap-2 rounded-full border border-rule bg-paper px-5 font-medium shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-accent-strong"
         >
           <Eye size={17} />
-          Show what the archive found
+          {t('prereview.show')}
         </button>
         {submitButton}
       </div>
@@ -122,7 +124,7 @@ export function PreReview({
     <section className="card bg-paper-2/60">
       <header className="flex items-start gap-4 border-b border-rule px-6 py-5">
         <div className="flex-1">
-          <h2 className="font-display text-xl sm:text-2xl">What the archive found</h2>
+          <h2 className="font-display text-xl sm:text-2xl">{t('prereview.heading')}</h2>
           <p className="mt-1 text-sm text-muted">
             Suggestions, not a record. Correct anything you know better — a volunteer reads both
             versions before publishing.
@@ -134,7 +136,7 @@ export function PreReview({
           className="rounded-md p-2 text-muted transition-colors hover:bg-paper-3 hover:text-ink"
         >
           <X size={20} />
-          <span className="sr-only">Hide this panel</span>
+          <span className="sr-only">{t('prereview.hide')}</span>
         </button>
       </header>
 
@@ -194,6 +196,7 @@ function EntryPanel({
   /** Only when each file is its own record. Otherwise the sheet sits above. */
   showFields: boolean;
 }) {
+  const t = useMessages();
   const [newKeyword, setNewKeyword] = useState('');
   const { analysis } = entry;
 
@@ -220,7 +223,7 @@ function EntryPanel({
 
       {showTitle && (
         <label className="mb-5 block">
-          <span className="eyebrow mb-1.5 block">Title for this item</span>
+          <span className="eyebrow mb-1.5 block">{t('prereview.titleForItem')}</span>
           <input
             value={draft.title}
             onChange={(e) => onChange({ ...draft, title: e.target.value })}
@@ -251,13 +254,13 @@ function EntryPanel({
       {analysis && (
         <>
           <div className="mb-5">
-            <p className="eyebrow mb-1.5">The machine&rsquo;s reading</p>
+            <p className="eyebrow mb-1.5">{t('prereview.machineReading')}</p>
             <p className="machine border-l-2 border-rule pl-3 text-ink-2">{analysis.summary}</p>
           </div>
 
           {(
             <label className="mb-5 block">
-              <span className="eyebrow mb-1.5 block">Your description</span>
+              <span className="eyebrow mb-1.5 block">{t('prereview.yourDescription')}</span>
               <textarea
                 value={draft.description}
                 onChange={(e) => onChange({ ...draft, description: e.target.value })}
@@ -266,14 +269,14 @@ function EntryPanel({
                 className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 leading-relaxed focus:border-accent-strong focus:outline-none"
               />
               <span className="mt-1.5 block text-sm text-muted">
-                Pre-filled with the machine&rsquo;s reading. Change anything you know better.
+                {t('prereview.prefilled')}
               </span>
             </label>
           )}
 
           {(
             <div className="mb-5">
-              <p className="eyebrow mb-1.5">Your tags</p>
+              <p className="eyebrow mb-1.5">{t('prereview.yourTags')}</p>
               <ul className="flex flex-wrap items-center gap-2">
                 {draft.keywords.map((term) => (
                   <li
@@ -304,7 +307,7 @@ function EntryPanel({
                       }
                     }}
                     maxLength={60}
-                    placeholder="Add a tag"
+                    placeholder={t('prereview.addTag')}
                     className="h-11 w-40 rounded-lg border border-rule bg-paper px-3.5 text-sm focus:border-accent-strong focus:outline-none"
                   />
                   <button
@@ -314,12 +317,12 @@ function EntryPanel({
                     className="rounded p-2 text-muted transition-colors hover:bg-paper-3 hover:text-ink disabled:opacity-40"
                   >
                     <Plus size={16} />
-                    <span className="sr-only">Add tag</span>
+                    <span className="sr-only">{t('prereview.addTagAction')}</span>
                   </button>
                 </li>
               </ul>
               <p className="mt-1.5 text-sm text-muted">
-                A volunteer matches these to the archive&rsquo;s own vocabulary before publishing.
+                {t('prereview.vocabularyNote')}
               </p>
             </div>
           )}
@@ -345,24 +348,24 @@ function EntryPanel({
             bytes: nothing here was generated, and nothing here is arguable.
           */}
           <dl className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Fact label="Size">{formatBytes(entry.metadata.byteSize)}</Fact>
-            <Fact label="Dimensions">
+            <Fact label={t('prereview.size')}>{formatBytes(entry.metadata.byteSize)}</Fact>
+            <Fact label={t('prereview.dimensions')}>
               {entry.metadata.width && entry.metadata.height
                 ? `${entry.metadata.width} × ${entry.metadata.height}`
                 : 'not measured'}
             </Fact>
-            <Fact label="Type">{entry.metadata.mimeType}</Fact>
+            <Fact label={t('prereview.type')}>{entry.metadata.mimeType}</Fact>
             {entry.durationMs !== null && (
-              <Fact label="Duration">{Math.round(entry.durationMs / 1000)}s</Fact>
+              <Fact label={t('prereview.duration')}>{Math.round(entry.durationMs / 1000)}s</Fact>
             )}
           </dl>
 
           <EvidenceLedger evidence={analysis.evidence} reasoning={analysis.reasoning} />
 
           {analysis.ocrText && (
-            <Excerpt label="Text found in the item" text={analysis.ocrText} />
+            <Excerpt label={t('prereview.textFound')} text={analysis.ocrText} />
           )}
-          {analysis.transcript && <Excerpt label="Transcript" text={analysis.transcript} />}
+          {analysis.transcript && <Excerpt label={t('prereview.transcript')} text={analysis.transcript} />}
         </>
       )}
     </article>

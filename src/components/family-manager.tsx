@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMessages } from '@/lib/i18n/provider';
 import { ChevronDown, Loader2, Mail, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { buttonClass } from '@/components/primitives';
 import { COMMUNITY_COLORS, COMMUNITY_ORDER } from '@/lib/communities';
@@ -26,6 +27,7 @@ export function FamilyManager({
   contributors: FamilyContributor[];
   isAdmin: boolean;
 }) {
+  const t = useMessages();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState('');
@@ -146,14 +148,14 @@ export function FamilyManager({
   return (
     <div className="max-w-4xl">
       <p className="mb-6 rounded-lg border-l-[3px] border-caution bg-accent-wash px-4 py-3 text-sm leading-relaxed text-caution">
-        Family names are <strong>published</strong> on every record they are attached to, which
+        {t('families.namesAre')} <strong>published</strong> on every record they are attached to, which
         means the surnames of living relatives appear in public. Register a family when the name is
         already part of the historical record — not to identify a private donor.
       </p>
 
       <form onSubmit={add} className="mb-8 grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
         <label>
-          <span className="eyebrow mb-1.5 block">Family name</span>
+          <span className="eyebrow mb-1.5 block">{t('families.heading')}</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -164,7 +166,7 @@ export function FamilyManager({
         </label>
 
         <label>
-          <span className="eyebrow mb-1.5 block">Community</span>
+          <span className="eyebrow mb-1.5 block">{t('families.community')}</span>
           <select
             value={community}
             onChange={(e) => setCommunity(e.target.value as Community)}
@@ -188,12 +190,12 @@ export function FamilyManager({
         </button>
 
         <label className="sm:col-span-3">
-          <span className="eyebrow mb-1.5 block">Note — optional</span>
+          <span className="eyebrow mb-1.5 block">{t('families.noteOptional')}</span>
           <input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength={400}
-            placeholder="Merchant family, Bombay and Shanghai"
+            placeholder={t('families.examplePlaceholder')}
             className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
         </label>
@@ -285,7 +287,7 @@ export function FamilyManager({
                       {removing === family.id && (
                         <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
                           <p className="text-sm leading-relaxed">
-                            Remove <strong>{family.name}</strong>? Every record attached to this
+                            {t('common.remove')} <strong>{family.name}</strong>? Every record attached to this
                             family loses the attachment, and{' '}
                             {contacts.length === 0
                               ? 'no addresses are linked to it'
@@ -307,7 +309,7 @@ export function FamilyManager({
                               onClick={() => setRemoving(null)}
                               className="h-10 rounded-full px-3 text-sm text-muted hover:text-ink"
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </button>
                           </div>
                         </div>
@@ -317,7 +319,7 @@ export function FamilyManager({
                         <div className="mt-3 rounded-lg bg-paper-2/70 px-4 py-3.5">
                           {contacts.length === 0 ? (
                             <p className="text-sm text-muted">
-                              No addresses linked to this family yet.
+                              {t('families.noAddresses')}
                             </p>
                           ) : (
                             <ul className="mb-3 space-y-1.5">
@@ -365,12 +367,12 @@ export function FamilyManager({
                               />
                             </label>
                             <label className="min-w-[10rem] flex-1">
-                              <span className="sr-only">Their name, if known</span>
+                              <span className="sr-only">{t('families.theirName')}</span>
                               <input
                                 value={contactName}
                                 onChange={(e) => setContactName(e.target.value)}
                                 maxLength={120}
-                                placeholder="Name — optional"
+                                placeholder={t('families.nameOptional')}
                                 className="h-11 w-full rounded-lg border border-rule bg-paper px-3 focus:border-accent-strong focus:outline-none"
                               />
                             </label>
@@ -409,7 +411,7 @@ export function FamilyManager({
           somebody opening the database by hand.
       */}
       <section className="mt-12 border-t border-rule pt-8">
-        <h2 className="font-display text-xl">Contributors</h2>
+        <h2 className="font-display text-xl">{t('families.contributors')}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           Everyone who has sent the archive something, or whom a volunteer has recorded against a
           family. Addresses are never published. Correcting one is a volunteer&rsquo;s to do;
@@ -418,16 +420,16 @@ export function FamilyManager({
 
         {contributors.length === 0 ? (
           <p className="mt-5 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-5 py-8 text-center text-sm text-muted">
-            Nobody has left an address yet.
+            {t('families.nobodyLeftAddress')}
           </p>
         ) : (
           <>
             <label className="mt-4 block">
-              <span className="sr-only">Search contributors</span>
+              <span className="sr-only">{t('families.searchContributors')}</span>
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Find an address or a name"
+                placeholder={t('families.findAddress')}
                 className="h-12 w-full max-w-md rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
               />
             </label>
@@ -519,7 +521,7 @@ export function FamilyManager({
                     {erasing === contact.id && (
                       <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
                         <p className="text-sm leading-relaxed">
-                          Erase <strong>{contact.email}</strong> from the register? This is what to
+                          {t('families.erase')} <strong>{contact.email}</strong> from the register? This is what to
                           do when somebody asks to be forgotten.{' '}
                           {contact.submissions > 0 ? (
                             <>
@@ -528,7 +530,7 @@ export function FamilyManager({
                               archive and stop being linked to a person.
                             </>
                           ) : (
-                            <>They have sent nothing, so only the register entry goes.</>
+                            <>{t('families.onlyRegisterGoes')}</>
                           )}{' '}
                           To take the material down as well, use the bin.
                         </p>
@@ -561,7 +563,7 @@ export function FamilyManager({
         )}
       </section>
 
-      {pending && <span className="sr-only">Saving</span>}
+      {pending && <span className="sr-only">{t('common.saving')}</span>}
     </div>
   );
 }

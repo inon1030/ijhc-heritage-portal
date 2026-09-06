@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMessages } from '@/lib/i18n/provider';
 import { Loader2, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import { ROLE_LABELS, type Profile, type UserRole } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
@@ -14,6 +15,7 @@ import { formatDate } from '@/lib/utils';
  * it becomes able to see the queue.
  */
 export function AccountManager({ accounts, currentId }: { accounts: Profile[]; currentId: string }) {
+  const t = useMessages();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
 
         {waiting.length === 0 ? (
           <p className="mt-4 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-6 py-8 text-center text-muted">
-            Nobody is waiting. Requests arrive from the sign-in page.
+            {t('accounts.nobodyWaiting')}
           </p>
         ) : (
           <ul className="mt-4 divide-y divide-rule border-y border-rule">
@@ -105,7 +107,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                   className="flex h-13 items-center gap-2 rounded-full border border-accent px-5 font-medium text-accent transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-wash disabled:opacity-50"
                 >
                   <ShieldCheck size={16} />
-                  As administrator
+                  {t('accounts.asAdministrator')}
                 </button>
 
                 {confirming === profile.id ? (
@@ -115,14 +117,14 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                       onClick={() => decline(profile)}
                       className="h-13 rounded-full bg-critical px-5 font-medium text-paper transition-transform duration-200 hover:-translate-y-0.5"
                     >
-                      Delete for good
+                      {t('accounts.deleteForGood')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirming(null)}
                       className="h-11 px-3 text-muted underline"
                     >
-                      Keep
+                      {t('accounts.keep')}
                     </button>
                   </span>
                 ) : (
@@ -133,7 +135,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                     className="flex h-11 items-center gap-2 px-3 text-muted transition-colors hover:text-critical disabled:opacity-50"
                   >
                     <UserX size={16} />
-                    Decline
+                    {t('accounts.decline')}
                   </button>
                 )}
               </li>
@@ -143,7 +145,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
       </section>
 
       <section>
-        <h2 className="font-display text-xl">Accounts</h2>
+        <h2 className="font-display text-xl">{t('manage.accounts')}</h2>
         <ul className="mt-4 divide-y divide-rule border-y border-rule">
           {approved.map((profile) => {
             const isSelf = profile.id === currentId;
@@ -178,15 +180,15 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                     aria-label={`Role for ${profile.email}`}
                     className="h-13 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
                   >
-                    <option value="volunteer">Volunteer</option>
-                    <option value="admin">Administrator</option>
-                    <option value="pending">Suspend</option>
+                    <option value="volunteer">{t('accounts.volunteer')}</option>
+                    <option value="admin">{t('accounts.administrator')}</option>
+                    <option value="pending">{t('accounts.suspend')}</option>
                   </select>
                 )}
 
                 {lastAdmin && (
                   <span className="text-xs text-muted">
-                    The only administrator — promote someone else first
+                    {t('accounts.onlyAdmin')}
                   </span>
                 )}
               </li>
@@ -195,7 +197,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
         </ul>
       </section>
 
-      {pending && <span className="sr-only">Saving</span>}
+      {pending && <span className="sr-only">{t('common.saving')}</span>}
     </div>
   );
 }

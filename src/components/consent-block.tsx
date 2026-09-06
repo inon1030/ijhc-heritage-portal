@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useMessages } from '@/lib/i18n/provider';
 import { Info } from 'lucide-react';
 import { CONSENT_CLAUSES, CONSENT_VERSION, contactSentence } from '@/lib/consent';
 
@@ -38,6 +39,7 @@ export function ConsentBlock({
   onChange: (agreed: boolean) => void;
   disabled: boolean;
 }) {
+  const t = useMessages();
   const boxId = useId();
   const [open, setOpen] = useState(false);
   const row = useRef<HTMLSpanElement>(null);
@@ -83,7 +85,7 @@ export function ConsentBlock({
 
       <span>
         <label htmlFor={boxId} className="cursor-pointer">
-          I may share this material, and I agree to
+          {t('consent.agree')}
         </label>{' '}
         <button
           type="button"
@@ -144,7 +146,7 @@ export function ConsentBlock({
             href="/handling"
             className="mt-4 block text-accent underline underline-offset-4"
           >
-            Open the full terms in their own page
+            {t('consent.openTerms')}
           </Link>
         </span>
       )}
