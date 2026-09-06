@@ -42,6 +42,13 @@ export function MastheadShell({
    * It is absolutely positioned into the strip's left, and the button carries
    * the room for it on its padding.
    *
+   * Logical properties throughout — `start`/`end` and `ps`/`pe`, never
+   * `left`/`right` and `pl`/`pr`. In Hebrew the whole strip mirrors, and a mark
+   * pinned with `left-6` stays on the left while the `justify-end` label moves
+   * there too: seen on the deployed Hebrew page, the wordmark and MENU printed
+   * on top of each other. Physical directions are a bug in any component that
+   * has to work in five languages, two of which do not run the same way.
+   *
    * That room is reserved **only from `sm:` up**, and the reason is measured.
    * The label is `justify-end`, so the left padding never actually holds it off
    * the mark — it only sets the button's minimum width. At 375px that minimum
@@ -115,7 +122,7 @@ export function MastheadShell({
         aria-controls="masthead-bar"
         aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
         onClick={() => setPinned((v) => !v)}
-        className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pr-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9 sm:pl-[15rem]"
+        className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pe-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9 sm:ps-[15rem]"
       >
         {/*
           The prompt shows only while the bar is shut. Once it is open the bar
@@ -150,7 +157,7 @@ export function MastheadShell({
       */}
       {/* The way home, in space the strip reserves for it on the left. */}
       <div
-        className="absolute left-6 top-0 flex h-11 items-center sm:h-9"
+        className="absolute start-6 top-0 flex h-11 items-center sm:h-9"
         onPointerEnter={(e) => e.stopPropagation()}
         onFocus={(e) => e.stopPropagation()}
       >
@@ -158,7 +165,7 @@ export function MastheadShell({
       </div>
 
       <div
-        className="absolute right-5 top-1.5 z-10 sm:top-0.5"
+        className="absolute end-5 top-1.5 z-10 sm:top-0.5"
         onPointerEnter={(e) => e.stopPropagation()}
         onFocus={(e) => e.stopPropagation()}
       >

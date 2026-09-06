@@ -64,7 +64,7 @@ export async function Masthead() {
                   set only for screen readers. */}
               <Logo variant="lockup" size={58} />
               <span className="sr-only">{t('site.home')}</span>
-              <span className="hidden border-l border-rule pl-4 lg:block">
+              <span className="hidden border-s border-rule ps-4 lg:block">
                 <span className="wordmark block text-lg leading-tight">{t('site.name')}</span>
                 <span className="eyebrow block">{t('masthead.fourStreams')}</span>
               </span>

@@ -92,7 +92,7 @@ export default async function ReceiptPage({
       )}
 
       <div
-        className="animate-rise mt-8 rounded-xl border-l-[3px] px-5 py-4"
+        className="animate-rise mt-8 rounded-xl border-s-[3px] px-5 py-4"
         style={{ borderLeftColor: `var(--color-${state.tone})` }}
       >
         <p className="font-display text-xl">{state.title}</p>

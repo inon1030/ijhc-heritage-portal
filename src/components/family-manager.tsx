@@ -147,7 +147,7 @@ export function FamilyManager({
 
   return (
     <div className="max-w-4xl">
-      <p className="mb-6 rounded-lg border-l-[3px] border-caution bg-accent-wash px-4 py-3 text-sm leading-relaxed text-caution">
+      <p className="mb-6 rounded-lg border-s-[3px] border-caution bg-accent-wash px-4 py-3 text-sm leading-relaxed text-caution">
         {t('families.namesAre')} <strong>published</strong> on every record they are attached to, which
         means the surnames of living relatives appear in public. Register a family when the name is
         already part of the historical record — not to identify a private donor.
@@ -202,7 +202,7 @@ export function FamilyManager({
       </form>
 
       {error && (
-        <p role="alert" className="mb-5 rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
+        <p role="alert" className="mb-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
           {error}
         </p>
       )}
@@ -285,7 +285,7 @@ export function FamilyManager({
                           is exactly the case where the cascade costs most.
                       */}
                       {removing === family.id && (
-                        <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
+                        <div className="mt-3 rounded-lg border-s-[3px] border-critical bg-critical/6 px-4 py-3">
                           <p className="text-sm leading-relaxed">
                             {t('common.remove')} <strong>{family.name}</strong>? Every record attached to this
                             family loses the attachment, and{' '}
@@ -519,7 +519,7 @@ export function FamilyManager({
                     )}
 
                     {erasing === contact.id && (
-                      <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
+                      <div className="mt-3 rounded-lg border-s-[3px] border-critical bg-critical/6 px-4 py-3">
                         <p className="text-sm leading-relaxed">
                           {t('families.erase')} <strong>{contact.email}</strong> from the register? This is what to
                           do when somebody asks to be forgotten.{' '}

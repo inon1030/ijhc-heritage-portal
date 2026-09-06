@@ -63,7 +63,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
       {error && (
         <p
           role="alert"
-          className="rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
+          className="rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
         >
           {error}
         </p>
@@ -129,7 +129,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
               </div>
 
               {confirmingThis && (
-                <div className="mt-4 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3.5">
+                <div className="mt-4 rounded-lg border-s-[3px] border-critical bg-critical/6 px-4 py-3.5">
                   <p className="text-sm leading-relaxed">
                     This destroys the record, its catalogue, and the uploaded file itself. Nothing
                     brings it back. Type <strong>{item.title}</strong> to confirm.

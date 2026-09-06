@@ -57,7 +57,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
   return (
     <div className="max-w-4xl space-y-10">
       {error && (
-        <p role="alert" className="rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
+        <p role="alert" className="rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
           {error}
         </p>
       )}
@@ -66,7 +66,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
         <h2 className="font-display text-xl">
           Waiting for a decision
           {waiting.length > 0 && (
-            <span className="ml-2 rounded-full bg-accent px-2.5 py-0.5 font-mono text-sm text-ink">
+            <span className="ms-2 rounded-full bg-accent px-2.5 py-0.5 font-mono text-sm text-ink">
               {waiting.length}
             </span>
           )}
@@ -157,7 +157,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                 <span className="min-w-[14rem] flex-1">
                   <span className="block font-medium">
                     {profile.full_name ?? profile.email}
-                    {isSelf && <span className="ml-2 text-xs text-muted">you</span>}
+                    {isSelf && <span className="ms-2 text-xs text-muted">you</span>}
                   </span>
                   <span className="machine block text-muted">{profile.email}</span>
                 </span>

@@ -427,7 +427,7 @@ export function UploadFlow() {
            * photograph had been published had no way to find out. These are
            * real links, they do not expire, and they need no account.
            */
-          <div className="mt-7 border-t border-rule pt-6 text-left">
+          <div className="mt-7 border-t border-rule pt-6 text-start">
             <p className="font-medium">
               {created.length > 1 ? t('upload.done.keepLinks') : t('upload.done.keepLink')}
             </p>
@@ -644,7 +644,7 @@ export function UploadFlow() {
       </Step>
 
       {error && (
-        <p role="alert" className="animate-rise rounded-lg border-l-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
+        <p role="alert" className="animate-rise rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
           {error}
         </p>
       )}
@@ -771,9 +771,9 @@ function Step({
 
       {/* The hint sits under the whole header on a phone: beside the ring it
           left a ragged edge and about two words to a line. */}
-      {hint && <p className="mb-4 text-muted sm:mb-5 sm:pl-[3.75rem]">{hint}</p>}
+      {hint && <p className="mb-4 text-muted sm:mb-5 sm:ps-[3.75rem]">{hint}</p>}
 
-      <div className="sm:pl-[3.75rem]">{children}</div>
+      <div className="sm:ps-[3.75rem]">{children}</div>
     </Reveal>
   );
 }

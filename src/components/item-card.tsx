@@ -35,7 +35,7 @@ export async function ItemCard({ item }: { item: Item & { file: ItemFile | null 
 
         <span
           aria-hidden
-          className="absolute top-3 right-3 flex h-9 w-9 translate-y-1 items-center justify-center rounded-full bg-paper/90 opacity-0 shadow-soft backdrop-blur-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+          className="absolute top-3 end-3 flex h-9 w-9 translate-y-1 items-center justify-center rounded-full bg-paper/90 opacity-0 shadow-soft backdrop-blur-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
         >
           <ArrowUpRight size={17} className="text-accent-strong" />
         </span>
@@ -88,7 +88,7 @@ export async function ItemRow({ item }: { item: Item & { file: ItemFile | null }
         )}
       </div>
 
-      <div className="min-w-0 flex-1 space-y-1 self-center pr-2">
+      <div className="min-w-0 flex-1 space-y-1 self-center pe-2">
         <p className="eyebrow">{t(categoryKey(item.category))}</p>
         <h3 className="truncate font-display text-xl transition-colors group-hover:text-accent">
           {item.title}
@@ -103,7 +103,7 @@ export async function ItemRow({ item }: { item: Item & { file: ItemFile | null }
       <ArrowUpRight
         size={19}
         aria-hidden
-        className="mt-2 mr-2 shrink-0 text-rule-strong transition-colors group-hover:text-accent-strong"
+        className="mt-2 me-2 shrink-0 text-rule-strong transition-colors group-hover:text-accent-strong"
       />
     </Link>
   );

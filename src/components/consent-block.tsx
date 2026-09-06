@@ -124,7 +124,7 @@ export function ConsentBlock({
           onPointerLeave={(e) => {
             if (e.pointerType === 'mouse') scheduleClose();
           }}
-          className="card animate-rise absolute bottom-full left-0 z-30 mb-3 block max-h-[min(22rem,52vh)] w-full max-w-[28rem] overflow-auto p-5 text-left shadow-lift"
+          className="card animate-rise absolute bottom-full start-0 z-30 mb-3 block max-h-[min(22rem,52vh)] w-full max-w-[28rem] overflow-auto p-5 text-left shadow-lift"
         >
           <span className="eyebrow mb-3 block">Terms · version {CONSENT_VERSION}</span>
 

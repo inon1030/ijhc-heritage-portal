@@ -155,7 +155,7 @@ export function FilePicker({
                 <button
                   type="button"
                   onClick={() => setViewing(index)}
-                  className="block w-full overflow-hidden rounded border border-rule bg-paper text-left"
+                  className="block w-full overflow-hidden rounded border border-rule bg-paper text-start"
                 >
                   <span className="flex h-28 items-center justify-center bg-paper-3">
                     {picked.previewUrl ? (
@@ -179,7 +179,7 @@ export function FilePicker({
                   type="button"
                   onClick={() => remove(picked.id)}
                   disabled={disabled}
-                  className="absolute top-1.5 right-1.5 rounded-full bg-ink/85 p-1.5 text-paper opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 disabled:hidden"
+                  className="absolute top-1.5 end-1.5 rounded-full bg-ink/85 p-1.5 text-paper opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 disabled:hidden"
                 >
                   <X size={14} />
                   <span className="sr-only">Remove {picked.file.name}</span>
@@ -211,7 +211,7 @@ export function FilePicker({
           {rejections.map((message) => (
             <li
               key={message}
-              className="rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
+              className="rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
             >
               {message}
             </li>

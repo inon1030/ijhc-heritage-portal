@@ -90,7 +90,7 @@ export function LinkInput({
           type="button"
           onClick={onClear}
           disabled={disabled}
-          className="absolute top-3 right-3 rounded-full p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
+          className="absolute top-3 end-3 rounded-full p-1.5 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
         >
           <X size={16} aria-hidden />
           <span className="sr-only">{t('upload.action.removeLink')}</span>
@@ -101,7 +101,7 @@ export function LinkInput({
           Captured from {captured.siteName ?? new URL(captured.sourceUrl).hostname}
         </p>
 
-        <p className="pr-6 font-display text-lg leading-snug">{captured.title}</p>
+        <p className="pe-6 font-display text-lg leading-snug">{captured.title}</p>
 
         <p className="machine mt-1 break-all text-sm text-muted">{captured.sourceUrl}</p>
 
@@ -120,7 +120,7 @@ export function LinkInput({
         {/* Said on the card, not in a footnote. A record that implied the
             archive had watched the video would be worse than no record. */}
         {captured.video && (
-          <p className="mt-3 rounded-lg border-l-[3px] border-caution bg-accent-wash px-3 py-2 text-sm leading-relaxed text-caution">
+          <p className="mt-3 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-sm leading-relaxed text-caution">
             The archive has not watched this video. It kept the title, the channel
             {captured.video.author ? ` (${captured.video.author})` : ''}, and the thumbnail — which
             is what {captured.video.provider} publishes about it.
@@ -170,7 +170,7 @@ export function LinkInput({
       {error && (
         <p
           role="alert"
-          className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
+          className="mt-3 rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
         >
           {error}
         </p>

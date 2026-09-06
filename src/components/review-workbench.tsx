@@ -171,8 +171,8 @@ export function ReviewWorkbench({
             a reviewer should be able to open the source before reading a word
             of what the archive made of it. */}
         {item.source_url && (
-          <p className="mb-3 rounded-lg border-l-[3px] border-cochin bg-turquoise-wash/60 px-3 py-2 text-sm">
-            <span className="eyebrow mr-2">{t('wb.capturedFrom')}</span>
+          <p className="mb-3 rounded-lg border-s-[3px] border-cochin bg-turquoise-wash/60 px-3 py-2 text-sm">
+            <span className="eyebrow me-2">{t('wb.capturedFrom')}</span>
             <a
               href={item.source_url}
               target="_blank"
@@ -269,7 +269,7 @@ export function ReviewWorkbench({
       <div>
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <h2 className="eyebrow">{t('wb.theRecord')}</h2>
-          <span className="eyebrow text-right">
+          <span className="eyebrow text-end">
             {categoryLabel(item.category)}
             {/* Named up here as well as in the control below, because "who can
                 see this" is the one decision on the screen a reviewer can make
@@ -285,7 +285,7 @@ export function ReviewWorkbench({
           item.contributor ||
           corrections.length > 0 ||
           item.consent_version) && (
-          <section className="mb-5 rounded-lg border-l-[3px] border-cochin bg-turquoise-wash/60 px-4 py-3.5">
+          <section className="mb-5 rounded-lg border-s-[3px] border-cochin bg-turquoise-wash/60 px-4 py-3.5">
             <p className="eyebrow mb-1.5">{t('wb.contributorSaid')}</p>
             {item.contributor_description && (
               <p className="leading-relaxed">{item.contributor_description}</p>
@@ -384,7 +384,7 @@ export function ReviewWorkbench({
             model is wrong about faded and cropped items often enough that this
             has to read as a question. */}
         {analysis?.off_topic && !simulated && (
-          <section className="mb-5 rounded-lg border-l-[3px] border-caution bg-accent-wash px-4 py-3.5">
+          <section className="mb-5 rounded-lg border-s-[3px] border-caution bg-accent-wash px-4 py-3.5">
             <p className="eyebrow mb-1">{t('wb.mayNotBelong')}</p>
             {analysis.off_topic_reason && (
               <p className="machine leading-relaxed text-ink-2">{analysis.off_topic_reason}</p>
@@ -398,7 +398,7 @@ export function ReviewWorkbench({
 
         {simulated && <SimulatedNotice className="mb-5" />}
         {analysis?.status === 'failed' && !simulated && (
-          <p className="mb-5 rounded-lg border-l-[3px] border-caution bg-accent-wash px-3 py-2 text-xs text-caution">
+          <p className="mb-5 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-xs text-caution">
             {t('wb.noAnalysis')}
           </p>
         )}
@@ -575,7 +575,7 @@ export function ReviewWorkbench({
         </div>
 
         {error && (
-          <p role="alert" className="mt-5 rounded-lg border-l-[3px] border-critical bg-critical/8 px-4 py-3 text-sm text-critical">
+          <p role="alert" className="mt-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3 text-sm text-critical">
             {error}
           </p>
         )}
@@ -638,7 +638,7 @@ export function ReviewWorkbench({
           <button
             onClick={remove}
             disabled={busy !== null}
-            className="ml-auto flex items-center gap-1.5 px-3 py-2.5 text-sm text-critical hover:underline disabled:opacity-50"
+            className="ms-auto flex items-center gap-1.5 px-3 py-2.5 text-sm text-critical hover:underline disabled:opacity-50"
           >
             {busy === 'delete' ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
             Delete permanently

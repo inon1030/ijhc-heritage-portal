@@ -153,7 +153,7 @@ export function LoginForm() {
         </label>
 
         {error && (
-          <p role="alert" className="rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
+          <p role="alert" className="rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
             {error}
           </p>
         )}

@@ -50,7 +50,7 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
         <div className="relative min-w-64 flex-1">
           <Search
             size={19}
-            className="absolute top-1/2 left-4 -translate-y-1/2 text-muted"
+            className="absolute top-1/2 start-4 -translate-y-1/2 text-muted"
             aria-hidden
           />
           <input
@@ -59,7 +59,7 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('controls.searchTitles')}
             aria-label={t('controls.search')}
-            className="h-14 w-full rounded-full card bg-paper-2/60 pr-4 pl-12 placeholder:text-muted/70 focus:border-accent-strong focus:bg-paper focus:outline-none"
+            className="h-14 w-full rounded-full card bg-paper-2/60 pe-4 ps-12 placeholder:text-muted/70 focus:border-accent-strong focus:bg-paper focus:outline-none"
           />
         </div>
 
@@ -88,7 +88,7 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="eyebrow mr-1 w-full sm:w-auto">{t('controls.community')}</span>
+        <span className="eyebrow me-1 w-full sm:w-auto">{t('controls.community')}</span>
         {COMMUNITIES.map((c) => (
           <Chip
             key={c}
@@ -100,7 +100,7 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
           </Chip>
         ))}
 
-        <span className="eyebrow mr-1 w-full sm:ml-4 sm:w-auto">{t('controls.type')}</span>
+        <span className="eyebrow me-1 w-full sm:ms-4 sm:w-auto">{t('controls.type')}</span>
         {CATEGORIES.map((c) => (
           <Chip key={c} active={category === c} onClick={() => apply({ category: category === c ? null : c })}>
             {t(categoryKey(c))}
@@ -113,13 +113,13 @@ export function PortalControls({ view }: { view: 'grid' | 'list' }) {
               setQuery('');
               startTransition(() => router.push('/portal', { scroll: false }));
             }}
-            className="ml-2 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-muted transition-colors hover:bg-paper-2 hover:text-critical"
+            className="ms-2 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm text-muted transition-colors hover:bg-paper-2 hover:text-critical"
           >
             <X size={14} /> {t('controls.clearAll')}
           </button>
         )}
 
-        {pending && <span className="eyebrow ml-auto">{t('controls.updating')}</span>}
+        {pending && <span className="eyebrow ms-auto">{t('controls.updating')}</span>}
       </div>
     </div>
   );

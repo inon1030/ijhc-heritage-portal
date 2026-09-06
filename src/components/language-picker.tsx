@@ -82,7 +82,7 @@ export function LanguagePicker({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-xl border border-rule bg-paper shadow-lift"
+          className="absolute end-0 top-10 z-50 w-56 overflow-hidden rounded-xl border border-rule bg-paper shadow-lift"
         >
           <p className="border-b border-rule px-4 py-2.5 text-xs leading-snug text-muted">
             {t('language.prompt')}
@@ -101,7 +101,7 @@ export function LanguagePicker({
                   setPending(language.code);
                   choose(language.code);
                 }}
-                className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-paper-2 disabled:opacity-60"
+                className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-start transition-colors hover:bg-paper-2 disabled:opacity-60"
               >
                 <span className="flex flex-col">
                   {/* Its own name, in its own script and its own direction —

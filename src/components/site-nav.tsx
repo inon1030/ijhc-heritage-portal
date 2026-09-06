@@ -69,7 +69,7 @@ export function SiteNav({ profile, queueCount }: NavProps) {
    * fold and not a secret.
    */
   const account = profile ? (
-    <form action="/api/auth/signout" method="post" className="md:ml-auto">
+    <form action="/api/auth/signout" method="post" className="md:ms-auto">
       <button
         type="submit"
         title={t('nav.signedInAs', { email: profile.email })}
@@ -89,7 +89,7 @@ export function SiteNav({ profile, queueCount }: NavProps) {
     // Signing in and asking for an account are two different intentions, and
     // one link labelled "Volunteer sign in" hid the second behind a tab nobody
     // knew was there.
-    <span className="flex flex-col gap-2 md:ml-auto md:flex-row md:items-center">
+    <span className="flex flex-col gap-2 md:ms-auto md:flex-row md:items-center">
       <Link
         href="/login?mode=request"
         className="flex h-[46px] items-center justify-center gap-2 rounded-full px-4 text-muted transition-colors hover:bg-paper-2 hover:text-ink"
@@ -138,13 +138,13 @@ export function SiteNav({ profile, queueCount }: NavProps) {
           className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 border-t border-rule pt-2 md:mt-2"
           aria-label={t('nav.archiveAdmin')}
         >
-          <span className="eyebrow mr-2 hidden md:inline">{t('nav.archive')}</span>
+          <span className="eyebrow me-2 hidden md:inline">{t('nav.archive')}</span>
           <QuietLink href="/review" current={pathname.startsWith('/review')}>
             <ClipboardCheck size={16} strokeWidth={1.9} aria-hidden />
             {t('nav.review')}
             {queueCount > 0 && (
               <span
-                className="ml-1 rounded-full bg-accent-strong px-2 py-0.5 font-mono text-xs leading-none text-paper"
+                className="ms-1 rounded-full bg-accent-strong px-2 py-0.5 font-mono text-xs leading-none text-paper"
                 aria-label={t('nav.waiting', { count: queueCount })}
               >
                 {queueCount}

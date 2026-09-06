@@ -20,7 +20,7 @@ export async function CommunityMark({ community }: { community: Community | null
     return <span className="text-muted italic">{t('streams.communityNotIdentified')}</span>;
   }
   return (
-    <span className="inline-flex items-center gap-2.5 rounded-full bg-paper-2 py-1.5 pr-4 pl-3 font-medium ring-1 ring-rule">
+    <span className="inline-flex items-center gap-2.5 rounded-full bg-paper-2 py-1.5 pe-4 ps-3 font-medium ring-1 ring-rule">
       <span
         aria-hidden
         className="h-3 w-3 shrink-0 rounded-full ring-2 ring-paper"

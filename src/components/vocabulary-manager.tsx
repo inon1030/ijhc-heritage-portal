@@ -156,14 +156,14 @@ export function VocabularyManager({
         {error && (
           <p
             role="alert"
-            className="mb-5 rounded-lg border-l-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
+            className="mb-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical"
           >
             {error}
           </p>
         )}
 
         {homeless.length > 0 && (
-          <div className="mb-8 rounded-xl border-l-[3px] border-caution bg-accent-wash px-4 py-4">
+          <div className="mb-8 rounded-xl border-s-[3px] border-caution bg-accent-wash px-4 py-4">
             <h2 className="font-display text-lg">
               {homeless.length === 1 ? 'One term has no home' : `${homeless.length} terms have no home`}
             </h2>
@@ -275,7 +275,7 @@ export function VocabularyManager({
                           vocabulary. Merging is almost always what was meant.
                       */}
                       {removing === row.id && (
-                        <div className="mt-3 rounded-lg border-l-[3px] border-critical bg-critical/6 px-4 py-3">
+                        <div className="mt-3 rounded-lg border-s-[3px] border-critical bg-critical/6 px-4 py-3">
                           <p className="text-sm leading-relaxed">
                             {t('common.remove')} <strong>{row.term}</strong> from the vocabulary? Records already
                             catalogued with it keep the word, but it can no longer be chosen — and

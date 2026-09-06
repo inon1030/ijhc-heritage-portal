@@ -81,7 +81,7 @@ export function PreReview({
   const submitButton = (
     <>
     {blocked && (
-      <p className="mb-3 rounded-lg border-l-[3px] border-caution bg-accent-wash px-3 py-2 text-sm text-caution">
+      <p className="mb-3 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-sm text-caution">
         Tick the box under &ldquo;Tell us what you know&rdquo; to confirm you may share this
         material.
       </p>
@@ -216,7 +216,7 @@ function EntryPanel({
       )}
 
       {entry.analysisError && (
-        <p className="mb-4 rounded-lg border-l-[3px] border-caution bg-accent-wash px-3 py-2 text-sm text-caution">
+        <p className="mb-4 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-sm text-caution">
           {entry.analysisError}
         </p>
       )}
@@ -255,7 +255,7 @@ function EntryPanel({
         <>
           <div className="mb-5">
             <p className="eyebrow mb-1.5">{t('prereview.machineReading')}</p>
-            <p className="machine border-l-2 border-rule pl-3 text-ink-2">{analysis.summary}</p>
+            <p className="machine border-s-2 border-rule ps-3 text-ink-2">{analysis.summary}</p>
           </div>
 
           {(
@@ -281,7 +281,7 @@ function EntryPanel({
                 {draft.keywords.map((term) => (
                   <li
                     key={term}
-                    className="flex items-center gap-1 rounded-full border border-rule bg-paper py-1.5 pr-1.5 pl-3.5 text-sm"
+                    className="flex items-center gap-1 rounded-full border border-rule bg-paper py-1.5 pe-1.5 ps-3.5 text-sm"
                   >
                     {term}
                     <button
