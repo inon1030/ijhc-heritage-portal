@@ -1,6 +1,6 @@
 import 'server-only';
 import { fileKind } from '@/lib/files/validate';
-import { viewableUrl } from '@/components/file-preview';
+import { viewableUrl } from '@/lib/files/urls';
 import type { Item, ItemFile } from '@/lib/types';
 
 /**

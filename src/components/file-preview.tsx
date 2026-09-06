@@ -5,25 +5,7 @@ import { fileKind } from '@/lib/files/validate';
 import { useMessages } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import type { ItemFile } from '@/lib/types';
-
-/**
- * Every asset is fetched through /api/files/[id], which checks permission and
- * then redirects to a short-lived signed URL. Storage paths are never exposed.
- */
-export function fileUrl(fileId: string) {
-  return `/api/files/${fileId}`;
-}
-
-/**
- * The address to put in an `<img>`.
- *
- * A TIFF master will not render in Chrome or Firefox, so anything with a
- * derivative is shown through it. The master stays one click away and is what
- * "Open file" reaches. The route makes the same permission decision either way.
- */
-export function viewableUrl(file: ItemFile) {
-  return file.preview_path ? `/api/files/${file.id}?rendition` : `/api/files/${file.id}`;
-}
+import { fileUrl, viewableUrl } from '@/lib/files/urls';
 
 export function FilePreview({
   file,
