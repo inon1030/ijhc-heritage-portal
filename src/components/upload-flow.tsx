@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Check, Loader2, Sparkles } from 'lucide-react';
 import { ConsentBlock } from '@/components/consent-block';
 import { RingMark, buttonClass } from '@/components/primitives';
-import { Reveal } from '@/components/reveal';
 import { FilePicker, type PickedFile } from '@/components/file-picker';
 import { LinkInput, type CapturedLink } from '@/components/link-input';
 import { PreReview, type Draft } from '@/components/pre-review';
@@ -82,6 +81,30 @@ export function UploadFlow() {
   const [fullName, setFullName] = useState('');
   const [agreed, setAgreed] = useState(false);
 
+  /*
+   * Three screens, not one long page.
+   *
+   * The whole form used to be visible at once: pick a file, answer six
+   * questions, tick a box, press analyse. That is a form for somebody who
+   * already knows what the archive wants. The people this is built for are
+   * families with a shoebox, and the difference between "one thing at a time"
+   * and "here is everything" is whether they finish.
+   */
+  const [screen, setScreen] = useState<1 | 2 | 3>(1);
+
+  /**
+   * What the contributor says they know, in their own words.
+   *
+   * This is the most valuable field on the page and it did not exist. The
+   * model is looking at a faded print; the person typing is holding it and
+   * knows whose grandmother that is. It goes to the model as fact.
+   */
+  const [known, setKnown] = useState('');
+  /** Which language the AI should write its reading in. */
+  const [analysisLang, setAnalysisLang] = useState('English');
+  /** Fields the contributor has said outright they cannot answer. */
+  const [dontKnow, setDontKnow] = useState<Record<string, boolean>>({});
+
   const [phase, setPhase] = useState<Phase>('describe');
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +129,17 @@ export function UploadFlow() {
   const many = files.length > 1;
   const needsTitle = Boolean(captured) || grouping === 'one' || !many;
   const hasSomething = captured ? true : files.length > 0;
-  const canAnalyse = hasSomething && agreed && !busy;
+  /*
+   * The address is the one thing the archive insists on now.
+   *
+   * It was optional, and optional meant a contribution arriving with no way to
+   * ask "who is this in the photograph?" — which is the question that turns a
+   * scan into a record. Validated in the shape a form can validate: an address
+   * that is obviously not one is caught here, and one that is merely wrong is
+   * caught when nobody replies.
+   */
+  const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  const canAnalyse = hasSomething && agreed && emailOk && !busy;
 
   function reset() {
     setFiles([]);
@@ -122,6 +155,7 @@ export function UploadFlow() {
     setError(null);
     setProgress(null);
     setPhase('describe');
+    setScreen(1);
   }
 
   /** Reads a file the archive already holds. The two paths meet here. */
@@ -141,6 +175,10 @@ export function UploadFlow() {
         grant: input.grant,
         expiresAt: input.expiresAt,
         title: title.trim() || input.fileName,
+        // The contributor's own account, and the language they want it back in.
+        // Both go to the model; `known` goes as fact, not as a hint.
+        known: known.trim() || undefined,
+        language: analysisLang,
       }),
     });
     const read = await analyseRes.json();
@@ -291,6 +329,7 @@ export function UploadFlow() {
       );
       setShowPreReview(true);
       setPhase('reviewing');
+      setScreen(3);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('upload.error.generic'));
       setPhase('describe');
@@ -387,6 +426,7 @@ export function UploadFlow() {
     } catch (e) {
       setError(e instanceof Error ? e.message : t('upload.error.save'));
       setPhase('reviewing');
+      setScreen(3);
     }
   }
 
@@ -455,227 +495,387 @@ export function UploadFlow() {
     );
   }
 
+  const stepIndicator = (
+    <p className="eyebrow mb-1">{t('flow.step', { n: screen })}</p>
+  );
+
   return (
-    <div className="space-y-10 sm:space-y-14">
-      <Step
-        number="01"
-        title={captured ? t('upload.step.filesRead') : t('upload.step.files')}
-        hint={
-          captured
-            ? 'A copy of the text and the picture is kept here, so the record survives the page coming down.'
-            : t('upload.step.filesHint')
-        }
-        done={hasSomething}
-      >
-        {/* Files or a link, not both. A captured page is one record made of two
-            views of itself, so "are these one item or several" has no answer
-            that spans the two. */}
-        {!captured && <FilePicker files={files} onChange={setFiles} disabled={busy} />}
-
-        {files.length === 0 && (
-          <div className={captured ? undefined : 'mt-6 border-t border-rule pt-6'}>
-            {!captured && <p className="eyebrow mb-2.5">{t('upload.step.orAddress')}</p>}
-            <LinkInput
-              captured={captured}
-              onCapture={setCaptured}
-              onClear={() => setCaptured(null)}
-              disabled={busy}
-            />
-          </div>
-        )}
-      </Step>
-
+    <div>
       {/*
-        Locked once the files have been read.
+        One screen at a time.
 
-        The grouping decides how the catalogue fields are distributed across
-        drafts, and that happens at analysis time. Changing it afterwards left
-        the two out of step: submit re-read `grouping` fresh while the drafts
-        still held the old shape, so switching "separate" to "one" dropped every
-        field but the first record's, and switching the other way submitted
-        empty field sets. Both reported success.
+        Everything below used to be on one page: pick a file, answer six
+        questions, tick a box, press analyse. That is a form for somebody who
+        already knows what the archive wants. The people it is built for are
+        families with a shoebox, and one thing at a time is the difference
+        between finishing and closing the tab.
       */}
-      {many && !captured && (
-        <Step
-          number="02"
-          title={t('upload.step.grouping')}
-          hint={
-            analysed.length > 0
-              ? t('upload.step.groupingSettled')
-              : t('upload.step.groupingOpen')
-          }
-          done
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <GroupingChoice
-              active={grouping === 'one'}
-              onClick={() => setGrouping('one')}
-              disabled={busy || analysed.length > 0}
-              label={t('upload.step.onePages')}
-              detail={`One record with ${files.length} files — a document scanned page by page, or one object photographed from several sides.`}
-            />
-            <GroupingChoice
-              active={grouping === 'separate'}
-              onClick={() => setGrouping('separate')}
-              disabled={busy || analysed.length > 0}
-              label={t('upload.step.separate')}
-              detail={`${files.length} records, each reviewed on its own — unrelated photographs or documents from the same collection.`}
+      <div className="mb-8 flex gap-1.5" aria-hidden>
+        {[1, 2, 3].map((n) => (
+          <span
+            key={n}
+            className={cn(
+              'h-1 flex-1 rounded-full transition-colors duration-300',
+              n <= screen ? 'bg-accent-strong' : 'bg-rule',
+            )}
+          />
+        ))}
+      </div>
+
+      {/* ── 1. what you have ─────────────────────────────────────────────── */}
+      {screen === 1 && (
+        <section className="animate-rise">
+          {stepIndicator}
+          <h2 className="font-display text-2xl sm:text-3xl">{t('flow.s1.title')}</h2>
+          <p className="mt-2 leading-relaxed text-muted">{t('flow.s1.hint')}</p>
+
+          <div className="mt-6">
+            {!captured && (
+              <FilePicker files={files} onChange={setFiles} disabled={busy} />
+            )}
+            {files.length === 0 && (
+              <div className={cn(files.length === 0 && !captured && 'mt-6')}>
+                {!captured && <p className="eyebrow mb-2.5">{t('upload.step.orAddress')}</p>}
+                <LinkInput
+                  captured={captured}
+                  onCapture={setCaptured}
+                  onClear={() => setCaptured(null)}
+                  disabled={busy}
+                />
+              </div>
+            )}
+          </div>
+
+          {many && !captured && (
+            <div className="mt-8 border-t border-rule pt-6">
+              <p className="eyebrow mb-1">{t('upload.step.grouping')}</p>
+              <p className="mb-3 text-sm text-muted">{t('upload.step.groupingOpen')}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <GroupingChoice
+                  active={grouping === 'one'}
+                  onClick={() => setGrouping('one')}
+                  label={t('upload.step.onePages')}
+                  detail="Front and back, or the pages of one letter."
+                  disabled={busy}
+                />
+                <GroupingChoice
+                  active={grouping === 'separate'}
+                  onClick={() => setGrouping('separate')}
+                  label={t('upload.step.separate')}
+                  detail="Different photographs, each its own record."
+                  disabled={busy}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setScreen(2)}
+              disabled={!hasSomething}
+              className={cn(
+                buttonClass('primary', 'h-13 px-8'),
+                !hasSomething && 'pointer-events-none bg-paper-3 text-muted shadow-none',
+              )}
+            >
+              {t('flow.next')}
+            </button>
+            {!hasSomething && <span className="text-sm text-muted">{t('flow.needFile')}</span>}
+          </div>
+        </section>
+      )}
+
+      {/* ── 2. what you know ─────────────────────────────────────────────── */}
+      {screen === 2 && (
+        <section className="animate-rise">
+          {stepIndicator}
+          <h2 className="font-display text-2xl sm:text-3xl">{t('flow.s2.title')}</h2>
+          <p className="mt-2 leading-relaxed text-muted">{t('flow.s2.hint')}</p>
+
+          <div className="mt-6 space-y-5">
+            {/*
+              The address, and the only thing on this page that is required.
+
+              It was optional, and optional meant contributions arriving with no
+              way to ask "who is this in the photograph?" — the question that
+              turns a scan into a record.
+            */}
+            <label className="block">
+              <span className="eyebrow mb-1.5 block">
+                {t('flow.email')} <span className="text-critical">*</span>
+              </span>
+              <input
+                type="email"
+                dir="ltr"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                aria-invalid={email.trim().length > 0 && !emailOk}
+                className={cn(
+                  'h-13 w-full rounded-lg border bg-paper px-4 focus:outline-none',
+                  email.trim().length > 0 && !emailOk
+                    ? 'border-critical focus:border-critical'
+                    : 'border-rule focus:border-accent-strong',
+                )}
+              />
+              {email.trim().length > 0 && !emailOk && (
+                <span className="mt-1.5 block text-sm text-critical">{t('flow.emailInvalid')}</span>
+              )}
+              <span className="mt-1.5 block text-sm leading-relaxed text-muted">
+                {t('flow.emailWhy')}
+              </span>
+            </label>
+
+            {/*
+              The most valuable field here, and it did not exist before.
+
+              The model is looking at a faded print. The person typing is
+              holding it and knows whose grandmother that is. What they write
+              goes to the model as fact, not as a hint to weigh against pixels.
+            */}
+            <label className="block">
+              <span className="eyebrow mb-1.5 block">{t('flow.whatYouKnow')}</span>
+              <textarea
+                value={known}
+                onChange={(e) => setKnown(e.target.value)}
+                rows={4}
+                maxLength={2000}
+                dir="auto"
+                placeholder={t('flow.whatYouKnowPlaceholder')}
+                className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 leading-relaxed focus:border-accent-strong focus:outline-none"
+              />
+              <span className="mt-1.5 block text-sm leading-relaxed text-muted">
+                {t('flow.whatYouKnowHint')}
+              </span>
+            </label>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Answerable
+                id="title"
+                label={t('upload.field.title')}
+                placeholder={t('upload.field.titlePlaceholder')}
+                value={title}
+                onChange={setTitle}
+                dontKnow={dontKnow}
+                setDontKnow={setDontKnow}
+                disabled={busy}
+              />
+              <Answerable
+                id="source"
+                label={t('upload.field.origin')}
+                placeholder={t('upload.field.originPlaceholder')}
+                value={source}
+                onChange={setSource}
+                dontKnow={dontKnow}
+                setDontKnow={setDontKnow}
+                disabled={busy}
+              />
+              <Answerable
+                id="fullName"
+                label={t('upload.field.yourName')}
+                placeholder={t('upload.field.yourNamePlaceholder')}
+                value={fullName}
+                onChange={setFullName}
+                dontKnow={dontKnow}
+                setDontKnow={setDontKnow}
+                disabled={busy}
+              />
+              <label className="block">
+                <span className="eyebrow mb-1.5 block">{t('flow.language')}</span>
+                <select
+                  value={analysisLang}
+                  onChange={(e) => setAnalysisLang(e.target.value)}
+                  className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+                >
+                  {ANALYSIS_LANGUAGES.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1.5 block text-sm text-muted">{t('flow.languageHint')}</span>
+              </label>
+            </div>
+
+            {/* Agreement sits on the button that sends the file out of the
+                building to Google, not at submission. */}
+            <ConsentBlock agreed={agreed} onChange={setAgreed} disabled={busy} />
+          </div>
+
+          {error && (
+            <p role="alert" className="mt-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
+              {error}
+            </p>
+          )}
+
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setScreen(1)}
+              disabled={busy}
+              className={buttonClass('quiet', 'h-13 px-6')}
+            >
+              {t('flow.back')}
+            </button>
+            <button
+              type="button"
+              onClick={runAnalysis}
+              disabled={!canAnalyse}
+              className={cn(
+                buttonClass('accent', 'h-13 flex-1 px-8 text-lg sm:flex-none'),
+                !canAnalyse && 'pointer-events-none bg-paper-3 text-muted shadow-none',
+              )}
+            >
+              {phase === 'analysing' ? (
+                <>
+                  <Loader2 size={17} className="animate-spin" />
+                  {progress && progress.total > 1
+                    ? `${progress.done + 1} / ${progress.total}`
+                    : t('flow.analysing')}
+                </>
+              ) : (
+                <>
+                  <Sparkles size={17} />
+                  {t('flow.analyse')}
+                </>
+              )}
+            </button>
+            {!canAnalyse && !busy && (
+              <span className="text-sm text-muted">
+                {!emailOk ? t('flow.emailMissing') : !agreed ? t('flow.needConsent') : ''}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ── 3. what the AI made of it ────────────────────────────────────── */}
+      {screen === 3 && (
+        <section className="animate-rise">
+          {stepIndicator}
+          <h2 className="font-display text-2xl sm:text-3xl">{t('flow.s3.title')}</h2>
+          <p className="mt-2 leading-relaxed text-muted">{t('flow.s3.hint')}</p>
+
+          {error && (
+            <p role="alert" className="mt-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
+              {error}
+            </p>
+          )}
+
+          <div className="mt-6">
+            <PreReview
+              entries={analysed.map((entry) => ({
+                id: entry.id,
+                fileName: entry.fileName,
+                previewUrl: entry.previewUrl,
+                analysis: entry.analysis,
+                analysisError: entry.analysisError,
+                metadata: entry.metadata,
+                durationMs: entry.durationMs,
+              }))}
+              drafts={drafts}
+              onDraftChange={(id, draft) => setDrafts((all) => ({ ...all, [id]: draft }))}
+              perItemTitles={grouping === 'separate' && many}
+              simulated={simulated}
+              hidden={!showPreReview}
+              onHiddenChange={(nowHidden) => setShowPreReview(!nowHidden)}
+              onSubmit={submit}
+              submitting={phase === 'submitting'}
+              blocked={!agreed}
             />
           </div>
-        </Step>
-      )}
 
-      <Step
-        number={many ? '03' : '02'}
-        title={t('upload.step.tell')}
-        hint="Whatever you have. Blanks are fine — a volunteer fills the rest."
-        done={agreed}
-      >
-        <div className="grid gap-5 sm:grid-cols-2">
-          {needsTitle && (
-            <label className="block">
-              <span className="eyebrow mb-1.5 block">{t('upload.field.title')}</span>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={200}
-                disabled={busy}
-                placeholder={t('upload.field.titlePlaceholder')}
-                className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
-              />
-            </label>
-          )}
-
-          <label className="block">
-            <span className="eyebrow mb-1.5 block">{t('upload.field.origin')}</span>
-            <input
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              maxLength={200}
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => setScreen(2)}
               disabled={busy}
-              placeholder={t('upload.field.originPlaceholder')}
-              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
-            />
-          </label>
-
-          <label className="block">
-            <span className="eyebrow mb-1.5 block">{t('upload.field.yourName')}</span>
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              maxLength={120}
-              disabled={busy}
-              placeholder={t('upload.field.yourNamePlaceholder')}
-              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
-            />
-            {/* The reason is worth giving, because "why do you want my name"
-                is a fair question and the answer is a good one: a surname is
-                the strongest single clue to which family a photograph belongs
-                to, and the archive would otherwise be guessing it from a file
-                name. */}
-            <span className="mt-1.5 block text-sm text-muted">
-              A family name helps place the material. It is not published unless a volunteer
-              decides the family belongs on the record.
-            </span>
-          </label>
-
-          <label className="block">
-            <span className="eyebrow mb-1.5 block">{t('upload.field.yourEmail')}</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              maxLength={160}
-              disabled={busy}
-              placeholder="you@example.com"
-              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
-            />
-            <span className="mt-1.5 block text-sm text-muted">
-              So a volunteer can come back to you with a question, and so your contributions can be
-              kept together. It is not an account and it is never shown in the portal.
-            </span>
-          </label>
-
-
-
-        </div>
-      </Step>
-
-      <Step number={many ? '04' : '03'} title={t('upload.step.read')} done={analysed.length > 0}>
-        {/* Agreement sits here rather than at submission, because this is the
-            button that sends the file out of the building to Google. */}
-        <div className="mb-4">
-          <ConsentBlock agreed={agreed} onChange={setAgreed} disabled={busy} />
-        </div>
-
-        <button
-          onClick={runAnalysis}
-          disabled={!canAnalyse}
-          className={cn(
-            buttonClass('accent', 'h-14 w-full text-lg'),
-            !canAnalyse && 'pointer-events-none bg-paper-3 text-muted shadow-none',
-          )}
-        >
-          {phase === 'analysing' ? (
-            <>
-              <Loader2 size={17} className="animate-spin" />
-              {progress && progress.total > 1
-                ? `Reading file ${progress.done + 1} of ${progress.total}…`
-                : t('upload.action.reading')}
-            </>
-          ) : (
-            <>
-              <Sparkles size={17} />
-              {captured
-                ? t('upload.action.analysePage')
-                : files.length > 1
-                  ? `Analyse ${files.length} files`
-                  : t('upload.action.analyseItem')}
-            </>
-          )}
-        </button>
-        {!canAnalyse && !busy && (
-          <p className="mt-2 text-sm text-muted">
-            {!hasSomething
-              ? 'Add at least one file, or paste a link.'
-              : 'Tick the box above to confirm you may share this material.'}
-          </p>
-        )}
-      </Step>
-
-      {error && (
-        <p role="alert" className="animate-rise rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
-          {error}
-        </p>
-      )}
-
-      {(phase === 'reviewing' || phase === 'submitting') && (
-        <PreReview
-          entries={analysed.map((entry) => ({
-            id: entry.id,
-            fileName: entry.fileName,
-            // The server's viewable copy wins: for a TIFF it is the only thing
-            // that draws, and for everything else the two are the same picture.
-            previewUrl: entry.previewUrl,
-            analysis: entry.analysis,
-            analysisError: entry.analysisError,
-            metadata: entry.metadata,
-            durationMs: entry.durationMs,
-          }))}
-          drafts={drafts}
-          onDraftChange={(id, draft) => setDrafts((all) => ({ ...all, [id]: draft }))}
-          perItemTitles={grouping === 'separate' && many}
-          simulated={simulated}
-          hidden={!showPreReview}
-          // Not `setShowPreReview` directly: the callback reports whether the
-          // panel is now hidden, and the state records whether it is shown.
-          onHiddenChange={(nowHidden) => setShowPreReview(!nowHidden)}
-          onSubmit={submit}
-          submitting={phase === 'submitting'}
-          blocked={!agreed}
-        />
+              className={buttonClass('quiet', 'h-12 px-6')}
+            >
+              {t('flow.back')}
+            </button>
+          </div>
+        </section>
       )}
     </div>
+  );
+}
+
+/**
+ * The languages the AI will write its reading in.
+ *
+ * Plain English names rather than the archive's own language table, because
+ * this is a sentence handed to a model — "Write the summary in Marathi" — and
+ * not a record's language. The list is wider than what the archive publishes
+ * in on purpose: a Judeo-Arabic ketubah is better described in Hebrew than in
+ * an English the family will not read.
+ */
+const ANALYSIS_LANGUAGES = [
+  'English',
+  'Hebrew',
+  'Hindi',
+  'Marathi',
+  'Malayalam',
+] as const;
+
+/**
+ * A field somebody may simply not be able to answer.
+ *
+ * "I don't know" is a real answer and the archive already treats it as one —
+ * a null is better than a guess (decision 11). Saying so out loud is kinder
+ * than an empty box, which reads as a question you failed. Ticking it clears
+ * and locks the field so nothing half-typed is sent.
+ */
+function Answerable({
+  id,
+  label,
+  placeholder,
+  value,
+  onChange,
+  dontKnow,
+  setDontKnow,
+  disabled,
+}: {
+  id: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  dontKnow: Record<string, boolean>;
+  setDontKnow: (next: Record<string, boolean>) => void;
+  disabled: boolean;
+}) {
+  const t = useMessages();
+  const unknown = Boolean(dontKnow[id]);
+
+  return (
+    <label className="block">
+      <span className="eyebrow mb-1.5 block">{label}</span>
+      <input
+        value={unknown ? '' : value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled || unknown}
+        placeholder={unknown ? '' : placeholder}
+        maxLength={200}
+        dir="auto"
+        className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:bg-paper-2 disabled:text-muted"
+      />
+      <span className="mt-1.5 flex items-center gap-2 text-sm text-muted">
+        <input
+          type="checkbox"
+          checked={unknown}
+          disabled={disabled}
+          onChange={(e) => {
+            setDontKnow({ ...dontKnow, [id]: e.target.checked });
+            if (e.target.checked) onChange('');
+          }}
+          className="h-4 w-4 rounded border-rule-strong accent-[var(--color-accent-strong)]"
+        />
+        {t('flow.dontKnow')}
+      </span>
+    </label>
   );
 }
 
@@ -730,50 +930,3 @@ function GroupingChoice({
   );
 }
 
-/**
- * One rung of the contribution flow.
- *
- * Numbered because this genuinely is a sequence — the outline warns against
- * numbering things that are merely a list, and four steps in a fixed order is
- * not that. The rung's ring fills in once the step has something in it, so the
- * page answers "where am I" without anybody having to read it.
- */
-function Step({
-  number,
-  title,
-  hint,
-  done = false,
-  children,
-}: {
-  number: string;
-  title: React.ReactNode;
-  hint?: string;
-  done?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Reveal as="section" className="relative">
-      <div className="mb-4 flex items-center gap-3.5 sm:mb-5 sm:items-start">
-        <RingMark
-          size={44}
-          color={done ? 'var(--color-sage)' : 'var(--color-rule-strong)'}
-          className={done ? 'text-sage' : 'text-muted'}
-        >
-          {done ? (
-            <Check size={19} strokeWidth={2.4} />
-          ) : (
-            <span className="font-mono font-medium">{number}</span>
-          )}
-        </RingMark>
-
-        <h2 className="font-display text-xl leading-tight sm:pt-1.5 sm:text-2xl">{title}</h2>
-      </div>
-
-      {/* The hint sits under the whole header on a phone: beside the ring it
-          left a ragged edge and about two words to a line. */}
-      {hint && <p className="mb-4 text-muted sm:mb-5 sm:ps-[3.75rem]">{hint}</p>}
-
-      <div className="sm:ps-[3.75rem]">{children}</div>
-    </Reveal>
-  );
-}

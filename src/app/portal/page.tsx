@@ -10,6 +10,9 @@ import { emptyCommunityCounts } from '@/lib/communities';
 import { CATEGORIES, COMMUNITIES, type Community, type ItemCategory } from '@/lib/types';
 import { getMessages } from '@/lib/i18n';
 import { presentMany } from '@/lib/translate/render';
+import { listItemsByContributor } from '@/lib/items/queries';
+import { getCurrentVolunteer } from '@/lib/supabase/server';
+import { ContributorSearch } from '@/components/contributor-search';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getMessages();
@@ -29,6 +32,16 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
   const categoryParam = one(params.category);
   const communityParam = one(params.community);
   const view = one(params.view) === 'list' ? 'list' : 'grid';
+  const contributor = one(params.contributor)?.trim();
+
+  /*
+   * Looking somebody up by their address is a volunteer's question, not a
+   * visitor's, and the terms they ticked say so in as many words. The control
+   * is only drawn for a volunteer and the query refuses without one — the
+   * second is what actually enforces it, since a hidden control is not a lock.
+   */
+  const volunteer = Boolean(await getCurrentVolunteer());
+  const sent = volunteer && contributor ? await listItemsByContributor(contributor) : null;
 
   const category = CATEGORIES.includes(categoryParam as ItemCategory)
     ? (categoryParam as ItemCategory)
@@ -85,6 +98,28 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
         </p>
       </header>
 
+      {volunteer && (
+        <div className="mb-8">
+          <ContributorSearch current={contributor ?? ''} />
+        </div>
+      )}
+
+      {sent !== null ? (
+        <section>
+          <p className="eyebrow mb-1">{t('contributor.found', { email: contributor ?? '' })}</p>
+          <p className="mb-6 text-sm text-muted">
+            {sent.length === 0 ? t('contributor.none') : null}
+          </p>
+          {sent.length > 0 && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {sent.map((item) => (
+                <ItemCard key={item.id} item={item} />
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+      <>
       <div className="mb-12">
         <StreamSummary counts={counts} active={community} />
       </div>
@@ -142,6 +177,8 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
             </Reveal>
           ))}
         </div>
+      )}
+      </>
       )}
     </div>
   );

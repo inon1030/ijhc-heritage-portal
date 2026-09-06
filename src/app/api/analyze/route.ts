@@ -24,6 +24,13 @@ const Body = z.object({
    * though it were one.
    */
   title: z.string().max(200).optional(),
+  /**
+   * What the contributor says they know. Given to the model as fact rather
+   * than as a hint — they are holding the object and it is not.
+   */
+  known: z.string().max(2000).optional(),
+  /** Which language the reading should come back in. */
+  language: z.string().max(40).optional(),
 });
 
 export const maxDuration = 60;
@@ -170,6 +177,8 @@ export async function POST(request: NextRequest) {
         mimeType,
         fileName: parsed.data.path.split('/').pop() ?? 'file',
         title: parsed.data.title ?? '',
+        known: parsed.data.known,
+        language: parsed.data.language,
         vocabulary,
       });
 

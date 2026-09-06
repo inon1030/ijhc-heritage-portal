@@ -5,13 +5,23 @@
  * writes `src/lib/i18n/locales/<code>.json` for every language in
  * `archive_languages` that is not the source.
  *
- * ── it only asks for what is missing ────────────────────────────────────────
+ * ── missing, and stale, are different problems ──────────────────────────────
  *
- * A key already present in a locale file is left exactly as it is, including a
- * correction somebody made by hand. That is the point of keeping these in the
- * repository rather than regenerating them: the archive's rule that a human
- * correction outlives the machine (decision 15) applies to the interface too.
- * Deleting a key from the JSON is how you ask for it again.
+ * A key already present is left exactly as it is, including a correction
+ * somebody made by hand — the archive's rule that a human correction outlives
+ * the machine (decision 15) applies to the interface too.
+ *
+ * But **a key whose English has since been edited is not done, it is wrong**,
+ * and it is the more dangerous of the two because it reads as finished. Caught
+ * live: `prereview.heading` was changed from "What the archive found" to "What
+ * the AI found" and the Hebrew page went on saying "מה שהארכיון מצא" with
+ * nothing anywhere reporting a problem. The record translator has known this
+ * since 0023 and stores a `source_hash` for exactly this reason; the interface
+ * catalogue did not, so it learns the same lesson here.
+ *
+ * `locales/.sources.json` holds the hash of the English each translation was
+ * made from. Different hash, translate again. Deleting a key from the JSON is
+ * still how you ask for one back by hand.
  *
  * ── and it checks what comes back ───────────────────────────────────────────
  *
@@ -23,10 +33,14 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { GoogleGenAI, Type } from '@google/genai';
 
 const ROOT = process.cwd();
 const LOCALES = path.join(ROOT, 'src/lib/i18n/locales');
+const SOURCES = path.join(LOCALES, '.sources.json');
+
+const hash = (value) => crypto.createHash('sha256').update(value, 'utf8').digest('hex').slice(0, 16);
 const BATCH = 40;
 
 const env = Object.fromEntries(
@@ -102,6 +116,9 @@ async function main() {
   const keys = Object.keys(english);
   console.log(`English catalogue: ${keys.length} strings`);
 
+  // key -> hash of the English it was translated from, per language.
+  const sources = fs.existsSync(SOURCES) ? JSON.parse(fs.readFileSync(SOURCES, 'utf8')) : {};
+
   const client = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 
   /*
@@ -130,12 +147,39 @@ async function main() {
     const file = path.join(LOCALES, `${language.code}.json`);
     const existing = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
 
-    // Stale keys go: a string removed from the English is not a translation any
-    // more, it is a file that never shrinks.
+    // A string removed from the English is not a translation any more, it is a
+    // file that never shrinks.
     for (const key of Object.keys(existing)) if (!(key in english)) delete existing[key];
+
+    const seen = (sources[language.code] ??= {});
+
+    /*
+     * And a string whose English has been edited since is worse than missing:
+     * it reads as finished while saying the old thing. Dropped, so the pass
+     * below remakes it.
+     */
+    const stale = keys.filter((k) => existing[k] && seen[k] && seen[k] !== hash(english[k]));
+    for (const key of stale) delete existing[key];
+    if (stale.length) console.log(`  ${language.code}  ${stale.length} stale (English edited): ${stale.slice(0, 4).join(', ')}${stale.length > 4 ? '…' : ''}`);
+
+    /*
+     * Stamped before the early exit below, not after it.
+     *
+     * The stamping used to live at the end of the loop — past a `continue` that
+     * fires whenever a language is already complete, which is most runs. So the
+     * sidecar was never written at all, and the stale detection this whole
+     * block exists for could never fire. Found by looking for the file and not
+     * finding it; nothing in the run said anything was wrong.
+     */
+    const stamp = () => {
+      for (const key of Object.keys(existing)) seen[key] ??= hash(english[key]);
+      for (const key of Object.keys(seen)) if (!(key in existing)) delete seen[key];
+      fs.writeFileSync(SOURCES, JSON.stringify(sources, null, 2) + '\n', 'utf8');
+    };
 
     const missing = keys.filter((k) => !existing[k]);
     if (!missing.length) {
+      stamp();
       console.log(`  ${language.code}  complete (${keys.length})`);
       continue;
     }
@@ -212,6 +256,7 @@ async function main() {
           continue;
         }
         existing[key] = value.trim();
+        seen[key] = hash(english[key]);
         added += 1;
       }
     }

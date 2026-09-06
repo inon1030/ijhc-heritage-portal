@@ -13,6 +13,10 @@ export interface AnalysisInput {
   fileName: string;
   /** May be empty. The contribution screen no longer insists on one. */
   title: string;
+  /** The contributor's own account of the object. Treated as verified fact. */
+  known?: string;
+  /** The language the reading should come back in. */
+  language?: string;
 }
 
 export interface AnalysisResult {

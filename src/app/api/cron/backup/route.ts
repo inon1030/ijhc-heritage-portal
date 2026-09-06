@@ -3,7 +3,7 @@ import { gzipSync } from 'node:zlib';
 import { timingSafeEqual } from 'node:crypto';
 import { fail, ok, unexpected } from '@/lib/api';
 import { createAdminSupabase } from '@/lib/supabase/admin';
-import { destination, exists, put, type Destination } from '@/lib/backup/s3';
+import { destination, exists, put } from '@/lib/backup/s3';
 
 /**
  * The nightly off-site copy.

@@ -111,7 +111,7 @@ export const en = {
   'portal.truncated': 'Showing the first {count}. Narrow the search to see the rest.',
   'portal.emptyTitle': 'Nothing matches that yet',
   'portal.emptyBody':
-    'Try a broader search, or clear the filters. If the archive is new, the first records appear here once a volunteer has reviewed them.',
+    'Try a broader search, or clear the filters. If the archive is new, the first records appear here once the knowledge manager has reviewed them.',
   'portal.communityUnknown': 'Community not identified',
 
   'controls.search': 'Search the archive',
@@ -159,7 +159,7 @@ export const en = {
   'upload.eyebrow': 'Open to everyone — no account needed',
   'upload.headline': 'Contribute an item',
   'upload.standfirst':
-    'A photograph, a document, a recording. The archive reads what it can from the file and suggests a description — a volunteer checks all of it before anything is published.',
+    'A photograph, a document, a recording. The AI reads what it can from the file and suggests a description — the knowledge manager checks it, approves it and publishes it.',
 
   'upload.step.files': 'Add your files',
   'upload.step.filesRead': 'The page the archive read',
@@ -230,7 +230,11 @@ export const en = {
   'review.history': 'History',
 
   // ── the pre-review panel a contributor edits ──────────────────────────────
-  'prereview.heading': 'What the archive found',
+  'prereview.heading': 'What the AI found',
+  'prereview.aiSuggested': 'The AI suggested:',
+  'prereview.useThis': 'use this',
+  'prereview.subtitle':
+    'Suggestions, not a record. Correct anything you know better — the knowledge manager reviews it, approves it and publishes it.',
   'prereview.hide': 'Hide this panel',
   'prereview.titleForItem': 'Title for this item',
   'prereview.machineReading': 'The machine’s reading',
@@ -288,16 +292,16 @@ export const en = {
   'receipt.published': 'Published',
   'receipt.keptNotPublic': 'Kept, but not public',
   'receipt.notAdded': 'Not added to the archive',
-  'receipt.waiting': 'Waiting for a volunteer',
+  'receipt.waiting': 'Waiting for the knowledge manager',
   'receipt.badLinkBody': 'This address does not match a contribution. Check the link you were given, or contribute something new.',
   'receipt.goneBody': 'The record this receipt pointed at is no longer held in the archive.',
-  'receipt.publishedBody': 'A volunteer checked it and it is in the public archive.',
+  'receipt.publishedBody': 'The knowledge manager checked it and it is in the public archive.',
   'receipt.keptNotPublicBody':
-    'A volunteer catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
+    'The knowledge manager catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
   'receipt.notAddedBody':
-    'A volunteer looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
+    'The knowledge manager looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
   'receipt.waitingBody':
-    'It has arrived safely. Volunteers check each contribution against the original before anything is published, and they are people with day jobs, so this can take a while.',
+    'It has arrived safely. The knowledge manager checks each contribution against the original before anything is published, so this can take a while.',
 
   // ── the review queue ──────────────────────────────────────────────────────
   'queue.title': 'Review queue',
@@ -451,7 +455,7 @@ export const en = {
   'common.editedByContributor': 'Edited by the contributor',
   'families.examplePlaceholder': 'Merchant family, Bombay and Shanghai',
   'prereview.vocabularyNote':
-    'A volunteer matches these to the archive’s own vocabulary before publishing.',
+    'The knowledge manager matches these to the archive’s own vocabulary before publishing.',
   'prereview.prefilled':
     'Pre-filled with the machine’s reading. Change anything you know better.',
   'common.cancel': 'Cancel',
@@ -538,6 +542,49 @@ export const en = {
     'You can ask for material to be taken down, or ask what is held about you, at any time.',
   'consent.c8.p2':
     'You can also ask to be forgotten without withdrawing what you sent. Your name and address are erased and the material stays in the archive, no longer linked to a person. The two are separate requests and you can make either one.',
+
+  // ── finding what one person sent (volunteers only) ────────────────────────
+  'contributor.search': 'Find everything one contributor sent',
+  'contributor.placeholder': 'their email address',
+  'contributor.find': 'Find',
+  'contributor.volunteersOnly': 'Volunteers only. Contributors are told their address cannot be used to look up their uploads by anyone else.',
+  'contributor.none': 'Nothing has been sent from that address.',
+  'contributor.found': 'Everything sent from {email}',
+  'contributor.clear': 'Back to the archive',
+
+  // ── the three screens a contributor moves through ─────────────────────────
+  'flow.step': 'Step {n} of 3',
+  'flow.next': 'Next',
+  'flow.back': 'Back',
+  'flow.s1.title': 'Add what you have',
+  'flow.s1.hint': 'A photograph, a document, a recording — or the address of a page.',
+  'flow.s2.title': 'Tell us what you know',
+  'flow.s2.hint':
+    'Anything you write here is treated as fact. The AI reads the file, but what you know about it is what it trusts.',
+  'flow.s3.title': 'Check what the AI made',
+  'flow.s3.hint':
+    'Correct anything before it goes to the knowledge manager. Nothing is published until they approve it.',
+
+  'flow.email': 'Your email address',
+  'flow.emailWhy':
+    'Required. It is how the knowledge manager comes back to you with a question, and how your contributions stay together. It is never published.',
+  'flow.emailInvalid': 'That does not look like an email address.',
+  'flow.emailMissing': 'An email address is needed before the AI reads the file.',
+
+  'flow.whatYouKnow': 'What do you know about it?',
+  'flow.whatYouKnowHint':
+    'Who is in it, where it was taken, roughly when, what happened to it. Write in any language. The AI treats this as verified and builds its reading around it.',
+  'flow.whatYouKnowPlaceholder':
+    'My grandmother in Bombay, about 1940. The synagogue behind her is Magen David.',
+
+  'flow.language': 'Language for the AI’s reading',
+  'flow.languageHint': 'Which language the description should come back in.',
+
+  'flow.dontKnow': 'I don’t know',
+  'flow.analyse': 'Read it with AI',
+  'flow.analysing': 'Reading…',
+  'flow.needFile': 'Add a file or a link first.',
+  'flow.needConsent': 'Tick the box to confirm you may share this material.',
 
   // ── the language picker ───────────────────────────────────────────────────
   'language.reading': 'Reading in {language}. Choose a language.',

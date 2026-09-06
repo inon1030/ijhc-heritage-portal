@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Eye, Loader2, Plus, X } from 'lucide-react';
-import { EvidenceLedger } from '@/components/evidence-ledger';
 import { useMessages } from '@/lib/i18n/provider';
 import { FieldSheet } from '@/components/field-sheet';
 import { SimulatedNotice } from '@/components/primitives';
@@ -125,10 +124,7 @@ export function PreReview({
       <header className="flex items-start gap-4 border-b border-rule px-6 py-5">
         <div className="flex-1">
           <h2 className="font-display text-xl sm:text-2xl">{t('prereview.heading')}</h2>
-          <p className="mt-1 text-sm text-muted">
-            Suggestions, not a record. Correct anything you know better — a volunteer reads both
-            versions before publishing.
-          </p>
+          <p className="mt-1 text-sm text-muted">{t('prereview.subtitle')}</p>
         </div>
         <button
           type="button"
@@ -253,11 +249,6 @@ function EntryPanel({
 
       {analysis && (
         <>
-          <div className="mb-5">
-            <p className="eyebrow mb-1.5">{t('prereview.machineReading')}</p>
-            <p className="machine border-s-2 border-rule ps-3 text-ink-2">{analysis.summary}</p>
-          </div>
-
           {(
             <label className="mb-5 block">
               <span className="eyebrow mb-1.5 block">{t('prereview.yourDescription')}</span>
@@ -267,6 +258,11 @@ function EntryPanel({
                 rows={4}
                 maxLength={4000}
                 className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 leading-relaxed focus:border-accent-strong focus:outline-none"
+              />
+              <Suggested
+                value={analysis.summary}
+                current={draft.description}
+                onUse={(v) => onChange({ ...draft, description: v })}
               />
               <span className="mt-1.5 block text-sm text-muted">
                 {t('prereview.prefilled')}
@@ -360,7 +356,14 @@ function EntryPanel({
             )}
           </dl>
 
-          <EvidenceLedger evidence={analysis.evidence} reasoning={analysis.reasoning} />
+          {/*
+            The evidence ledger used to be here, collecting every basis into one
+            block at the bottom under "What each answer rests on". It is gone,
+            and nothing was lost: `FieldSheet` already prints the basis beneath
+            the field it belongs to, which is where somebody checking that field
+            is actually looking. A second copy at the end of the page was one
+            more thing to scroll past and one more place to disagree with.
+          */}
 
           {analysis.ocrText && (
             <Excerpt label={t('prereview.textFound')} text={analysis.ocrText} />
@@ -369,6 +372,46 @@ function EntryPanel({
         </>
       )}
     </article>
+  );
+}
+
+/**
+ * What the AI proposed for this field, under the field.
+ *
+ * It used to sit in one block at the top ("The machine's reading") and again
+ * in one at the bottom ("What each answer rests on"), which meant a person
+ * correcting the description had the thing they were correcting two scrolls
+ * away in either direction. Suggestions belong under the box they are a
+ * suggestion for.
+ *
+ * Hidden once the value matches, because at that point it is not a suggestion
+ * any more, it is the answer — and a line saying "the AI suggested" above
+ * identical text reads as a disagreement that is not there.
+ */
+function Suggested({
+  value,
+  current,
+  onUse,
+}: {
+  value: string | null;
+  current: string;
+  onUse: (value: string) => void;
+}) {
+  const t = useMessages();
+  if (!value?.trim() || value.trim() === current.trim()) return null;
+
+  return (
+    <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg bg-paper-2/70 px-3 py-2 text-sm">
+      <span className="eyebrow shrink-0 text-[0.7rem]">{t('prereview.aiSuggested')}</span>
+      <span className="machine flex-1 leading-relaxed text-ink-2">{value}</span>
+      <button
+        type="button"
+        onClick={() => onUse(value)}
+        className="shrink-0 text-accent underline underline-offset-2 hover:text-accent-strong"
+      >
+        {t('prereview.useThis')}
+      </button>
+    </span>
   );
 }
 

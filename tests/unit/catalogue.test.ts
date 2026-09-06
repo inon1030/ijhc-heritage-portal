@@ -21,9 +21,13 @@ import { reader, resolve } from '@/lib/i18n';
  */
 
 const LOCALES = path.join(process.cwd(), 'src/lib/i18n/locales');
+// `.sources.json` sits beside the locales and is not one: it maps language ->
+// key -> hash of the English that translation was made from. Sweeping the
+// directory without excluding it made the suite read its language names as
+// message keys and fail — which is at least the right kind of failure.
 const codes = fs
   .readdirSync(LOCALES)
-  .filter((f) => f.endsWith('.json'))
+  .filter((f) => f.endsWith('.json') && !f.startsWith('.'))
   .map((f) => f.replace('.json', ''));
 
 function catalogue(code: string): Record<string, string> {
@@ -94,5 +98,35 @@ describe('every locale file in the repository', () => {
     for (const key of Object.keys(en)) {
       expect(resolved[key]).toBeTruthy();
     }
+  });
+});
+
+/**
+ * The record of what each translation was made from.
+ *
+ * A key whose English has been edited since is worse than a missing one: it
+ * reads as finished while saying the old thing. Caught live — `prereview.heading`
+ * was changed from "What the archive found" to "What the AI found" and the
+ * Hebrew page went on saying `מה שהארכיון מצא`, with nothing anywhere reporting
+ * a problem. `npm run i18n` compares against these hashes and remakes what has
+ * drifted; the sidecar is only useful if it stays in step with the locales.
+ */
+describe('the record of what each translation was made from', () => {
+  const sources: Record<string, Record<string, string>> = JSON.parse(
+    fs.readFileSync(path.join(LOCALES, '.sources.json'), 'utf8'),
+  );
+
+  it('covers every language that has a locale file', () => {
+    expect(Object.keys(sources).sort()).toEqual([...codes].sort());
+  });
+
+  it.each(codes)('%s has a recorded source for every string it holds', (code) => {
+    const unstamped = Object.keys(catalogue(code)).filter((key) => !sources[code]?.[key]);
+    expect(unstamped).toEqual([]);
+  });
+
+  it.each(codes)('%s records nothing for a string it does not hold', (code) => {
+    const orphaned = Object.keys(sources[code] ?? {}).filter((key) => !catalogue(code)[key]);
+    expect(orphaned).toEqual([]);
   });
 });

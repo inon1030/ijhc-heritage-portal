@@ -228,7 +228,7 @@ export function createGeminiProvider(): AIProvider {
               { inlineData: { mimeType: input.mimeType, data: toBase64(input.bytes) } },
               // Contributor text only. The rules live in systemInstruction, in
               // a turn nobody outside this codebase can write into.
-              { text: buildContributorNote(input.title, input.fileName) },
+              { text: buildContributorNote(input.title, input.fileName, input.known, input.language) },
             ],
           },
         ],

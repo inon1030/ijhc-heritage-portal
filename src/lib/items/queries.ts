@@ -2,6 +2,7 @@ import 'server-only';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getContributor } from '@/lib/contributors';
+import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { REVIEW_QUEUE_STATUSES } from './status';
 import { inTreeOrder } from '@/lib/fields/registry';
 import type {
@@ -27,6 +28,22 @@ export interface PortalFilters {
   query?: string;
   category?: ItemCategory;
   community?: Community;
+  /**
+   * Everything one person sent, found by the address they left.
+   *
+   * **Volunteer-only, and it has to stay that way.** The terms every
+   * contributor ticks say the address "is not an account: it grants no access
+   * to anything, and nobody can retrieve your uploads by typing it." A public
+   * search box over this column would make that sentence false — anyone could
+   * confirm whether a given person had sent anything, and see what.
+   *
+   * So it is enforced twice: `contributors` is behind
+   * `contributors_volunteer_select`, so an anonymous caller resolves no
+   * addresses at all, and `listItemsByContributor` refuses outright without a
+   * volunteer session rather than quietly returning an empty list — an empty
+   * result and a refusal mean different things and only one of them is true.
+   */
+  contributorEmail?: string;
   /** Caps the rows fetched. The portal wants all of them; the front page does not. */
   limit?: number;
 }
@@ -88,6 +105,50 @@ function analysisFor(analyses: AiAnalysis[], file: ItemFile | null): AiAnalysis 
  */
 export function likeTerm(query: string): string {
   return query.trim().replace(/[%_\\]/g, (character) => '\\' + character);
+}
+
+/**
+ * Everything one contributor sent, whatever state it is in.
+ *
+ * Not filtered to published: the point of asking is to see the whole of what
+ * somebody sent — what is out, what is still in the queue, what was declined —
+ * because the question that prompts it is almost always a person writing in to
+ * ask what happened to their material.
+ *
+ * Returns null for anyone who is not an approved volunteer. Null rather than
+ * `[]`, so a caller cannot mistake "you may not ask" for "they sent nothing".
+ */
+export async function listItemsByContributor(
+  email: string,
+): Promise<(Item & { file: ItemFile | null })[] | null> {
+  if (!(await getCurrentVolunteer())) return null;
+
+  const supabase = await createServerSupabase();
+  const address = email.trim().toLowerCase();
+  if (!address) return [];
+
+  // Resolved through `contributors`, which RLS already restricts, so this is
+  // the second lock rather than the only one.
+  const { data: contributor, error: lookupError } = await supabase
+    .from('contributors')
+    .select('id')
+    .ilike('email', likeTerm(address))
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+  if (!contributor) return [];
+
+  const { data, error } = await supabase
+    .from('items')
+    .select('*, item_files(*)')
+    .eq('contributor_id', contributor.id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(({ item_files, ...item }) => ({
+    ...(item as Item),
+    file: primaryFile(item_files as FileRow[]),
+  }));
 }
 
 /** Published items for the public portal. */
