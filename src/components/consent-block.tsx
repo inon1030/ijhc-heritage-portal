@@ -109,7 +109,7 @@ export function ConsentBlock({
           }}
           className="inline-flex items-center gap-1 text-accent underline decoration-dotted underline-offset-4 hover:text-accent-strong"
         >
-          how it will be handled
+          {t('consent.howHandled')}
           <Info size={14} aria-hidden />
         </button>
         .

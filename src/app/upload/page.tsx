@@ -9,7 +9,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function UploadPage() {
-  const { t } = await getMessages();
   /*
    * The archive's own tag list, read on the server and handed down.
    *
@@ -22,19 +21,23 @@ export default async function UploadPage() {
     variants: term.variants,
   }));
   return (
-    <div className="mx-auto max-w-3xl px-6 pt-8 pb-14 sm:pt-12 sm:pb-16">
-      <header className="mb-10 max-w-xl sm:mb-12">
-        <p className="eyebrow animate-rise">{t('upload.eyebrow')}</p>
-        <h1 className="animate-rise mt-3 font-display text-3xl leading-tight sm:text-5xl">
-          {t('upload.headline')}
-        </h1>
-        <p
-          className="animate-rise mt-4 leading-relaxed text-muted sm:text-lg"
-          style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
-        >
-          {t('upload.standfirst')}
-        </p>
-      </header>
+    <div className="mx-auto max-w-3xl px-6 pt-4 pb-14 sm:pt-5 sm:pb-16">
+      {/*
+        ── the page title is the screen's title ──────────────────────────────
+        
+        There was a header here: an eyebrow, a 3xl headline and a two-line
+        standfirst, 262px of it — above three screens each of which opens with
+        its own heading and its own hint saying the same thing in fewer words.
+        Measured at 1440x900 it was most of the reason screen two ran 1124px
+        past the fold and the button that continues the flow could not be seen
+        without scrolling.
+        
+        The site's name is in the strip at the top of every page. What a person
+        needs here is the step they are on, and that is what they get — so the
+        page's own title went too: at 1366x768, the laptop most people bring to
+        a meeting, it was the last fifty pixels between the analyse button and
+        the bottom of the screen.
+      */}
       <UploadFlow vocabulary={vocabulary} />
     </div>
   );

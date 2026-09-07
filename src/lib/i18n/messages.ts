@@ -366,6 +366,11 @@ export const en = {
   'file.viewableCopy': 'A viewable copy appears once the archive reads it',
   'file.cannotPlay': 'Your browser cannot play this recording.',
   'consent.agree': 'I may share this material, and I agree to',
+  // The link that opens the terms. It was the one piece of the sentence still
+  // set in English, so a Hebrew reader met "ואני מסכים ל how it will be
+  // handled" — the words naming what they are agreeing to, in a language they
+  // may not read, inside the one sentence where that matters most.
+  'consent.howHandled': 'how it will be handled',
   'consent.openTerms': 'Open the full terms in their own page',
   'handling.title': 'How your contribution is handled',
   'handling.description':
@@ -576,28 +581,25 @@ export const en = {
   'flow.next': 'Next',
   'flow.back': 'Back',
   'flow.s1.title': 'Add what you have',
-  'flow.s1.hint': 'A photograph, a document, a recording — or the address of a page.',
+  'flow.s1.hint': 'A photograph, a document, a recording — or a link to a page.',
   'flow.s2.title': 'Tell us what you know',
-  'flow.s2.hint':
-    'Anything you write here is treated as fact. The AI reads the file, but what you know about it is what it trusts.',
+  'flow.s2.hint': 'The AI reads the file. What you know about it is what it trusts.',
   'flow.s3.title': 'Check what the AI made',
-  'flow.s3.hint':
-    'Correct anything before it goes to the knowledge manager. Nothing is published until they approve it.',
+  'flow.s3.hint': 'Correct anything before it goes to the knowledge manager.',
 
   'flow.email': 'Your email address',
-  'flow.emailWhy':
-    'Required. It is how the knowledge manager comes back to you with a question, and how your contributions stay together. It is never published.',
+  'flow.emailWhy': 'Never published. It is how we come back to you with a question.',
   'flow.emailInvalid': 'That does not look like an email address.',
   'flow.emailMissing': 'An email address is needed before the AI reads the file.',
 
   'flow.whatYouKnow': 'What do you know about it?',
   'flow.whatYouKnowHint':
-    'Who is in it, where it was taken, roughly when, what happened to it. Write in any language. The AI treats this as verified and builds its reading around it.',
+    'Any language. The AI treats this as fact and builds its reading around it.',
   'flow.whatYouKnowPlaceholder':
     'My grandmother in Bombay, about 1940. The synagogue behind her is Magen David.',
 
   'flow.language': 'Language for the AI’s reading',
-  'flow.languageHint': 'Which language the description should come back in.',
+  'flow.languageHint': '',
 
   'flow.dontKnow': 'I don’t know',
   'flow.analyse': 'Read it with AI',

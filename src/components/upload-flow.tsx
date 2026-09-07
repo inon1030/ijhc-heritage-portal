@@ -495,8 +495,22 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
     );
   }
 
-  const stepIndicator = (
-    <p className="eyebrow mb-1">{t('flow.step', { n: screen })}</p>
+  /*
+   * The step label sits on the heading's line, not above it.
+   *
+   * On its own row it cost 24px plus its margin on every screen — and screen
+   * two was ten pixels past the fold, so those 24 were the difference between
+   * a form you can see and a form you have to scroll. It also read oddly
+   * stacked: an eyebrow, then a heading larger than the page's own title.
+   */
+  const heading = (title: string, hint: string) => (
+    <>
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <h2 className="font-display text-xl leading-tight sm:text-2xl">{title}</h2>
+        <span className="eyebrow text-[0.7rem]">{t('flow.step', { n: screen })}</span>
+      </div>
+      <p className="mt-1 text-[0.95rem] leading-snug text-muted">{hint}</p>
+    </>
   );
 
   return (
@@ -525,11 +539,9 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
       {/* ── 1. what you have ─────────────────────────────────────────────── */}
       {screen === 1 && (
         <section className="animate-rise">
-          {stepIndicator}
-          <h2 className="font-display text-2xl sm:text-3xl">{t('flow.s1.title')}</h2>
-          <p className="mt-2 leading-relaxed text-muted">{t('flow.s1.hint')}</p>
+          {heading(t('flow.s1.title'), t('flow.s1.hint'))}
 
-          <div className="mt-6">
+          <div className="mt-4">
             {!captured && (
               <FilePicker files={files} onChange={setFiles} disabled={busy} />
             )}
@@ -569,7 +581,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
             </div>
           )}
 
-          <div className="mt-8 flex items-center gap-4">
+          <div className="mt-5 flex items-center gap-4">
             <button
               type="button"
               onClick={() => setScreen(2)}
@@ -589,11 +601,9 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
       {/* ── 2. what you know ─────────────────────────────────────────────── */}
       {screen === 2 && (
         <section className="animate-rise">
-          {stepIndicator}
-          <h2 className="font-display text-2xl sm:text-3xl">{t('flow.s2.title')}</h2>
-          <p className="mt-2 leading-relaxed text-muted">{t('flow.s2.hint')}</p>
+          {heading(t('flow.s2.title'), t('flow.s2.hint'))}
 
-          <div className="mt-6 space-y-5">
+          <div className="mt-3 space-y-3">
             {/*
               The address, and the only thing on this page that is required.
 
@@ -602,8 +612,13 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
               turns a scan into a record.
             */}
             <label className="block">
-              <span className="eyebrow mb-1.5 block">
-                {t('flow.email')} <span className="text-critical">*</span>
+              <span className="mb-1.5 flex flex-wrap items-baseline gap-x-2">
+                <span className="eyebrow">
+                  {t('flow.email')} <span className="text-critical">*</span>
+                </span>
+                {/* Beside the label, not under the field: the same sentence,
+                    one row instead of two. */}
+                <span className="text-xs text-muted">{t('flow.emailWhy')}</span>
               </span>
               <input
                 type="email"
@@ -623,9 +638,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
               {email.trim().length > 0 && !emailOk && (
                 <span className="mt-1.5 block text-sm text-critical">{t('flow.emailInvalid')}</span>
               )}
-              <span className="mt-1.5 block text-sm leading-relaxed text-muted">
-                {t('flow.emailWhy')}
-              </span>
+
             </label>
 
             {/*
@@ -640,18 +653,24 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
               <textarea
                 value={known}
                 onChange={(e) => setKnown(e.target.value)}
-                rows={4}
+                rows={3}
                 maxLength={2000}
                 dir="auto"
                 placeholder={t('flow.whatYouKnowPlaceholder')}
                 className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 leading-relaxed focus:border-accent-strong focus:outline-none"
               />
-              <span className="mt-1.5 block text-sm leading-relaxed text-muted">
-                {t('flow.whatYouKnowHint')}
-              </span>
+              <span className="mt-1 block text-xs text-muted">{t('flow.whatYouKnowHint')}</span>
             </label>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            {/*
+              Four short answers on one row where there is room.
+              
+              Two columns of two put 260px of form between the description and
+              the button that runs the analysis; at four they are one row of
+              130. None of them is a long answer — a title, a place, a name and
+              a language — so none of them needs half the width.
+            */}
+            <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
               <Answerable
                 id="title"
                 label={t('upload.field.title')}
@@ -695,7 +714,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
                     </option>
                   ))}
                 </select>
-                <span className="mt-1.5 block text-sm text-muted">{t('flow.languageHint')}</span>
+
               </label>
             </div>
 
@@ -710,7 +729,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
             </p>
           )}
 
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div className="mt-4 flex flex-wrap items-center gap-4">
             <button
               type="button"
               onClick={() => setScreen(1)}
@@ -754,9 +773,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
       {/* ── 3. what the AI made of it ────────────────────────────────────── */}
       {screen === 3 && (
         <section className="animate-rise">
-          {stepIndicator}
-          <h2 className="font-display text-2xl sm:text-3xl">{t('flow.s3.title')}</h2>
-          <p className="mt-2 leading-relaxed text-muted">{t('flow.s3.hint')}</p>
+          {heading(t('flow.s3.title'), t('flow.s3.hint'))}
 
           {error && (
             <p role="alert" className="mt-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
