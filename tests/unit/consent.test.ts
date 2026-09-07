@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   CONSENT_CLAUSES,
   CONSENT_SUMMARY,
@@ -178,5 +178,56 @@ describe('the withdrawal address', () => {
   it('treats blank configuration as missing', () => {
     process.env.NEXT_PUBLIC_ARCHIVE_CONTACT = '   ';
     expect(contactAddress()).toBeNull();
+  });
+});
+
+/**
+ * The tier, the sentence, and the version, moving together.
+ *
+ * On the unpaid tier Google's terms let them read what is sent; on a paid
+ * account they undertake the opposite. That difference is the largest thing
+ * this notice contains and it is what a family decides on — so the sentence
+ * has to follow the account, and the version has to follow the sentence.
+ *
+ * Read from a fresh import per case, because the module reads the environment
+ * once at load. That is the point: the tier is a deploy-time fact, not
+ * something a request can change.
+ */
+describe('the model tier the notice describes', () => {
+  const load = async (paid: boolean) => {
+    vi.resetModules();
+    const previous = process.env.GEMINI_PAID_TIER;
+    process.env.GEMINI_PAID_TIER = paid ? 'true' : 'false';
+    const mod = await import('@/lib/consent');
+    const clause = mod.CONSENT_CLAUSES.find((c) => c.heading === 'The machine reading')!;
+    process.env.GEMINI_PAID_TIER = previous;
+    return { version: mod.CONSENT_VERSION, text: clause.body.join(' ') };
+  };
+
+  it('warns families off private material while the archive is not paying', async () => {
+    const { version, text } = await load(false);
+    expect(text).toMatch(/free tier/i);
+    expect(text).toMatch(/may be reviewed by people at Google/i);
+    expect(text).toMatch(/do not upload it here/i);
+    expect(version).toBe('2026-09-06');
+  });
+
+  it('stops warning them off it once the archive is paying, and says why', async () => {
+    const { version, text } = await load(true);
+    expect(text).toMatch(/paid account/i);
+    expect(text).toMatch(/not reviewed by people at Google/i);
+    // The remaining caveat is real and must survive: it still leaves the
+    // building, even if nobody there reads it.
+    expect(text).toMatch(/still leaves the Center/i);
+    // And it must NOT keep telling people not to send private material.
+    expect(text).not.toMatch(/do not upload it here/i);
+    expect(version).toBe('2026-09-06-paid');
+  });
+
+  it('never lets the two tiers share a version string', async () => {
+    const free = await load(false);
+    const paid = await load(true);
+    expect(free.version).not.toBe(paid.version);
+    expect(free.text).not.toBe(paid.text);
   });
 });

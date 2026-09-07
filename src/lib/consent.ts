@@ -40,7 +40,32 @@
  * ticked `2026-09-03` agreed to the old sentence and the archive has to keep
  * saying so — so this is a new one.
  */
-export const CONSENT_VERSION = '2026-09-06';
+/**
+ * Whether the archive is paying for the model.
+ *
+ * This is not a detail: on the unpaid tier Google's terms let them read what is
+ * sent, and on a paid account they undertake the opposite. The consent notice
+ * says which, in as many words, and a contributor decides what to send based on
+ * it — so the sentence has to follow the account rather than be remembered
+ * about.
+ *
+ * Set `GEMINI_PAID_TIER=true` when billing is enabled on the Google Cloud
+ * project behind `GEMINI_API_KEY`. Nothing else changes; the same key gets
+ * higher limits, and this makes the archive stop telling families not to send
+ * anything private.
+ */
+export const GEMINI_PAID_TIER = process.env.GEMINI_PAID_TIER === 'true';
+
+/**
+ * The version a contributor agreed to — and it moves with the tier.
+ *
+ * Versions are never edited in place, and "the file may be read by people at
+ * Google" versus "it may not" is the largest difference this notice contains.
+ * Somebody who uploaded under the free tier agreed to the first sentence and
+ * the archive has to keep being able to say so; somebody uploading after the
+ * switch agreed to the second. One string cannot stand for both.
+ */
+export const CONSENT_VERSION = GEMINI_PAID_TIER ? '2026-09-06-paid' : '2026-09-06';
 
 /**
  * The address someone writes to in order to withdraw material or ask what is
@@ -83,13 +108,29 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     ],
   },
   {
-    key: 'consent.c2',
+    /*
+     * The key changes with the tier, and it has to.
+     *
+     * The notice is translated by position — `consent.c2.p3` is whatever the
+     * third paragraph happens to be — so a paid clause sharing the free
+     * clause's keys would have printed the English "not reviewed by people at
+     * Google" above a Hebrew paragraph still saying the opposite. The one
+     * sentence in this document where that would matter most.
+     */
+    key: GEMINI_PAID_TIER ? 'consent.c2paid' : 'consent.c2',
     heading: 'The machine reading',
     body: [
       'An automated system reads the file and suggests a description, a period, a place, and keywords. Everything it produces is a suggestion. A person decides what becomes the record.',
       'To do that, the file is sent to Google’s Gemini service, outside the Center.',
-      'The archive currently uses that service on its free tier. Under Google’s terms for unpaid use, material sent there may be reviewed by people at Google and used to improve their products. A paid account carries the opposite undertaking.',
-      'So: if the material is private, or shows a living person, or you would rather it were not seen outside the Center, do not upload it here. Contact the Center and it will be taken in by hand.',
+      ...(GEMINI_PAID_TIER
+        ? [
+            'The archive uses that service on a paid account. Under Google’s terms for paid use, what is sent is not reviewed by people at Google and is not used to improve their products.',
+            'It still leaves the Center to be read by a machine, so if the material is one you would rather nobody outside the Center held even briefly, contact the Center and it will be taken in by hand.',
+          ]
+        : [
+            'The archive currently uses that service on its free tier. Under Google’s terms for unpaid use, material sent there may be reviewed by people at Google and used to improve their products. A paid account carries the opposite undertaking.',
+            'So: if the material is private, or shows a living person, or you would rather it were not seen outside the Center, do not upload it here. Contact the Center and it will be taken in by hand.',
+          ]),
     ],
   },
   {

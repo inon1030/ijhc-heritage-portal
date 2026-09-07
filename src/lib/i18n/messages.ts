@@ -500,6 +500,17 @@ export const en = {
   'consent.c2.p4':
     'So: if the material is private, or shows a living person, or you would rather it were not seen outside the Center, do not upload it here. Contact the Center and it will be taken in by hand.',
 
+  // The same clause on a paid account. Its own keys, because the notice is
+  // translated by position and the two tiers must never share one.
+  'consent.c2paid.heading': 'The machine reading',
+  'consent.c2paid.p1':
+    'An automated system reads the file and suggests a description, a period, a place, and keywords. Everything it produces is a suggestion. A person decides what becomes the record.',
+  'consent.c2paid.p2': 'To do that, the file is sent to Google’s Gemini service, outside the Center.',
+  'consent.c2paid.p3':
+    'The archive uses that service on a paid account. Under Google’s terms for paid use, what is sent is not reviewed by people at Google and is not used to improve their products.',
+  'consent.c2paid.p4':
+    'It still leaves the Center to be read by a machine, so if the material is one you would rather nobody outside the Center held even briefly, contact the Center and it will be taken in by hand.',
+
   'consent.c3.heading': 'Your name and email address, if you give them',
   'consent.c3.p1':
     'Both are optional. Leaving them blank does not change how your contribution is treated.',

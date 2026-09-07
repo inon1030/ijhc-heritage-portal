@@ -446,7 +446,12 @@
     "filters.clear": "7179ea0035fca783",
     "filters.showing": "f3d25c9265aac7c1",
     "filters.more": "b1ab49a6fedc4d33",
-    "filters.fewer": "6e3b02b08e9b850e"
+    "filters.fewer": "6e3b02b08e9b850e",
+    "consent.c2paid.heading": "3cc3ad06ffcbce77",
+    "consent.c2paid.p1": "7f3d4302ae10b8a1",
+    "consent.c2paid.p2": "486a5bb850c8e270",
+    "consent.c2paid.p3": "2d852dcd2f84e8b8",
+    "consent.c2paid.p4": "d8310dfd46a2a88e"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -895,7 +900,12 @@
     "filters.clear": "7179ea0035fca783",
     "filters.showing": "f3d25c9265aac7c1",
     "filters.more": "b1ab49a6fedc4d33",
-    "filters.fewer": "6e3b02b08e9b850e"
+    "filters.fewer": "6e3b02b08e9b850e",
+    "consent.c2paid.heading": "3cc3ad06ffcbce77",
+    "consent.c2paid.p1": "7f3d4302ae10b8a1",
+    "consent.c2paid.p2": "486a5bb850c8e270",
+    "consent.c2paid.p3": "2d852dcd2f84e8b8",
+    "consent.c2paid.p4": "d8310dfd46a2a88e"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -1344,7 +1354,12 @@
     "filters.clear": "7179ea0035fca783",
     "filters.showing": "f3d25c9265aac7c1",
     "filters.more": "b1ab49a6fedc4d33",
-    "filters.fewer": "6e3b02b08e9b850e"
+    "filters.fewer": "6e3b02b08e9b850e",
+    "consent.c2paid.heading": "3cc3ad06ffcbce77",
+    "consent.c2paid.p1": "7f3d4302ae10b8a1",
+    "consent.c2paid.p2": "486a5bb850c8e270",
+    "consent.c2paid.p3": "2d852dcd2f84e8b8",
+    "consent.c2paid.p4": "d8310dfd46a2a88e"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -1793,6 +1808,11 @@
     "filters.clear": "7179ea0035fca783",
     "filters.showing": "f3d25c9265aac7c1",
     "filters.more": "b1ab49a6fedc4d33",
-    "filters.fewer": "6e3b02b08e9b850e"
+    "filters.fewer": "6e3b02b08e9b850e",
+    "consent.c2paid.heading": "3cc3ad06ffcbce77",
+    "consent.c2paid.p1": "7f3d4302ae10b8a1",
+    "consent.c2paid.p2": "486a5bb850c8e270",
+    "consent.c2paid.p3": "2d852dcd2f84e8b8",
+    "consent.c2paid.p4": "d8310dfd46a2a88e"
   }
 }
