@@ -140,12 +140,29 @@ async function main() {
       probe = 'answering';
       anyOpen = true;
     } catch (e) {
+      /*
+       * Per minute and per day are both RESOURCE_EXHAUSTED, and they are not
+       * the same news.
+       *
+       * This reported "allowance gone" for a burst that had merely tripped the
+       * five-per-minute limit, so a model with fourteen readings left was
+       * written off for the day. The quotaId says which — `...PerDay...` or
+       * `...PerMinute...` — and a per-minute refusal clears itself in under a
+       * minute, which is the difference between "come back tomorrow" and
+       * "wait, then carry on".
+       */
       const m = e?.message ?? '';
+      const perDay = /PerDay/i.test(m);
+      const perMinute = /PerMinute/i.test(m);
+      const retry = /retryDelay[^0-9]*([0-9]+)/.exec(m)?.[1];
       probe = /prepayment/.test(m)
         ? 'REFUSED — prepay required'
-        : /RESOURCE_EXHAUSTED|free_tier/.test(m)
-          ? 'REFUSED — allowance gone'
-          : `REFUSED — ${e?.status ?? '?'}`;
+        : perDay
+          ? "REFUSED — today's allowance gone"
+          : perMinute || /RESOURCE_EXHAUSTED/.test(m)
+            ? `busy — too many just now${retry ? `, retry in ${retry}s` : ''}`
+            : `REFUSED — ${e?.status ?? '?'}`;
+      if (perMinute || (!perDay && /RESOURCE_EXHAUSTED/.test(m))) anyOpen = true;
     }
     const left = Math.max(0, DAILY - n - 1); // the probe above spent one
     console.log(
