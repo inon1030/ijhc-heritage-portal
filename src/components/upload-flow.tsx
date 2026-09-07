@@ -506,10 +506,10 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
   const heading = (title: string, hint: string) => (
     <>
       <div className="flex flex-wrap items-baseline gap-x-3">
-        <h2 className="font-display text-xl leading-tight sm:text-2xl">{title}</h2>
-        <span className="eyebrow text-[0.7rem]">{t('flow.step', { n: screen })}</span>
+        <h2 className="font-display text-2xl leading-tight sm:text-3xl lg:text-4xl">{title}</h2>
+        <span className="eyebrow text-[0.82rem]">{t('flow.step', { n: screen })}</span>
       </div>
-      <p className="mt-1 text-[0.95rem] leading-snug text-muted">{hint}</p>
+      <p className="mt-2 text-[1.05rem] leading-snug text-muted lg:text-[1.15rem]">{hint}</p>
     </>
   );
 
@@ -541,12 +541,17 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
         <section className="animate-rise">
           {heading(t('flow.s1.title'), t('flow.s1.hint'))}
 
-          <div className="mt-4">
-            {!captured && (
-              <FilePicker files={files} onChange={setFiles} disabled={busy} />
-            )}
+          {/*
+            A file, or an address — beside each other rather than stacked.
+            
+            They are two answers to one question, and stacking them made the
+            second look like a step after the first. Side by side they read as
+            the choice they are, and the screen is half as tall.
+          */}
+          <div className={cn('mt-5 gap-6', files.length === 0 && !captured && 'lg:grid lg:grid-cols-2')}>
+            {!captured && <FilePicker files={files} onChange={setFiles} disabled={busy} />}
             {files.length === 0 && (
-              <div className={cn(files.length === 0 && !captured && 'mt-6')}>
+              <div className={cn(!captured && 'mt-6 lg:mt-0')}>
                 {!captured && <p className="eyebrow mb-2.5">{t('upload.step.orAddress')}</p>}
                 <LinkInput
                   captured={captured}
@@ -603,7 +608,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
         <section className="animate-rise">
           {heading(t('flow.s2.title'), t('flow.s2.hint'))}
 
-          <div className="mt-3 space-y-3">
+          <div className="mt-5 space-y-4">
             {/*
               The address, and the only thing on this page that is required.
 
@@ -611,14 +616,15 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
               way to ask "who is this in the photograph?" — the question that
               turns a scan into a record.
             */}
+            <div className="gap-6 lg:grid lg:grid-cols-2">
             <label className="block">
               <span className="mb-1.5 flex flex-wrap items-baseline gap-x-2">
-                <span className="eyebrow">
+                <span className="eyebrow text-[0.82rem]">
                   {t('flow.email')} <span className="text-critical">*</span>
                 </span>
                 {/* Beside the label, not under the field: the same sentence,
                     one row instead of two. */}
-                <span className="text-xs text-muted">{t('flow.emailWhy')}</span>
+                <span className="text-sm text-muted">{t('flow.emailWhy')}</span>
               </span>
               <input
                 type="email"
@@ -629,7 +635,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
                 placeholder="you@example.com"
                 aria-invalid={email.trim().length > 0 && !emailOk}
                 className={cn(
-                  'h-13 w-full rounded-lg border bg-paper px-4 focus:outline-none',
+                  'h-14 w-full rounded-lg border bg-paper px-4 text-[1.05rem] focus:outline-none',
                   email.trim().length > 0 && !emailOk
                     ? 'border-critical focus:border-critical'
                     : 'border-rule focus:border-accent-strong',
@@ -648,8 +654,8 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
               holding it and knows whose grandmother that is. What they write
               goes to the model as fact, not as a hint to weigh against pixels.
             */}
-            <label className="block">
-              <span className="eyebrow mb-1.5 block">{t('flow.whatYouKnow')}</span>
+            <label className="mt-4 block lg:mt-0">
+              <span className="eyebrow mb-2 block text-[0.82rem]">{t('flow.whatYouKnow')}</span>
               <textarea
                 value={known}
                 onChange={(e) => setKnown(e.target.value)}
@@ -657,10 +663,11 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
                 maxLength={2000}
                 dir="auto"
                 placeholder={t('flow.whatYouKnowPlaceholder')}
-                className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 leading-relaxed focus:border-accent-strong focus:outline-none"
+                className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 text-[1.05rem] leading-relaxed focus:border-accent-strong focus:outline-none"
               />
-              <span className="mt-1 block text-xs text-muted">{t('flow.whatYouKnowHint')}</span>
+              <span className="mt-1 block text-sm text-muted">{t('flow.whatYouKnowHint')}</span>
             </label>
+            </div>
 
             {/*
               Four short answers on one row where there is room.
@@ -702,11 +709,11 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
                 disabled={busy}
               />
               <label className="block">
-                <span className="eyebrow mb-1.5 block">{t('flow.language')}</span>
+                <span className="eyebrow mb-2 block text-[0.82rem]">{t('flow.language')}</span>
                 <select
                   value={analysisLang}
                   onChange={(e) => setAnalysisLang(e.target.value)}
-                  className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+                  className="h-14 w-full rounded-lg border border-rule bg-paper px-4 text-[1.05rem] focus:border-accent-strong focus:outline-none"
                 >
                   {ANALYSIS_LANGUAGES.map((l) => (
                     <option key={l} value={l}>
@@ -870,7 +877,7 @@ function Answerable({
 
   return (
     <label className="block">
-      <span className="eyebrow mb-1.5 block">{label}</span>
+      <span className="eyebrow mb-2 block text-[0.82rem]">{label}</span>
       <input
         value={unknown ? '' : value}
         onChange={(e) => onChange(e.target.value)}
@@ -878,9 +885,9 @@ function Answerable({
         placeholder={unknown ? '' : placeholder}
         maxLength={200}
         dir="auto"
-        className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:bg-paper-2 disabled:text-muted"
+        className="h-14 w-full rounded-lg border border-rule bg-paper px-4 text-[1.05rem] focus:border-accent-strong focus:outline-none disabled:bg-paper-2 disabled:text-muted"
       />
-      <span className="mt-1.5 flex items-center gap-2 text-sm text-muted">
+      <span className="mt-1.5 flex items-center gap-2 text-[0.95rem] text-muted">
         <input
           type="checkbox"
           checked={unknown}

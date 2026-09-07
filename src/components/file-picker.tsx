@@ -193,14 +193,16 @@ export function FilePicker({
           htmlFor={inputId}
           className={cn(
             'block cursor-pointer px-6 text-center',
-            files.length > 0 ? 'border-t border-rule py-5' : 'py-12',
+            files.length > 0 ? 'border-t border-rule py-5' : 'py-12 lg:py-20',
           )}
         >
-          <FileUp className="mx-auto text-muted" size={22} aria-hidden />
-          <span className="mt-3 block font-medium">
+          {/* The invitation is the largest thing on the first screen, because
+              it is the one thing a contributor has to understand. */}
+          <FileUp className="mx-auto text-muted" size={26} aria-hidden />
+          <span className="mt-3 block text-[1.1rem] font-medium lg:text-[1.25rem]">
             {files.length > 0 ? t('upload.action.addMore') : t('upload.action.choose')}
           </span>
-          <span className="mt-1 block text-sm text-muted">
+          <span className="mt-1.5 block text-[0.95rem] text-muted lg:text-base">
             {t('file.accepted', { size: formatBytes(MAX_FILE_BYTES) })}
           </span>
         </label>

@@ -103,13 +103,13 @@ export function LinkInput({
 
         <p className="pe-6 font-display text-lg leading-snug">{captured.title}</p>
 
-        <p className="machine mt-1 break-all text-sm text-muted">{captured.sourceUrl}</p>
+        <p className="machine mt-1 break-all text-[0.95rem] text-muted">{captured.sourceUrl}</p>
 
         <ul className="mt-3 flex flex-wrap gap-2">
           {captured.files.map((file) => (
             <li
               key={file.path}
-              className="rounded-full border border-rule bg-paper px-3 py-1 text-sm text-muted"
+              className="rounded-full border border-rule bg-paper px-3 py-1 text-[0.95rem] text-muted"
             >
               {file.mimeType.startsWith('image/') ? t('upload.leadImage') : t('upload.capturedText')} ·{' '}
               {formatBytes(file.byteSize)}

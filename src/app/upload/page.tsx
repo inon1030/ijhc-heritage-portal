@@ -20,8 +20,17 @@ export default async function UploadPage() {
     term: term.term,
     variants: term.variants,
   }));
+  /*
+   * The flow fills the screen instead of sitting in a band at the top.
+   *
+   * Compacting the three steps worked — and left a 252px void between the last
+   * control and the footer on a 1080px screen, which reads as a page that has
+   * finished rather than a form waiting for you. The wrapper claims the
+   * viewport and centres what is in it, so a short step is composed rather
+   * than stranded and a tall one simply flows.
+   */
   return (
-    <div className="mx-auto max-w-3xl px-6 pt-4 pb-14 sm:pt-5 sm:pb-16">
+    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-[110rem] flex-col justify-center px-6 pt-4 pb-10 sm:px-10 sm:pt-6">
       {/*
         ── the page title is the screen's title ──────────────────────────────
         
