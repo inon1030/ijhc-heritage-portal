@@ -254,7 +254,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <main id="main" className="flex-1">
             {children}
           </main>
-        <footer className="mt-24 border-t border-rule bg-paper-2/70">
+        {/*
+          The campaign's blue foot, flush against the bar it closes.
+          
+          It was the last element of the home page and the footer carried a
+          96px top margin, so the two never touched: band, cream, bar. Moving
+          it onto the footer makes the join exact by construction rather than
+          by two numbers agreeing, and gives every page the same close as the
+          poster.
+        */}
+        <div aria-hidden className="mt-24 h-14 w-full bg-[var(--color-brand-blue)] sm:h-16" />
+        <footer className="bg-paper-2/70">
           <div className="mx-auto max-w-6xl px-6 py-12">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
               <div>

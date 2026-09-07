@@ -77,14 +77,24 @@ export async function ItemCard({ item }: { item: Item & { file: ItemFile | null 
         captioning. The eyebrow is one line or nothing, and the title steps up
         with the tile.
       */}
-      <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-4">
-        <p className="eyebrow mb-0.5 truncate text-[0.6rem] text-paper/75 sm:mb-1 sm:text-[0.65rem]">
+      {/*
+        Sized between the two versions of this card.
+
+        The old catalogue card set the title at `text-xl`, which was legible
+        and took half the tile. The first pass at a wall cut it to 0.9rem,
+        which stopped the text competing with the photograph and went a step
+        too far to read comfortably — this archive is for an older audience and
+        the root is already 18px for that reason. This is the middle: bigger
+        than the wall's first draft, smaller than the catalogue's.
+      */}
+      <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+        <p className="eyebrow mb-0.5 truncate text-[0.68rem] text-paper/80 sm:mb-1 sm:text-[0.72rem]">
           {t(categoryKey(item.category))}
           {item.community ? ` · ${t(communityKey(item.community))}` : ''}
         </p>
         <h3
           dir="auto"
-          className="line-clamp-2 font-display text-[0.9rem] leading-tight text-paper drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] sm:text-base sm:leading-snug lg:text-lg"
+          className="line-clamp-2 font-display text-[1.05rem] leading-tight text-paper drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] sm:text-[1.12rem] sm:leading-snug lg:text-[1.19rem]"
         >
           {item.title}
         </h3>

@@ -109,7 +109,7 @@ export function PortalFilters({
               aria-pressed={on}
               onClick={() => apply({ community: on ? null : c })}
               className={cn(
-                'flex h-9 shrink-0 items-center gap-2 rounded-full border ps-2.5 pe-3 text-sm transition-all duration-200',
+                'flex h-10 shrink-0 items-center gap-2 rounded-full border ps-3 pe-3.5 text-[0.95rem] transition-all duration-200',
                 on
                   ? 'border-transparent bg-ink text-paper shadow-soft'
                   : 'border-rule hover:border-accent-strong hover:bg-accent-wash',
@@ -122,7 +122,7 @@ export function PortalFilters({
                 style={{ backgroundColor: COMMUNITY_COLORS[c] }}
               />
               {t(communityKey(c))}
-              <span className={cn('machine text-xs', on ? 'text-paper/70' : 'text-muted')}>{n}</span>
+              <span className={cn('machine text-[0.8rem]', on ? 'text-paper/70' : 'text-muted')}>{n}</span>
             </button>
           );
         })}
@@ -138,7 +138,7 @@ export function PortalFilters({
               aria-pressed={on}
               onClick={() => apply({ category: on ? null : (c as ItemCategory) })}
               className={cn(
-                'h-9 shrink-0 rounded-full border px-3 text-sm transition-all duration-200',
+                'h-10 shrink-0 rounded-full border px-3.5 text-[0.95rem] transition-all duration-200',
                 on
                   ? 'border-transparent bg-ink text-paper shadow-soft'
                   : 'border-rule hover:border-accent-strong hover:bg-accent-wash',
@@ -155,7 +155,7 @@ export function PortalFilters({
             aria-expanded={expanded}
             onClick={() => setExpanded((v) => !v)}
             className={cn(
-              'flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors',
+              'flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-[0.95rem] transition-colors',
               expanded || query || contributor
                 ? 'border-accent-strong bg-accent-wash'
                 : 'border-rule text-muted hover:text-ink',
@@ -218,7 +218,7 @@ export function PortalFilters({
               setEmail('');
               startTransition(() => router.push('/portal', { scroll: false }));
             }}
-            className="inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-critical"
+            className="inline-flex items-center gap-1 text-[0.95rem] text-muted transition-colors hover:text-critical"
           >
             <X size={13} /> {t('filters.clear')}
           </button>
@@ -263,7 +263,7 @@ function Typed({
         onBlur={onCommit}
         onKeyDown={(e) => e.key === 'Enter' && onCommit()}
         placeholder={placeholder}
-        className="h-9 w-full rounded-full border border-rule bg-paper-2/60 ps-8 pe-3 text-sm placeholder:text-muted/70 focus:border-accent-strong focus:bg-paper focus:outline-none"
+        className="h-10 w-full rounded-full border border-rule bg-paper-2/60 ps-8 pe-3 text-[0.95rem] placeholder:text-muted/70 focus:border-accent-strong focus:bg-paper focus:outline-none"
       />
     </div>
   );
@@ -287,7 +287,7 @@ function ViewToggle({
       aria-pressed={on}
       aria-label={label}
       className={cn(
-        'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+        'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
         on ? 'bg-ink text-paper' : 'text-muted hover:bg-paper-2 hover:text-ink',
       )}
     >

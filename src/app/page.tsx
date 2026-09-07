@@ -206,10 +206,13 @@ export default async function Home() {
         )}
       </div>
 
-      {/* The poster's blue foot. It is the one place the campaign colour is
-          allowed to take a whole band, and it closes the page the way the
-          artwork closes. */}
-      <div aria-hidden className="h-14 w-full bg-[var(--color-brand-blue)] sm:h-16" />
+      {/*
+        The poster's blue foot used to sit here, at the end of the home page,
+        with the footer's own 96px top margin between them — so the band that
+        was meant to close the page had a strip of cream under it and then a
+        second bar under that. It now lives on the footer itself, flush against
+        it, and closes every page rather than one.
+      */}
     </div>
   );
 }
