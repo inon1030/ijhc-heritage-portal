@@ -875,10 +875,25 @@ function Answerable({
   const t = useMessages();
   const unknown = Boolean(dontKnow[id]);
 
+  /*
+   * Two controls, two labels — and that is the whole point of this shape.
+   *
+   * The field and its "I don't know" used to live inside one <label>. A label
+   * binds to the first labelable thing inside it, so tapping the words "I
+   * don't know" did not tick the box: it focused the text field above. The
+   * only way to set it was to hit the 18px square exactly, which on a phone is
+   * most of the way to impossible and is the wrong answer for an audience the
+   * archive describes as families with a shoebox.
+   *
+   * Now each control owns its own label, and the checkbox's covers its words.
+   */
   return (
-    <label className="block">
-      <span className="eyebrow mb-2 block text-[0.82rem]">{label}</span>
+    <div>
+      <label htmlFor={`field-${id}`} className="eyebrow mb-2 block text-[0.82rem]">
+        {label}
+      </label>
       <input
+        id={`field-${id}`}
         value={unknown ? '' : value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled || unknown}
@@ -887,8 +902,13 @@ function Answerable({
         dir="auto"
         className="h-14 w-full rounded-lg border border-rule bg-paper px-4 text-[1.05rem] focus:border-accent-strong focus:outline-none disabled:bg-paper-2 disabled:text-muted"
       />
-      <span className="mt-1.5 flex items-center gap-2 text-[0.95rem] text-muted">
+      {/* The whole row is the target, not the square. */}
+      <label
+        htmlFor={`unknown-${id}`}
+        className="mt-1.5 flex min-h-11 cursor-pointer items-center gap-2 text-[0.95rem] text-muted"
+      >
         <input
+          id={`unknown-${id}`}
           type="checkbox"
           checked={unknown}
           disabled={disabled}
@@ -896,11 +916,11 @@ function Answerable({
             setDontKnow({ ...dontKnow, [id]: e.target.checked });
             if (e.target.checked) onChange('');
           }}
-          className="h-4 w-4 rounded border-rule-strong accent-[var(--color-accent-strong)]"
+          className="h-5 w-5 rounded border-rule-strong accent-[var(--color-accent-strong)]"
         />
         {t('flow.dontKnow')}
-      </span>
-    </label>
+      </label>
+    </div>
   );
 }
 
