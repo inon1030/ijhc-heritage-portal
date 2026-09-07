@@ -168,7 +168,7 @@ async function withFallback(
   request: (model: string) => Parameters<GoogleGenAI['models']['generateContent']>[0],
 ): Promise<{ response: Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>; model: string }> {
   const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS.filter((m) => m !== GEMINI_MODEL)];
-  let lastQuotaError: unknown = null;
+  let lastError: unknown = null;
 
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -179,19 +179,32 @@ async function withFallback(
         const message = String((error as { message?: string })?.message ?? '');
 
         if (status === 429 || /RESOURCE_EXHAUSTED/.test(message)) {
-          lastQuotaError = error;
+          lastError = error;
           break; // this model is out for the day; the next one is not
         }
-        if ((status === 503 || /UNAVAILABLE/.test(message)) && attempt === 0) {
-          await new Promise((r) => setTimeout(r, 900));
-          continue; // a queue, not a wall
+        if (status === 503 || /UNAVAILABLE/.test(message)) {
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 900));
+            continue; // a queue a moment may clear
+          }
+          /*
+           * Still busy after the retry: move on, do not give up.
+           *
+           * This used to fall through to the throw below, so a model answering
+           * 503 ended the whole attempt and the other three were never asked.
+           * Measured live: every upload failed with "the analysis service did
+           * not respond" while three models were sitting there answering.
+           * Busy is exactly the case the chain exists for.
+           */
+          lastError = error;
+          break;
         }
         throw error;
       }
     }
   }
 
-  throw lastQuotaError ?? new Error('No model was able to answer.');
+  throw lastError ?? new Error('No model was able to answer.');
 }
 
 export function createGeminiProvider(): AIProvider {
