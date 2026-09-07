@@ -70,13 +70,23 @@ export const GEMINI_FALLBACK_MODELS = (
    * in the list — a model that makes people wait is worse than the next one
    * down).
    *
-   * `gemini-3.8-flash` goes first among the fallbacks because it is a full
-   * flash model and the lite ones are the compromise: they catalogue in
-   * English perfectly well, which is all this path asks of them, but they are
-   * the models measured losing a script mid-word and are kept last.
+   * Every name here must be a **distinct** model, and that is not obvious from
+   * the name. `gemini-flash-lite-latest` was in this list until its
+   * `modelVersion` was read back: it resolves to `gemini-3.5-flash-lite`, the
+   * same model, sharing the same allowance. It added a wasted round trip when
+   * that model ran out and — worse — made `npm run quota` report capacity that
+   * did not exist.
+   *
+   * `gemini-3.8-flash` goes first: a full flash model, and fast. Then
+   * `gemini-3.5-flash-lite`, which catalogues in English perfectly well, which
+   * is all this path asks of it — the script-losing that keeps it out of the
+   * translator does not apply here. `gemini-3.7-flash` is last: a full model
+   * and a good one, but measured at 2.4s against sub-second for the others and
+   * returning 503 an hour earlier. A slow answer is worth having when the
+   * alternative is none, and worth avoiding when it is not.
    */
   process.env.GEMINI_FALLBACK_MODELS ??
-  'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest'
+  'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-3.7-flash'
 )
   .split(',')
   .map((m) => m.trim())

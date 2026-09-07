@@ -110,13 +110,14 @@ async function main() {
      * The same default as `src/lib/env.ts`, and it has to stay that way.
      *
      * This file had a shorter list of its own, so it reported two models while
-     * the site was using four — a quota check that under-reports the quota is
-     * worse than none, because it says "nearly out" on a day with sixty
-     * readings left.
+     * the site was using four — a quota check that under-reports is worse than
+     * none, because it says "nearly out" on a day with sixty readings left.
+     * It then briefly over-reported, listing an alias that resolves to a model
+     * already in the list, which is the same failure pointing the other way.
      */
     ...(
       env.GEMINI_FALLBACK_MODELS ||
-      'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest'
+      'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-3.7-flash'
     )
       .split(',')
       .map((m) => m.trim()),
