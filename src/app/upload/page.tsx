@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { UploadFlow } from '@/components/upload-flow';
+import { Logo } from '@/components/logo';
 import { getMessages } from '@/lib/i18n';
 import { readVocabulary } from '@/lib/vocabulary/load';
 
@@ -47,7 +48,7 @@ export default async function UploadPage() {
         a meeting, it was the last fifty pixels between the analyse button and
         the bottom of the screen.
       */}
-      <UploadFlow vocabulary={vocabulary} />
+      <UploadFlow vocabulary={vocabulary} mark={<Logo variant="mark" size={52} />} />
     </div>
   );
 }

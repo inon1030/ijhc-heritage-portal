@@ -134,7 +134,7 @@ async function QueueGrid({ items }: { items: QueueItem[] }) {
                 <p className="machine line-clamp-2 text-muted">{item.analysis.summary}</p>
               )}
               {/* The clause, not the verdict. "a festival in Cusco, Peru" is
-                  something a volunteer can agree or disagree with at a glance. */}
+                  something a knowledge expert can agree or disagree with at a glance. */}
               {item.analysis?.off_topic && item.analysis.off_topic_reason && (
                 <p className="machine text-caution">{item.analysis.off_topic_reason}</p>
               )}

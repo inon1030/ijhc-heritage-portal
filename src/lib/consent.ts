@@ -65,7 +65,16 @@ export const GEMINI_PAID_TIER = process.env.GEMINI_PAID_TIER === 'true';
  * the archive has to keep being able to say so; somebody uploading after the
  * switch agreed to the second. One string cannot stand for both.
  */
-export const CONSENT_VERSION = GEMINI_PAID_TIER ? '2026-09-06-paid' : '2026-09-06';
+/*
+ * Bumped again on 07.09 for the relabelling.
+ *
+ * Only the word changed — "volunteer" to "knowledge expert" — and the people,
+ * the permission and the behaviour are identical. It is still a new version,
+ * because a version is a record of the exact sentences somebody agreed to and
+ * "only the wording changed" is the reason versions exist rather than an
+ * excuse to skip one.
+ */
+export const CONSENT_VERSION = GEMINI_PAID_TIER ? '2026-09-07-paid' : '2026-09-07';
 
 /**
  * The address someone writes to in order to withdraw material or ask what is
@@ -103,7 +112,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     key: 'consent.c1',
     heading: 'What happens to what you send',
     body: [
-      'A volunteer reads it and checks it against the file before anything appears in public. Until then it is visible only to volunteers of the Heritage Center.',
+      'A knowledge expert reads it and checks it against the file before anything appears in public. Until then it is visible only to knowledge experts of the Heritage Center.',
       'If it is accepted, the material and the description are published on this site under the Center’s name, and anyone can see them. If it is not accepted, it normally stays in the archive as an unpublished record rather than being deleted, so that a decision can be revisited — but see what the Center may do without asking you, below.',
     ],
   },
@@ -139,8 +148,8 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     body: [
       'Both are optional. Leaving them blank does not change how your contribution is treated.',
       'Neither is published as part of a record. The address is not an account and grants no access to anything — but anyone who knows it can type it into the portal and see the records you sent that are already public. It reveals nothing that is not already on the site; it groups what is. Material still in review, or not accepted, is never shown this way.',
-      'The volunteers who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a volunteer records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
-      'A family name recorded against your address is not published by that alone. Family names appear on a record only when a volunteer decides the family belongs on it.',
+      'The knowledge experts who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a knowledge expert records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
+      'A family name recorded against your address is not published by that alone. Family names appear on a record only when a knowledge expert decides the family belongs on it.',
       'Neither is used for a newsletter, passed to anyone outside the Center, or sold.',
     ],
   },
@@ -149,7 +158,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     heading: 'Names of people',
     body: [
       'Family names attached to a record are published with it — that is what makes a heritage archive usable, and it means the surnames of living relatives can appear in public.',
-      'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a volunteer will hold it rather than publish it.',
+      'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a knowledge expert will hold it rather than publish it.',
     ],
   },
   {
@@ -164,7 +173,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     key: 'consent.c6',
     heading: 'Following what you sent',
     body: [
-      'At the end of an upload you are given a link, one for each contribution. It shows you whether a volunteer has published it yet, and it does not expire.',
+      'At the end of an upload you are given a link, one for each contribution. It shows you whether a knowledge expert has published it yet, and it does not expire.',
       'It needs no account and no password, so keep it somewhere you will find it — the Center cannot send you another unless it has your address.',
       'Anyone holding that link can see the same page, so treat it the way you would treat the material itself.',
     ],
@@ -174,7 +183,7 @@ export const CONSENT_CLAUSES: ConsentClause[] = [
     heading: 'What the Center may do without asking you',
     body: [
       'The Heritage Center decides what the archive holds. It may decline your contribution, take a published record out of public view, or remove material entirely, at its own discretion and without telling you first.',
-      'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Volunteers are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
+      'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Knowledge experts are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
       'What is kept is a note that the item existed, so the same thing is not accepted again later by mistake.',
       'This does not affect the two requests below. Those are yours to make, and the Center answers them.',
     ],
@@ -198,5 +207,5 @@ export function contactSentence(): string {
   const address = contactAddress();
   return address
     ? `Write to ${address}.`
-    : 'The Heritage Center has not yet published a contact address for this. Until it does, ask the volunteer who was in touch with you — and if nobody has been, the address will appear here as soon as the Center provides one.';
+    : 'The Heritage Center has not yet published a contact address for this. Until it does, ask the knowledge expert who was in touch with you — and if nobody has been, the address will appear here as soon as the Center provides one.';
 }

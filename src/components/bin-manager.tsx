@@ -52,7 +52,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
     return (
       <EmptyState
         title={t('bin.empty')}
-        body="Records a volunteer removes land here rather than disappearing. Nothing has been removed yet."
+        body="Records a knowledge expert removes land here rather than disappearing. Nothing has been removed yet."
         action={{ href: '/review', label: 'Go to the review queue' }}
       />
     );

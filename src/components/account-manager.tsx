@@ -97,7 +97,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                   ) : (
                     <UserCheck size={16} />
                   )}
-                  Approve as volunteer
+                  Approve as knowledge expert
                 </button>
 
                 <button

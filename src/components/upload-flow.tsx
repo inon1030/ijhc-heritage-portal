@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Check, Loader2, Sparkles } from 'lucide-react';
+import { Check, Sparkles } from 'lucide-react';
 import { ConsentBlock } from '@/components/consent-block';
 import { RingMark, buttonClass } from '@/components/primitives';
 import { FilePicker, type PickedFile } from '@/components/file-picker';
@@ -70,7 +70,21 @@ interface Analysed {
 type Grouping = 'one' | 'separate';
 type Phase = 'describe' | 'analysing' | 'reviewing' | 'submitting' | 'done';
 
-export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
+export function UploadFlow({
+  vocabulary,
+  mark,
+}: {
+  vocabulary: OfferedTerm[];
+  /**
+   * The Center's mark, handed down rather than imported.
+   *
+   * `Logo` reads the public directory to decide whether a supplied file
+   * exists, so importing it here would pull `node:fs` into the client bundle —
+   * which took every page of the deployed site down once already. The entry
+   * animation gets its mark the same way, for the same reason.
+   */
+  mark: React.ReactNode;
+}) {
   const t = useMessages();
   const [files, setFiles] = useState<PickedFile[]>([]);
   const [captured, setCaptured] = useState<CapturedLink | null>(null);
@@ -442,7 +456,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
             : t('upload.done.one')}
         </h2>
         <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted">
-          A volunteer checks the description and the suggestions against the original. It appears in
+          A knowledge expert checks the description and the suggestions against the original. It appears in
           the public portal once it is approved.
         </p>
         <div className="mt-6 flex justify-center gap-3">
@@ -473,7 +487,7 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
             </p>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               {created.length > 1 ? 'They show you' : 'It shows you'} what happens next —
-              whether a volunteer has published{' '}
+              whether a knowledge expert has published{' '}
               {created.length > 1 ? 'each contribution' : 'it'} yet. Save{' '}
               {created.length > 1 ? 'them' : 'it'} somewhere; we have no other way to reach you.
             </p>
@@ -608,6 +622,12 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
         <section className="animate-rise">
           {heading(t('flow.s2.title'), t('flow.s2.hint'))}
 
+          {phase === 'analysing' ? (
+            <div className="mt-6">
+              <Thinking mark={mark} fileName={files[0]?.file.name ?? captured?.title ?? null} progress={progress} />
+            </div>
+          ) : (
+          <>
           <div className="mt-5 space-y-4">
             {/*
               The address, and the only thing on this page that is required.
@@ -754,19 +774,11 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
                 !canAnalyse && 'pointer-events-none bg-paper-3 text-muted shadow-none',
               )}
             >
-              {phase === 'analysing' ? (
-                <>
-                  <Loader2 size={17} className="animate-spin" />
-                  {progress && progress.total > 1
-                    ? `${progress.done + 1} / ${progress.total}`
-                    : t('flow.analysing')}
-                </>
-              ) : (
-                <>
-                  <Sparkles size={17} />
-                  {t('flow.analyse')}
-                </>
-              )}
+              {/* No spinner here any more: while it reads, this whole form is
+                  replaced by `Thinking`, so this button is never on screen in
+                  that state. TypeScript said so before I noticed. */}
+              <Sparkles size={17} />
+              {t('flow.analyse')}
             </button>
             {!canAnalyse && !busy && (
               <span className="text-sm text-muted">
@@ -774,6 +786,8 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
               </span>
             )}
           </div>
+          </>
+          )}
         </section>
       )}
 
@@ -823,6 +837,80 @@ export function UploadFlow({ vocabulary }: { vocabulary: OfferedTerm[] }) {
             </button>
           </div>
         </section>
+      )}
+    </div>
+  );
+}
+
+/**
+ * What a person looks at while the model reads their file.
+ *
+ * The only sign it was working used to be a 17px spinner inside the button,
+ * and a reading takes between eight and thirty seconds — long enough, on a
+ * phone at a conference, for somebody to decide the page has frozen and press
+ * it again. So this takes the screen: the Center's own mark, turning, over the
+ * name of the file it is actually looking at.
+ *
+ * ── the counter is there to be believed ─────────────────────────────────────
+ *
+ * A spinner alone is what a hung page looks like too. A number that keeps
+ * moving cannot be mistaken for one, and it costs nothing to be honest with:
+ * it is elapsed time, which the archive knows, rather than a percentage, which
+ * it does not — the model does not report progress and inventing a bar that
+ * creeps to 90% and waits is the kind of thing this project does not do.
+ *
+ * After twenty seconds it says so plainly rather than going quiet, because by
+ * then the question in the room is whether anything is happening at all.
+ */
+function Thinking({
+  mark,
+  fileName,
+  progress,
+}: {
+  mark: React.ReactNode;
+  fileName: string | null;
+  progress: { done: number; total: number } | null;
+}) {
+  const t = useMessages();
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const started = Date.now();
+    const timer = window.setInterval(
+      () => setSeconds(Math.round((Date.now() - started) / 1000)),
+      1000,
+    );
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex flex-col items-center justify-center rounded-xl border border-rule bg-paper-2/40 px-6 py-14 text-center"
+    >
+      <span className="animate-turning block">{mark}</span>
+
+      <p className="mt-6 font-display text-xl sm:text-2xl">{t('flow.analysing')}</p>
+
+      {fileName && (
+        <p className="machine mt-1.5 max-w-full truncate text-sm text-muted">{fileName}</p>
+      )}
+
+      {progress && progress.total > 1 && (
+        <p className="eyebrow mt-2 text-[0.75rem]">
+          {progress.done + 1} / {progress.total}
+        </p>
+      )}
+
+      <p className="machine mt-4 text-sm text-muted" aria-hidden>
+        {seconds}s
+      </p>
+
+      {seconds >= 20 && (
+        <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+          {t('flow.stillReading')}
+        </p>
       )}
     </div>
   );

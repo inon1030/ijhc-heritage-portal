@@ -302,7 +302,7 @@ function EntryPanel({
 
             Community, period, place and language used to sit here as read-only
             text. They are findings, and a finding a person cannot correct is
-            one they have to argue about with a volunteer later — so they moved
+            one they have to argue about with a knowledge expert later — so they moved
             into the sheet above, where they can be edited. What is left is the
             bytes: nothing here was generated, and nothing here is arguable.
           */}

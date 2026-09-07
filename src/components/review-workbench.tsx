@@ -329,7 +329,7 @@ export function ReviewWorkbench({
                 Who sent it.
 
                 The address, the name they gave, how much else they have sent,
-                and the families a volunteer has tied that address to. The
+                and the families a knowledge expert has tied that address to. The
                 families are the working part: a surname on a photograph is a
                 guess, and an address already recorded against the Sassoons is
                 something the archive established. Linking and unlinking is done
@@ -379,7 +379,7 @@ export function ReviewWorkbench({
         )}
 
         {/* Said first, because it changes what the rest of the screen is for.
-            The clause is shown rather than the verdict: a volunteer can agree
+            The clause is shown rather than the verdict: a knowledge expert can agree
             or disagree with "a festival in Cusco, Peru" at a glance, and the
             model is wrong about faded and cropped items often enough that this
             has to read as a question. */}
@@ -582,7 +582,7 @@ export function ReviewWorkbench({
 
         {/*
           Directly above the decision, and deliberately so. Publishing sends
-          this record out in five languages; the last thing a volunteer reads
+          this record out in five languages; the last thing a knowledge expert reads
           before pressing Publish should be the five languages it will go out
           in, not the English they have already been through field by field.
         */}

@@ -413,8 +413,8 @@ export function FamilyManager({
       <section className="mt-12 border-t border-rule pt-8">
         <h2 className="font-display text-xl">{t('families.contributors')}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Everyone who has sent the archive something, or whom a volunteer has recorded against a
-          family. Addresses are never published. Correcting one is a volunteer&rsquo;s to do;
+          Everyone who has sent the archive something, or whom a knowledge expert has recorded against a
+          family. Addresses are never published. Correcting one is a knowledge expert&rsquo;s to do;
           erasing a person is an administrator&rsquo;s.
         </p>
 

@@ -912,3 +912,24 @@
   line-height: 1.7;
   white-space: pre-wrap;
 }
+
+/*
+ * The mark, turning, while the archive reads a file.
+ *
+ * Slower than a loading spinner on purpose — a spinner says "busy", and this
+ * says "something careful is happening", which is what is actually happening.
+ * Two and a half seconds a turn, and it stops entirely for anyone who has
+ * asked their system not to animate.
+ */
+@keyframes turning {
+  to { transform: rotate(360deg); }
+}
+
+.animate-turning {
+  animation: turning 2.6s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-turning { animation: none; }
+}

@@ -214,7 +214,7 @@ export function TranslationDeck({ itemId }: { itemId: string }) {
         <p className="mb-4 rounded-lg bg-critical/8 px-4 py-2.5 text-sm text-critical">{error}</p>
       )}
 
-      {/* The tabs carry their own progress, so a volunteer can see at a glance
+      {/* The tabs carry their own progress, so a knowledge expert can see at a glance
           which language is short without opening each one. */}
       <div role="tablist" aria-label={t('review.languagesHeading')} className="mb-4 flex flex-wrap gap-1.5">
         {deck.languages.map((l) => {

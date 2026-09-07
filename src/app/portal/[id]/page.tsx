@@ -242,7 +242,7 @@ export default async function RecordPage({
           </dl>
           </Reveal>
 
-          {/* The rest of the catalogue. Only what a volunteer approved: nothing
+          {/* The rest of the catalogue. Only what a knowledge expert approved: nothing
               reaches this page until the record does, and the record does not
               move until a person has been through the fields one at a time.
 

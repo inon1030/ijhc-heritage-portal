@@ -84,7 +84,10 @@ describe('the handling notice', () => {
     // moves without the other, one of them is lying to a contributor.
     const emailClause = CONSENT_CLAUSES.find((c) => c.heading.startsWith('Your name and email'))!;
     const text = emailClause.body.join(' ');
-    expect(text).toMatch(/volunteers who catalogue the archive can see both/i);
+    // The label changed to "knowledge expert" on 07.09; the permission behind
+    // it — `contributors_volunteer_select` — did not, which is why the schema
+    // still says volunteer and this sentence no longer does.
+    expect(text).toMatch(/knowledge experts who catalogue the archive can see both/i);
     expect(text).toMatch(/belongs to a particular family/i);
     // And the limit on it: a family link is not itself publication.
     expect(text).toMatch(/not published by that alone/i);
@@ -209,7 +212,7 @@ describe('the model tier the notice describes', () => {
     expect(text).toMatch(/free tier/i);
     expect(text).toMatch(/may be reviewed by people at Google/i);
     expect(text).toMatch(/do not upload it here/i);
-    expect(version).toBe('2026-09-06');
+    expect(version).toBe('2026-09-07');
   });
 
   it('stops warning them off it once the archive is paying, and says why', async () => {
@@ -221,7 +224,7 @@ describe('the model tier the notice describes', () => {
     expect(text).toMatch(/still leaves the Center/i);
     // And it must NOT keep telling people not to send private material.
     expect(text).not.toMatch(/do not upload it here/i);
-    expect(version).toBe('2026-09-06-paid');
+    expect(version).toBe('2026-09-07-paid');
   });
 
   it('never lets the two tiers share a version string', async () => {

@@ -133,7 +133,7 @@ export function FieldSheet({
           {tone === 'contributor'
             ? present.length > 0
               ? 'Only what it could read with reasonable certainty. Correct anything you know better — you are holding the original and it is not — and add whatever it missed.'
-              : 'It could not read anything about this item with enough certainty to suggest it. Add whatever you know, or leave it and a volunteer will.'
+              : 'It could not read anything about this item with enough certainty to suggest it. Add whatever you know, or leave it and a knowledge expert will.'
             : present.length > 0
               ? 'Suggestions that cleared the archive’s threshold, plus anything added by hand. Everything the model was less sure of was discarded and is not shown.'
               : 'Nothing the model proposed cleared the threshold. Add the fields this record should carry.'}
@@ -318,7 +318,7 @@ function FieldRow({
         It disappears once a person has overruled the value, because it would
         then be describing something that is no longer on screen. What the
         machine read is still available — on the undo control, and in the
-        analysis a volunteer sees.
+        analysis a knowledge expert sees.
       */}
       {fromMachine && <Basis basis={row.basis!} note={row.note ?? null} />}
     </div>

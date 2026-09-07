@@ -111,7 +111,7 @@ export const en = {
   'portal.truncated': 'Showing the first {count}. Narrow the search to see the rest.',
   'portal.emptyTitle': 'Nothing matches that yet',
   'portal.emptyBody':
-    'Try a broader search, or clear the filters. If the archive is new, the first records appear here once the knowledge manager has reviewed them.',
+    'Try a broader search, or clear the filters. If the archive is new, the first records appear here once the knowledge expert has reviewed them.',
   'portal.communityUnknown': 'Community not identified',
 
   'controls.search': 'Search the archive',
@@ -159,7 +159,7 @@ export const en = {
   'upload.eyebrow': 'Open to everyone — no account needed',
   'upload.headline': 'Contribute an item',
   'upload.standfirst':
-    'A photograph, a document, a recording. The AI reads what it can from the file and suggests a description — the knowledge manager checks it, approves it and publishes it.',
+    'A photograph, a document, a recording. The AI reads what it can from the file and suggests a description — the knowledge expert checks it, approves it and publishes it.',
 
   'upload.step.files': 'Add your files',
   'upload.step.filesRead': 'The page the archive read',
@@ -234,7 +234,7 @@ export const en = {
   'prereview.aiSuggested': 'The AI suggested:',
   'prereview.useThis': 'use this',
   'prereview.subtitle':
-    'Suggestions, not a record. Correct anything you know better — the knowledge manager reviews it, approves it and publishes it.',
+    'Suggestions, not a record. Correct anything you know better — the knowledge expert reviews it, approves it and publishes it.',
   'prereview.hide': 'Hide this panel',
   'prereview.titleForItem': 'Title for this item',
   'prereview.machineReading': 'The machine’s reading',
@@ -242,7 +242,7 @@ export const en = {
   'prereview.yourTags': 'Your tags',
   'prereview.addTag': 'Search the archive’s tags',
   'prereview.tagsFromList':
-    'Tags come from the archive’s own list, so the same thing is filed under the same word everywhere. If what you want is not here, say it in the description and the knowledge manager can add it.',
+    'Tags come from the archive’s own list, so the same thing is filed under the same word everywhere. If what you want is not here, say it in the description and the knowledge expert can add it.',
   'prereview.tagsSuggested': 'Suggested for this item',
   'prereview.tagsNoMatch': 'No tag matches that.',
   'prereview.tagsAll': 'Browse all tags',
@@ -297,20 +297,20 @@ export const en = {
   'receipt.published': 'Published',
   'receipt.keptNotPublic': 'Kept, but not public',
   'receipt.notAdded': 'Not added to the archive',
-  'receipt.waiting': 'Waiting for the knowledge manager',
+  'receipt.waiting': 'Waiting for the knowledge expert',
   'receipt.badLinkBody': 'This address does not match a contribution. Check the link you were given, or contribute something new.',
   'receipt.goneBody': 'The record this receipt pointed at is no longer held in the archive.',
-  'receipt.publishedBody': 'The knowledge manager checked it and it is in the public archive.',
+  'receipt.publishedBody': 'The knowledge expert checked it and it is in the public archive.',
   'receipt.keptNotPublicBody':
-    'The knowledge manager catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
+    'The knowledge expert catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
   'receipt.notAddedBody':
-    'The knowledge manager looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
+    'The knowledge expert looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
   'receipt.waitingBody':
-    'It has arrived safely. The knowledge manager checks each contribution against the original before anything is published, so this can take a while.',
+    'It has arrived safely. The knowledge expert checks each contribution against the original before anything is published, so this can take a while.',
 
   // ── the review queue ──────────────────────────────────────────────────────
   'queue.title': 'Review queue',
-  'queue.volunteersOnly': 'Volunteers only',
+  'queue.volunteersOnly': 'Knowledge experts only',
   'queue.clear': 'The queue is clear',
   'queue.openPortal': 'Open the portal',
 
@@ -323,7 +323,7 @@ export const en = {
   'manage.heading': 'Archive administration',
   'manage.title': 'Manage',
   'manage.administratorsOnly': 'Administrators only',
-  'manage.volunteerAccess': 'Volunteer access',
+  'manage.volunteerAccess': 'Knowledge expert access',
 
   'vocab.newTerm': 'New term',
   'vocab.subdivides': 'Subdivides',
@@ -335,7 +335,7 @@ export const en = {
 
   'families.heading': 'Family name',
   'families.community': 'Community',
-  'families.note': 'Family names are attached to a record by a volunteer, never guessed.',
+  'families.note': 'Family names are attached to a record by a knowledge expert, never guessed.',
   'families.add': 'Add a family',
   'families.notes': 'Notes',
 
@@ -455,7 +455,7 @@ export const en = {
 
   'accounts.deleteForGood': 'Delete for good',
   'accounts.keep': 'Keep',
-  'accounts.volunteer': 'Volunteer',
+  'accounts.volunteer': 'Knowledge expert',
   'accounts.administrator': 'Administrator',
   'accounts.suspend': 'Suspend',
   'accounts.onlyAdmin': 'The only administrator — promote someone else first',
@@ -465,7 +465,7 @@ export const en = {
   'common.editedByContributor': 'Edited by the contributor',
   'families.examplePlaceholder': 'Merchant family, Bombay and Shanghai',
   'prereview.vocabularyNote':
-    'The knowledge manager matches these to the archive’s own vocabulary before publishing.',
+    'The knowledge expert matches these to the archive’s own vocabulary before publishing.',
   'prereview.prefilled':
     'Pre-filled with the machine’s reading. Change anything you know better.',
   'common.cancel': 'Cancel',
@@ -491,7 +491,7 @@ export const en = {
 
   'consent.c1.heading': 'What happens to what you send',
   'consent.c1.p1':
-    'A volunteer reads it and checks it against the file before anything appears in public. Until then it is visible only to volunteers of the Heritage Center.',
+    'A knowledge expert reads it and checks it against the file before anything appears in public. Until then it is visible only to knowledge experts of the Heritage Center.',
   'consent.c1.p2':
     'If it is accepted, the material and the description are published on this site under the Center’s name, and anyone can see them. If it is not accepted, it normally stays in the archive as an unpublished record rather than being deleted, so that a decision can be revisited — but see what the Center may do without asking you, below.',
 
@@ -522,9 +522,9 @@ export const en = {
   'consent.c3.p2':
     'Neither is published as part of a record. The address is not an account and grants no access to anything — but anyone who knows it can type it into the portal and see the records you sent that are already public. It reveals nothing that is not already on the site; it groups what is. Material still in review, or not accepted, is never shown this way.',
   'consent.c3.p3':
-    'The volunteers who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a volunteer records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
+    'The knowledge experts who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a knowledge expert records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
   'consent.c3.p4':
-    'A family name recorded against your address is not published by that alone. Family names appear on a record only when a volunteer decides the family belongs on it.',
+    'A family name recorded against your address is not published by that alone. Family names appear on a record only when a knowledge expert decides the family belongs on it.',
   'consent.c3.p5':
     'Neither is used for a newsletter, passed to anyone outside the Center, or sold.',
 
@@ -532,7 +532,7 @@ export const en = {
   'consent.c4.p1':
     'Family names attached to a record are published with it — that is what makes a heritage archive usable, and it means the surnames of living relatives can appear in public.',
   'consent.c4.p2':
-    'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a volunteer will hold it rather than publish it.',
+    'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a knowledge expert will hold it rather than publish it.',
 
   'consent.c5.heading': 'Rights in the material',
   'consent.c5.p1':
@@ -542,7 +542,7 @@ export const en = {
 
   'consent.c6.heading': 'Following what you sent',
   'consent.c6.p1':
-    'At the end of an upload you are given a link, one for each contribution. It shows you whether a volunteer has published it yet, and it does not expire.',
+    'At the end of an upload you are given a link, one for each contribution. It shows you whether a knowledge expert has published it yet, and it does not expire.',
   'consent.c6.p2':
     'It needs no account and no password, so keep it somewhere you will find it — the Center cannot send you another unless it has your address.',
   'consent.c6.p3':
@@ -552,7 +552,7 @@ export const en = {
   'consent.c7.p1':
     'The Heritage Center decides what the archive holds. It may decline your contribution, take a published record out of public view, or remove material entirely, at its own discretion and without telling you first.',
   'consent.c7.p2':
-    'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Volunteers are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
+    'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Knowledge experts are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
   'consent.c7.p3':
     'What is kept is a note that the item existed, so the same thing is not accepted again later by mistake.',
   'consent.c7.p4':
@@ -585,7 +585,7 @@ export const en = {
   'flow.s2.title': 'Tell us what you know',
   'flow.s2.hint': 'The AI reads the file. What you know about it is what it trusts.',
   'flow.s3.title': 'Check what the AI made',
-  'flow.s3.hint': 'Correct anything before it goes to the knowledge manager.',
+  'flow.s3.hint': 'Correct anything before it goes to the knowledge expert.',
 
   'flow.email': 'Your email address',
   'flow.emailWhy': 'Never published. It is how we come back to you with a question.',
@@ -603,7 +603,9 @@ export const en = {
 
   'flow.dontKnow': 'I don’t know',
   'flow.analyse': 'Read it with AI',
-  'flow.analysing': 'Reading…',
+  'flow.analysing': 'Reading it now…',
+  'flow.stillReading':
+    'Still reading. A detailed scan can take half a minute — the page has not stopped.',
   'flow.needFile': 'Add a file or a link first.',
   'flow.needConsent': 'Tick the box to confirm you may share this material.',
 
