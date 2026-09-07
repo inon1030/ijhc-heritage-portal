@@ -23,7 +23,8 @@
     "db:backup": "tsx scripts/backup.ts",
     "db:backup:verify": "tsx scripts/backup.ts --verify",
     "test:db": "vitest run --config vitest.db.config.ts",
-    "i18n": "node scripts/translate-ui.mjs"
+    "i18n": "node scripts/translate-ui.mjs",
+    "quota": "node scripts/quota.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
