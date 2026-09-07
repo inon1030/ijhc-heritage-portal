@@ -106,7 +106,20 @@ async function main() {
 
   const models = [
     env.GEMINI_MODEL || 'gemini-3.6-flash',
-    ...(env.GEMINI_FALLBACK_MODELS || 'gemini-3.5-flash-lite').split(',').map((m) => m.trim()),
+    /*
+     * The same default as `src/lib/env.ts`, and it has to stay that way.
+     *
+     * This file had a shorter list of its own, so it reported two models while
+     * the site was using four — a quota check that under-reports the quota is
+     * worse than none, because it says "nearly out" on a day with sixty
+     * readings left.
+     */
+    ...(
+      env.GEMINI_FALLBACK_MODELS ||
+      'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest'
+    )
+      .split(',')
+      .map((m) => m.trim()),
   ].filter((m, i, a) => m && a.indexOf(m) === i);
 
   console.log('  model                      site used today   probe');

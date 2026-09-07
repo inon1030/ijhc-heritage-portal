@@ -60,7 +60,23 @@ export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
  * model is out.
  */
 export const GEMINI_FALLBACK_MODELS = (
-  process.env.GEMINI_FALLBACK_MODELS ?? 'gemini-3.5-flash-lite,gemini-flash-lite-latest'
+  /*
+   * Ordered by how well they read a document, not by how cheap they are.
+   *
+   * The allowance is per model, so each name here is another twenty readings a
+   * day — measured before a conference where end users would be uploading:
+   * 3.6-flash was spent, 3.8-flash and both lite models were answering, and
+   * 3.7-flash was returning 503 (busy, not exhausted, which is why it is not
+   * in the list — a model that makes people wait is worse than the next one
+   * down).
+   *
+   * `gemini-3.8-flash` goes first among the fallbacks because it is a full
+   * flash model and the lite ones are the compromise: they catalogue in
+   * English perfectly well, which is all this path asks of them, but they are
+   * the models measured losing a script mid-word and are kept last.
+   */
+  process.env.GEMINI_FALLBACK_MODELS ??
+  'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest'
 )
   .split(',')
   .map((m) => m.trim())
