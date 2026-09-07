@@ -132,6 +132,15 @@ export function LinkInput({
 
   return (
     <div>
+      {/*
+        `flex-1` only once the row is a row.
+        
+        The wrapper is `flex-col` on a phone, and in a column `flex: 1 1 0%`
+        sets the basis on the *main* axis — which is the height. It beat the
+        `h-13` beside it and the field rendered 25px tall: unreadable, and well
+        under a thumb. On a wide screen the axis is horizontal, so the same two
+        classes cooperate and the bug never appeared.
+      */}
       <div className="flex flex-col gap-2.5 sm:flex-row">
         <input
           type="url"
@@ -146,7 +155,7 @@ export function LinkInput({
           }}
           disabled={disabled || busy}
           placeholder={t('upload.linkPlaceholder')}
-          className="h-13 flex-1 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+          className="h-13 w-full rounded-lg border border-rule bg-paper px-4 sm:flex-1 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
         />
         <button
           type="button"
