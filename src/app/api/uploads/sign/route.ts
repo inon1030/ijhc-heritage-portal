@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { issueGrant } from '@/lib/files/grant';
 import { buildStoragePath, isValidStorageKey } from '@/lib/files/paths';
@@ -19,17 +20,19 @@ const Body = z.object({
  * 50 MB scan work on a platform with a 4.5 MB request body limit.
  */
 export async function POST(request: NextRequest) {
+  const { t } = await getMessages();
+
   try {
     const limit = rateLimit(clientKey(request));
     if (!limit.allowed) {
-      return fail(429, 'rate_limited', `Too many uploads. Try again in ${limit.retryAfterSeconds} seconds.`);
+      return fail(429, 'rate_limited', t('err.tooManyUploads', { seconds: limit.retryAfterSeconds }));
     }
 
     const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     const rejection = validateFile(parsed.data);
-    if (rejection) return fail(415, rejection.code, rejection.message);
+    if (rejection) return fail(415, rejection.code, t(rejection.key, rejection.vars));
 
     const path = buildStoragePath(parsed.data.fileName);
 
@@ -38,14 +41,14 @@ export async function POST(request: NextRequest) {
     // Catching it here means a bad key is our bug, not their problem.
     if (!isValidStorageKey(path)) {
       console.error('[uploads] built an invalid storage key', { fileName: parsed.data.fileName, path });
-      return fail(500, 'internal_error', 'Could not prepare the upload. Try again.');
+      return fail(500, 'internal_error', t('err.uploadNotPrepared'));
     }
 
     const { data, error } = await createAdminSupabase()
       .storage.from('heritage')
       .createSignedUploadUrl(path);
 
-    if (error || !data) return fail(502, 'storage_unavailable', 'Could not start the upload. Try again.');
+    if (error || !data) return fail(502, 'storage_unavailable', t('err.uploadNotStarted'));
 
     // The grant is what lets /api/analyze and /api/items know this path came
     // from here rather than from a stranger who guessed one.

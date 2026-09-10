@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { createServerSupabase } from '@/lib/supabase/server';
@@ -64,10 +65,12 @@ const BUDGET_MS = 20_000;
 export const maxDuration = 25;
 
 export async function POST(request: NextRequest) {
+  const { t } = await getMessages();
+
   try {
     const limit = rateLimit(`translate:${clientKey(request)}`, { limit: 30, windowMs: 60_000 });
     if (!limit.allowed) {
-      return fail(429, 'rate_limited', `Too many translations at once. Try again in ${limit.retryAfterSeconds} seconds.`);
+      return fail(429, 'rate_limited', t('err.tooManyTranslations', { seconds: limit.retryAfterSeconds }));
     }
 
     const parsed = Body.safeParse(await readJson(request));
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     const language = await getLanguage(parsed.data.lang);
     if (!language) {
-      return fail(400, 'unknown_language', 'This archive does not publish in that language.');
+      return fail(400, 'unknown_language', t('err.unknownLanguage'));
     }
 
     const supabase = await createServerSupabase();

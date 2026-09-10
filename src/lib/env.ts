@@ -1,3 +1,4 @@
+import CHAIN from '@/lib/ai/models.json';
 /**
  * Environment access, in one place, validated once.
  *
@@ -35,7 +36,7 @@ export function geminiApiKey(): string {
 
 // Verified against the live API on 2026-08-19. gemini-2.5-flash is listed by
 // the models endpoint but refuses new API keys, so it is not a safe default.
-export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-3.6-flash';
+export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? CHAIN.primary;
 
 /**
  * What cataloguing falls back to when the day's allowance on the first model
@@ -78,15 +79,26 @@ export const GEMINI_FALLBACK_MODELS = (
    * did not exist.
    *
    * `gemini-3.8-flash` goes first: a full flash model, and fast. Then
-   * `gemini-3.5-flash-lite`, which catalogues in English perfectly well, which
-   * is all this path asks of it — the script-losing that keeps it out of the
-   * translator does not apply here. `gemini-3.7-flash` is last: a full model
-   * and a good one, but measured at 2.4s against sub-second for the others and
-   * returning 503 an hour earlier. A slow answer is worth having when the
-   * alternative is none, and worth avoiding when it is not.
+   * `gemini-3.5-flash` and `gemini-3.7-flash`, both full models — 3.7 measured
+   * at 2.4s against sub-second for the others, which is worth having when the
+   * alternative is nothing and worth avoiding when it is not. Then
+   * `gemini-3-flash-preview`. The two lite models are last: they catalogue in
+   * English perfectly well, which is all this path asks of them — the
+   * script-losing that keeps them out of the translator does not apply here.
+   *
+   * **Seven distinct models, so roughly a hundred and forty readings a day.**
+   * It was four and eighty. Every name was verified by asking it a real
+   * question and reading `modelVersion` off the reply, which is also how two
+   * candidates were rejected: `gemini-2.5-flash` and `gemini-2.5-flash-lite`
+   * are still returned by `models.list` and answer `generateContent` with
+   * **404, no longer available**. The catalogue of models is not the list of
+   * models that work.
+   *
+   * That withdrawal is also why `withFallback` now treats a 404 the way it
+   * treats a 429. A name here is a name Google can retire between two deploys,
+   * and until today that would have taken the whole archive down with it.
    */
-  process.env.GEMINI_FALLBACK_MODELS ??
-  'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-3.7-flash'
+  process.env.GEMINI_FALLBACK_MODELS ?? CHAIN.fallbacks.join(',')
 )
   .split(',')
   .map((m) => m.trim())
@@ -126,4 +138,36 @@ export const GEMINI_FALLBACK_MODELS = (
  * `GEMINI_TRANSLATE_MODEL` to move it without a deploy.
  */
 export const GEMINI_TRANSLATE_MODEL =
-  process.env.GEMINI_TRANSLATE_MODEL ?? 'gemini-3.6-flash';
+  process.env.GEMINI_TRANSLATE_MODEL ?? CHAIN.translate.chain[0];
+
+/**
+ * The translator's own chain, lite first — and not the analyser's order.
+ *
+ * Measured on 08.09.2026, the same five-language batch through each model:
+ *
+ *     gemini-3.5-flash-lite     1.8s     0 thinking tokens
+ *     gemini-3.1-flash-lite     3.9s     0 thinking tokens
+ *     gemini-3.5-flash         19.0s   3,134 thinking tokens
+ *     gemini-3.5-flash (no thinking)   7.3s
+ *
+ * Two findings, and both were costing the contribution screen its whole point.
+ *
+ * **A full flash model thinks before it translates.** Three thousand tokens of
+ * reasoning to render a synagogue plaque, which is eleven seconds spent on a
+ * task with nothing to reason about. The lite models do not think at all, and
+ * their output was as good — a translation is constrained by a schema and
+ * checked for script on the way back.
+ *
+ * **And it started on the analyser's own model.** So the two competed for one
+ * allowance of twenty; when the analyser had spent it, every translation
+ * walked the chain paying a refusal and a retry before landing somewhere slow.
+ * That is where the fifteen to thirty seconds a contributor was waiting came
+ * from — not from the translation at all.
+ */
+export const GEMINI_TRANSLATE_MODELS: string[] = (
+  process.env.GEMINI_TRANSLATE_MODELS ?? CHAIN.translate.chain.join(',')
+)
+  .split(',')
+  .map((m) => m.trim())
+  .filter(Boolean);
+

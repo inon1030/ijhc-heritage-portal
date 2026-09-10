@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMessages } from '@/lib/i18n/provider';
+import { communityKey } from '@/lib/i18n/labels';
 import { ArrowLeft, Check, EyeOff, Loader2, RotateCcw, Trash2, X } from 'lucide-react';
 import { EvidenceLedger } from '@/components/evidence-ledger';
 import { FieldSheet } from '@/components/field-sheet';
@@ -44,8 +45,11 @@ export function ReviewWorkbench({
   vocabulary,
   families,
   selectedFamilyIds,
+  siteLanguage,
 }: {
   item: ItemDetail;
+  /** The language this review is being done in. See `TranslationDeck`. */
+  siteLanguage: string;
   /** The only terms a record may carry, with their variants. Managed at /manage/vocabulary. */
   vocabulary: VocabularyTerm[];
   families: Family[];
@@ -134,7 +138,7 @@ export function ReviewWorkbench({
       router.push('/review');
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'The decision did not save. Try again.');
+      setError(e instanceof Error ? e.message : t('error.decisionNotSaved'));
       setBusy(null);
     }
   }
@@ -152,7 +156,7 @@ export function ReviewWorkbench({
       router.push('/review');
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'The record was not deleted. Try again.');
+      setError(e instanceof Error ? e.message : t('error.notDeleted'));
       setBusy(null);
     }
   }
@@ -396,7 +400,7 @@ export function ReviewWorkbench({
           </section>
         )}
 
-        {simulated && <SimulatedNotice className="mb-5" />}
+        {simulated && <SimulatedNotice label={t('common.simulated')} className="mb-5" />}
         {analysis?.status === 'failed' && !simulated && (
           <p className="mb-5 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-xs text-caution">
             {t('wb.noAnalysis')}
@@ -514,7 +518,7 @@ export function ReviewWorkbench({
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               maxLength={120}
-              placeholder="1890s, late 19th century, before 1948"
+              placeholder={t('wb.periodPlaceholder')}
               className="w-full rounded-lg border border-rule bg-paper px-4 py-3 focus:border-accent-strong focus:outline-none"
             />
           </FieldRow>
@@ -587,7 +591,7 @@ export function ReviewWorkbench({
           in, not the English they have already been through field by field.
         */}
         <div className="mt-8 border-t border-rule pt-6">
-          <TranslationDeck itemId={item.id} />
+          <TranslationDeck itemId={item.id} siteLanguage={siteLanguage} />
         </div>
 
         <div className="mt-8 flex flex-wrap gap-3 border-t border-rule pt-6">
@@ -990,7 +994,7 @@ function FamilyPicker({
         <p className="text-sm text-muted">{t('wb.chooseCommunityFirst')}</p>
       ) : families.length === 0 ? (
         <p className="text-sm text-muted">
-          No families registered for {COMMUNITY_LABELS[community]} yet.
+          {t('wb.noFamiliesYet', { community: t(communityKey(community)) })}
         </p>
       ) : (
         <div className="flex flex-wrap gap-2">

@@ -104,21 +104,26 @@ async function main() {
     used[t.model] = (used[t.model] ?? 0) + 1;
   }
 
+  /*
+   * The chain, read from the file the site reads.
+   *
+   * This block used to hold its own copy of the default "and it has to stay
+   * that way", said the comment. It did not: the site moved to seven models
+   * and this went on reporting four, so the check under-reported by sixty
+   * readings a day — and a quota check that under-reports is worse than none,
+   * because it says "nearly out" on a day with plenty left. It had already
+   * over-reported once, in the other direction, by listing an alias.
+   *
+   * Two copies of a value that must agree is the whole failure. There is one
+   * copy now, in `src/lib/ai/models.json`, and both sides read it.
+   */
+  const chain = JSON.parse(
+    fs.readFileSync(new URL('../src/lib/ai/models.json', import.meta.url), 'utf8'),
+  );
+
   const models = [
-    env.GEMINI_MODEL || 'gemini-3.6-flash',
-    /*
-     * The same default as `src/lib/env.ts`, and it has to stay that way.
-     *
-     * This file had a shorter list of its own, so it reported two models while
-     * the site was using four — a quota check that under-reports is worse than
-     * none, because it says "nearly out" on a day with sixty readings left.
-     * It then briefly over-reported, listing an alias that resolves to a model
-     * already in the list, which is the same failure pointing the other way.
-     */
-    ...(
-      env.GEMINI_FALLBACK_MODELS ||
-      'gemini-3.8-flash,gemini-3.5-flash-lite,gemini-3.7-flash'
-    )
+    env.GEMINI_MODEL || chain.primary,
+    ...(env.GEMINI_FALLBACK_MODELS || chain.fallbacks.join(','))
       .split(',')
       .map((m) => m.trim()),
   ].filter((m, i, a) => m && a.indexOf(m) === i);
@@ -175,6 +180,25 @@ async function main() {
     console.log('\n  also used today by models no longer configured:');
     for (const m of other) console.log(`    ${m.padEnd(26)} ${used[m]}`);
   }
+
+  /*
+   * What the left-hand column does not see, said out loud.
+   *
+   * "used today" is counted from rows the archive stored — one per
+   * `ai_analyses`, one per translated field. Three kinds of call leave no row
+   * and are invisible to it: a reading a contributor looked at and never
+   * submitted, a pre-review language switch, and `npm run i18n`. On the day
+   * this was written those alone were thirty-one calls the table showed as 0.
+   *
+   * The probe on the right is not a count — it is the answer from Google, and
+   * it is the column to believe. A number that is quietly optimistic about
+   * money is the same fault as a translation that is quietly wrong.
+   */
+  console.log(
+    '\n  The count is of rows stored. Readings nobody submitted, language switches at\n' +
+      '  pre-review and `npm run i18n` all spend the allowance and show here as 0 —\n' +
+      '  the probe on the right is the answer from Google, and the one to trust.',
+  );
 
   console.log(
     anyOpen

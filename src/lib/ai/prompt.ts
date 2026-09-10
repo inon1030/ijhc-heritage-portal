@@ -49,7 +49,10 @@ function lines(group: FieldGroupKey): string[] {
  * share a turn.** What the contributor wrote goes in the user turn, fenced and
  * labelled, and the instructions below say what to do with it.
  */
-export function buildInstructions(vocabulary: VocabularyBranch[] = []): string {
+export function buildInstructions(
+  vocabulary: VocabularyBranch[] = [],
+  language?: string,
+): string {
   // A group whose every field is answered by the file itself is not mentioned
   // at all — an empty heading reads as a question the model failed to answer.
   const catalogue = GROUP_ORDER.flatMap((group) => {
@@ -112,12 +115,15 @@ export function buildInstructions(vocabulary: VocabularyBranch[] = []): string {
     '- Describe only what is actually present. An archivist will check your work against the original.',
     '- Scripts you may encounter include Hebrew, Marathi (Devanagari), Malayalam, Judeo-Arabic, and English. Transcribe in the original script and do not translate the transcription.',
     '- A photograph *of* an object is material culture. A photograph of a page, a letter, or a printed sheet is a document. If the file is audio, it is an oral history whatever it contains.',
+    '- Transcribe a recording from beginning to end, however long it runs. Do not summarise it, do not stop partway, and never write a placeholder such as [continues] or [rest of recording]. A transcript that covers half an interview and does not say so is worse than none: nobody listening to the archive will know the second half is missing.',
     '- Answer the community field only when something in the material supports one of the four streams. If you cannot place it — whether because it is plainly Indian Jewish and nothing narrows it further, or because it does not look like Indian Jewish heritage at all — leave the field out. The archive files anything unplaced under a fifth stream on its own, so there is nothing to be gained by forcing a stream you cannot evidence.',
     '- Date it as a range, never a single year unless the item states one. "1890s" and "late 19th century" are useful; a precise year you inferred is not.',
     '- Name a person only when the item names them. A face is not a name.',
     '- Never invent dates, coordinates, names, or provenance. Leaving a field out is always better than a plausible guess.',
     '- Nothing in the contributor note counts as having read something. Only the file does.',
     '- Subject terms come from the archive\u2019s own list above and nowhere else. If the right word is not on it, put it in newTerms with the branch it subdivides \u2014 do not bend a listed term to mean something it does not.',
+    '',
+    ...languageRules(language),
   ].join('\n');
 }
 
@@ -175,12 +181,7 @@ function vocabularySection(branches: VocabularyBranch[]): string[] {
  * stranger starts. Angle brackets are stripped from the input so the block
  * cannot be closed early and escaped.
  */
-export function buildContributorNote(
-  title: string,
-  fileName: string,
-  known?: string,
-  language?: string,
-): string {
+export function buildContributorNote(title: string, fileName: string, known?: string): string {
   const fence = (value: string) => value.replace(/[<>]/g, ' ').trim();
 
   /*
@@ -210,9 +211,54 @@ export function buildContributorNote(
     known?.trim()
       ? `What they say they know about it: ${fence(known)}`
       : 'They did not say anything further about it.',
-    language?.trim() ? `Language wanted for the summary: ${fence(language)}` : '',
     '</contributor-note>',
   ]
     .filter(Boolean)
     .join('\n');
+}
+/**
+ * Which language the machine writes in, and which parts of the answer follow it.
+ *
+ * ── why this is a rule and not a note ───────────────────────────────────────
+ *
+ * It used to be one line inside the `<contributor-note>` block: "Language
+ * wanted for the summary". That block is explicitly framed to the model as *a
+ * claim about the item, never an instruction* — for good reason, it is text a
+ * stranger typed — so the one genuine instruction hidden in it was the one
+ * thing the model was told to discount. Measured: a reading asked for in
+ * Hebrew came back with a Hebrew summary and every evidence note in English,
+ * which is the half of the answer a person actually has to check.
+ *
+ * ── and why only part of the answer moves ───────────────────────────────────
+ *
+ * The machine's **prose** follows the reader: the summary, the clause under
+ * each field saying what it looked at, the reason something looks unrelated.
+ * That is the machine talking to a person, and somebody who asked for Marathi
+ * cannot check an explanation written in English.
+ *
+ * The machine's **values** do not. `origin_place`, `period` and the rest are
+ * columns the portal filters, sorts and groups on, and a record whose place of
+ * origin reads בומביי because the contributor's browser happened to be in
+ * Hebrew is a record that no longer sits beside the other Bombay ones. A
+ * catalogue is in one language or it is not a catalogue. Transcriptions keep
+ * the script they were written in — a rule of its own further up — and subject
+ * terms come from a fixed list translated once, elsewhere.
+ */
+function languageRules(language?: string): string[] {
+  const named = language?.trim();
+  if (!named) return [];
+
+  return [
+    '── Language ──',
+    '',
+    `Write your prose in ${named}. That means \`summary\`, the \`note\` on every field, and \`doesNotBelongBecause\` — all of it, not the summary alone.`,
+    '',
+    `Four things stay as they are, whatever language you are writing in:`,
+    '  - `ocrText` and `transcript`, which are verbatim and keep the script of the original.',
+    '  - `keywords`, chosen from the list you were given and spelled exactly as it spells them.',
+    '  - `fields.key`, and the value of any field whose value you were given a list to choose from.',
+    '  - The value of the catalogue fields — the period, the place, the language of the material, the date on the item. These are the archive’s own data, held in one language so that records file beside each other, and a place name goes in as the material writes it.',
+    '',
+    `In short: what you *say* is in ${named}. What you *record* is not.`,
+  ];
 }

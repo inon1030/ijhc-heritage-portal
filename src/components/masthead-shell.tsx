@@ -52,12 +52,16 @@ export function MastheadShell({
    * That room is reserved **only from `sm:` up**, and the reason is measured.
    * The label is `justify-end`, so the left padding never actually holds it off
    * the mark — it only sets the button's minimum width. At 375px that minimum
-   * was 15rem + 7.25rem + the label: 401px inside a 375px viewport, and the
-   * whole page scrolled sideways on a phone. Measured on the phone the mark
-   * ends at 100px and the language picker begins at 289px, while the label
-   * needs 65px; without the left reserve it sits at 194–259 and touches
-   * neither. The right reserve stays at both sizes, because that is the one
-   * that keeps MENU off the language picker.
+   * would exceed the viewport and the whole page would scroll sideways on a
+   * phone; there is room without it, because the short wordmark is used below
+   * `sm:`. The right reserve stays at both sizes, because that is the one that
+   * keeps MENU off the language picker.
+   *
+   * **Re-measured when the strip was enlarged.** The bar is 48px from `sm:` up
+   * and 56px on a phone — it was 36 and 44 — with a 32px mark and a 1.1rem
+   * wordmark, because a strip nobody notices is a way home nobody finds. At
+   * 1440 the home block is 314px wide in Hebrew and wider in English, so the
+   * reserve is 19.5rem rather than the 15rem that held the old 268px block.
    */
   home: React.ReactNode;
   /**
@@ -122,7 +126,7 @@ export function MastheadShell({
         aria-controls="masthead-bar"
         aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
         onClick={() => setPinned((v) => !v)}
-        className="flex h-11 w-full items-center justify-end gap-3 bg-paper/90 pe-[7.25rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-9 sm:ps-[15rem]"
+        className="flex h-16 w-full items-center justify-end gap-3 bg-paper/90 pe-[8rem] backdrop-blur-md transition-colors hover:bg-paper-2/90 sm:h-14 sm:ps-[20.5rem]"
       >
         {/*
           The prompt shows only while the bar is shut. Once it is open the bar
@@ -138,8 +142,8 @@ export function MastheadShell({
             open ? 'pointer-events-none translate-x-2 opacity-0' : 'opacity-100',
           ].join(' ')}
         >
-          <span className="eyebrow">{t('nav.menu')}</span>
-          <ChevronDown size={16} />
+          <span className="eyebrow text-[0.82rem]">{t('nav.menu')}</span>
+          <ChevronDown size={18} />
         </span>
       </button>
 
@@ -157,7 +161,7 @@ export function MastheadShell({
       */}
       {/* The way home, in space the strip reserves for it on the left. */}
       <div
-        className="absolute start-6 top-0 flex h-11 items-center sm:h-9"
+        className="absolute start-6 top-0 flex h-16 items-center sm:h-14"
         onPointerEnter={(e) => e.stopPropagation()}
         onFocus={(e) => e.stopPropagation()}
       >
@@ -165,7 +169,7 @@ export function MastheadShell({
       </div>
 
       <div
-        className="absolute end-5 top-1.5 z-10 sm:top-0.5"
+        className="absolute end-5 top-0 z-10 flex h-16 items-center sm:h-14"
         onPointerEnter={(e) => e.stopPropagation()}
         onFocus={(e) => e.stopPropagation()}
       >

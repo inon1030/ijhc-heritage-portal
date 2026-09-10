@@ -268,6 +268,92 @@ export async function translateItem(
  *
  * Never throws: nothing here is worth failing a volunteer's review over.
  */
+/**
+ * Whether a published record is actually published in every language.
+ *
+ * ── the gap this closes ─────────────────────────────────────────────────────
+ *
+ * Accepting a record fires `translateRecord` in the background, and until now
+ * nothing looked at what came back. A batch that lost Malayalam to a bad script
+ * check, a language refused for quota, a 503 on the way out — each of those
+ * leaves a record that reads as published and is not, and the archive learned
+ * about it the next night at 20:15, if at all.
+ *
+ * This is the reading of that: it costs one select, calls no model, and says
+ * per language exactly which fields are absent or made from text that has since
+ * changed. It is the same question `findOutstanding` asks across the archive,
+ * asked about one record at the moment it matters.
+ *
+ * A human translation is complete whatever its hash says — a volunteer's own
+ * words are not stale because somebody fixed a comma in the English, and
+ * `planTranslation` already refuses to overwrite them.
+ */
+export interface Verification {
+  complete: boolean;
+  /** Language code → the fields it is still missing. Absent when it has none. */
+  missing: Record<string, TranslatableField[]>;
+}
+
+export async function verifyRecord(itemId: string): Promise<Verification> {
+  const admin = createAdminSupabase();
+
+  const [{ data: item }, { data: analysis }, { data: rows }, languages] = await Promise.all([
+    admin
+      .from('items')
+      .select('id, language, title, description, provenance, period, origin_place')
+      .eq('id', itemId)
+      .is('deleted_at', null)
+      .maybeSingle(),
+    admin
+      .from('ai_analyses')
+      .select('ocr_text, transcript')
+      .eq('item_id', itemId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    admin
+      .from('item_translations')
+      .select('lang, field, value, source, source_hash')
+      .eq('item_id', itemId),
+    listLanguages().catch(() => [] as ArchiveLanguage[]),
+  ]);
+
+  if (!item) return { complete: true, missing: {} };
+
+  const source: Translatable = {
+    ...(item as Record<string, unknown>),
+    id: item.id as string,
+    transcript: analysis?.transcript ?? analysis?.ocr_text ?? null,
+  };
+
+  const held = new Map<string, CachedTranslation[]>();
+  for (const row of rows ?? []) {
+    const list = held.get(row.lang as string) ?? [];
+    list.push(row as unknown as CachedTranslation);
+    held.set(row.lang as string, list);
+  }
+
+  const missing: Record<string, TranslatableField[]> = {};
+
+  for (const language of languages) {
+    // The source language is not translated into itself.
+    if (language.is_source) continue;
+    if (alreadyInLanguage(source.language, { code: language.code, labelEn: language.label_en })) {
+      continue;
+    }
+
+    const plan = planTranslation(
+      TRANSLATABLE_FIELDS.map((field) => ({ field, value: source[field] as string | null })),
+      held.get(language.code) ?? [],
+    );
+
+    // `plan.translate` is precisely "worth translating and not already done".
+    if (plan.translate.length) missing[language.code] = plan.translate.map((job) => job.field);
+  }
+
+  return { complete: Object.keys(missing).length === 0, missing };
+}
+
 export interface Sweep {
   made: string[];
   /** True when the run stopped because the allowance ran out, not because it

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { issueGrant } from '@/lib/files/grant';
 import { buildStoragePath } from '@/lib/files/paths';
@@ -37,12 +38,14 @@ export const maxDuration = 60;
  * decides whether an address may be fetched at all.
  */
 export async function POST(request: NextRequest) {
+  const { t } = await getMessages();
+
   try {
     // A fetch the server makes is more expensive than one it serves, and this
     // one reaches the outside world. Same bucket as uploads.
     const limit = rateLimit(clientKey(request));
     if (!limit.allowed) {
-      return fail(429, 'rate_limited', `Too many links. Try again in ${limit.retryAfterSeconds} seconds.`);
+      return fail(429, 'rate_limited', t('err.tooManyLinks', { seconds: limit.retryAfterSeconds }));
     }
 
     const parsed = Body.safeParse(await readJson(request));
@@ -130,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     if (snapshotError) {
       console.error('[links] snapshot upload failed', snapshotError.message, snapshotError);
-      return fail(502, 'storage_unavailable', 'The page was read but could not be stored. Try again.');
+      return fail(502, 'storage_unavailable', t('err.pageNotStored'));
     }
 
     files.push({

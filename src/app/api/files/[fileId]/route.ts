@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getMessages } from '@/lib/i18n';
 import { fail, unexpected } from '@/lib/api';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getCurrentAdmin, getCurrentVolunteer } from '@/lib/supabase/server';
@@ -16,6 +17,8 @@ const SIGNED_URL_TTL_SECONDS = 600;
  * those attached to rejected submissions, stayed reachable forever.
  */
 export async function GET(request: NextRequest, context: { params: Promise<{ fileId: string }> }) {
+  const { t } = await getMessages();
+
   try {
     const { fileId } = await context.params;
     const admin = createAdminSupabase();
@@ -27,7 +30,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
       .maybeSingle();
 
     if (error) throw error;
-    if (!file) return fail(404, 'not_found', 'File not found.');
+    if (!file) return fail(404, 'not_found', t('err.fileNotFound'));
 
     const item = file.items as unknown as {
       status: string;
@@ -59,7 +62,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
      * system reads the role. This one now does too.
      */
     if (!isPublished && !(await getCurrentVolunteer())) {
-      return fail(403, 'forbidden', 'This file is not publicly available.');
+      return fail(403, 'forbidden', t('err.fileNotPublic'));
     }
 
     // A record in the bin is an administrator's to look at, the same as the row
@@ -85,7 +88,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
       .storage.from('heritage')
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
 
-    if (signError || !signed) return fail(502, 'storage_unavailable', 'Could not open that file.');
+    if (signError || !signed) return fail(502, 'storage_unavailable', t('err.fileNotOpened'));
 
     return NextResponse.redirect(signed.signedUrl, {
       status: 307,

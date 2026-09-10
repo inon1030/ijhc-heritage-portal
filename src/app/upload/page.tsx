@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { UploadFlow } from '@/components/upload-flow';
 import { Logo } from '@/components/logo';
 import { getMessages } from '@/lib/i18n';
+import { listLanguages, requestedLanguage } from '@/lib/translate/languages';
 import { readVocabulary } from '@/lib/vocabulary/load';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,6 +23,21 @@ export default async function UploadPage() {
     variants: term.variants,
   }));
   /*
+   * The languages the archive publishes in, for the switch under the scanned
+   * text at pre-review.
+   *
+   * Read here rather than in the flow because `listLanguages` is server-only,
+   * and empty on failure rather than fatal: the language switch is an aid, and
+   * losing it must not cost somebody the ability to contribute at all.
+   */
+  const current = await requestedLanguage().catch(() => null);
+  const languages = (await listLanguages().catch(() => [])).map((language) => ({
+    code: language.code,
+    label_en: language.label_en,
+    label_native: language.label_native,
+    rtl: language.rtl,
+  }));
+  /*
    * The flow fills the screen instead of sitting in a band at the top.
    *
    * Compacting the three steps worked — and left a 252px void between the last
@@ -31,7 +47,7 @@ export default async function UploadPage() {
    * than stranded and a tall one simply flows.
    */
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-8rem)] max-w-[110rem] flex-col justify-center px-6 pt-4 pb-10 sm:px-10 sm:pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--masthead-h)-4.5rem)] max-w-[110rem] flex-col justify-center px-6 pt-4 pb-10 sm:px-10 sm:pt-6">
       {/*
         ── the page title is the screen's title ──────────────────────────────
         
@@ -48,7 +64,12 @@ export default async function UploadPage() {
         a meeting, it was the last fifty pixels between the analyse button and
         the bottom of the screen.
       */}
-      <UploadFlow vocabulary={vocabulary} mark={<Logo variant="mark" size={52} />} />
+      <UploadFlow
+        vocabulary={vocabulary}
+        languages={languages}
+        siteLanguage={current?.code ?? languages[0]?.code ?? 'en'}
+        mark={<Logo variant="mark" size={52} />}
+      />
     </div>
   );
 }

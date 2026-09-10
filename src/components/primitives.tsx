@@ -103,8 +103,17 @@ export function EmptyState({
   );
 }
 
-/** Says plainly that the values beside it were invented. */
-export function SimulatedNotice({ className }: { className?: string }) {
+/**
+ * Says plainly that the values beside it were invented.
+ *
+ * Takes its sentence rather than reading the catalogue, and the reason is a
+ * fault this project has already paid for once: `'use client'` marks the whole
+ * **file**, not the component, so calling `useMessages` here would turn every
+ * export in this module — `StatusPill`, `EmptyState`, `buttonClass` — into a
+ * client export and pull them out of every server page that uses them. That
+ * mistake took the deployed site down. One prop is cheaper than that.
+ */
+export function SimulatedNotice({ label, className }: { label: string; className?: string }) {
   return (
     <p
       className={cn(
@@ -112,7 +121,7 @@ export function SimulatedNotice({ className }: { className?: string }) {
         className,
       )}
     >
-      DEMO — SIMULATED. No AI model examined this file. Set GEMINI_API_KEY to get real analysis.
+      {label}
     </p>
   );
 }

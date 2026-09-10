@@ -19,7 +19,7 @@ type Params = Promise<{ id: string }>;
 
 export default async function ReviewItemPage({ params }: { params: Params }) {
   const { id } = await params;
-  const { t } = await getMessages();
+  const { t, language } = await getMessages();
   const item = await getItemDetail(id);
   if (!item) notFound();
 
@@ -41,6 +41,7 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
         vocabulary={vocabulary}
         families={families}
         selectedFamilyIds={selectedFamilyIds}
+        siteLanguage={language.code}
       />
 
       {events.length > 0 && (

@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { createPartFromUri, FileState, GoogleGenAI, Type, type Part } from '@google/genai';
 import { GEMINI_FALLBACK_MODELS, GEMINI_MODEL, geminiApiKey } from '@/lib/env';
 import { MODEL_FIELDS, fieldDef } from '@/lib/fields/registry';
 import { communityOrCatchAll } from './community';
@@ -121,6 +121,112 @@ function toBase64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString('base64');
 }
 
+/**
+ * Where a file stops fitting in the request that asks about it.
+ *
+ * `generateContent` takes at most 20 MB of request, and base64 costs a third
+ * on top of the bytes — so 12 MB of file is about 16 MB of request, which
+ * leaves room for the prompt and the archive's subject list.
+ *
+ * **This is the line an hour-long recording was falling over.** The upload cap
+ * is 50 MB and an m4a interview reaches that at around fifty minutes, so every
+ * oral history longer than roughly a quarter of an hour was posted, stored,
+ * charged for and then refused by the model — and the contributor was told the
+ * analysis service had not responded, which was true and useless. Above the
+ * line the bytes go to the Files API and the request carries a reference.
+ */
+const INLINE_LIMIT_BYTES = 12 * 1024 * 1024;
+
+/** How long to wait for Google to finish ingesting a large upload. */
+const FILE_READY_MS = 20_000;
+
+/**
+ * The file, in whatever form this request can carry it.
+ *
+ * Small things go inline, which is one round trip and no state anywhere.
+ * Large things are uploaded first and referenced — the same model, the same
+ * prompt, the same answer, just a request that is a kilobyte instead of sixty
+ * megabytes.
+ *
+ * A large upload is **not** left behind afterwards: it would sit in Google's
+ * file store for forty-eight hours, and this is family material that has not
+ * been published, has not been reviewed, and in most cases has not yet been
+ * submitted. See `discard`.
+ */
+async function sourcePart(
+  client: GoogleGenAI,
+  bytes: Uint8Array,
+  mimeType: string,
+): Promise<{ part: Part; uploaded: string | null }> {
+  if (bytes.byteLength <= INLINE_LIMIT_BYTES) {
+    return { part: { inlineData: { mimeType, data: toBase64(bytes) } }, uploaded: null };
+  }
+
+  const file = await client.files.upload({
+    file: new Blob([new Uint8Array(bytes)], { type: mimeType }),
+    config: { mimeType },
+  });
+
+  /*
+   * Audio and video are transcoded on arrival, and a file that is still
+   * PROCESSING cannot be referenced — the request fails with a 400 that names
+   * the state. So this waits for ACTIVE rather than assuming it, and gives up
+   * with a sentence a person can act on rather than with Google's.
+   */
+  const ready = await waitForFile(client, file);
+  if (!ready.uri) throw new Error('The recording could not be prepared for reading. Try again.');
+
+  return {
+    part: createPartFromUri(ready.uri, ready.mimeType ?? mimeType),
+    uploaded: file.name ?? null,
+  };
+}
+
+async function waitForFile(
+  client: GoogleGenAI,
+  file: { name?: string; state?: FileState; uri?: string; mimeType?: string },
+): Promise<{ uri?: string; mimeType?: string }> {
+  /*
+   * Seeded with the upload's own answer, not with its state alone.
+   *
+   * A small upload comes back ACTIVE and complete, and re-fetching it to learn
+   * what it already told us is a round trip for nothing. The first version
+   * carried the state across and dropped the `uri` beside it, which made every
+   * already-active upload fail as "could not be prepared" — a value lost in the
+   * handoff, reported as a fault in the file.
+   */
+  let current = file;
+  const until = Date.now() + FILE_READY_MS;
+
+  while (current.state === FileState.PROCESSING || current.state === undefined) {
+    if (Date.now() > until) throw new Error('That recording is taking too long to prepare. Try a shorter one.');
+    await new Promise((r) => setTimeout(r, 1_000));
+    current = await client.files.get({ name: file.name ?? '' });
+  }
+
+  if (current.state === FileState.FAILED) {
+    throw new Error('That recording could not be read. It may be damaged or in an unsupported codec.');
+  }
+  return current;
+}
+
+/**
+ * Take the copy back out of Google's file store once the reading is done.
+ *
+ * Failing to delete is not worth losing an analysis over — the file expires on
+ * its own in forty-eight hours — so this never throws. It is logged, because a
+ * deletion that quietly stops working is a retention promise that quietly
+ * stops being true.
+ */
+async function discard(client: GoogleGenAI, name: string | null): Promise<void> {
+  if (!name) return;
+  try {
+    await client.files.delete({ name });
+  } catch (cause) {
+    console.error('[gemini] could not remove the uploaded copy', name, cause);
+  }
+}
+
 function nonEmpty(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
@@ -182,6 +288,25 @@ async function withFallback(
           lastError = error;
           break; // this model is out for the day; the next one is not
         }
+        /*
+         * The model is gone. Ask the next one.
+         *
+         * Measured today, and not hypothetically: `gemini-2.5-flash` and
+         * `gemini-2.5-flash-lite` are still listed by `models.list` and answer
+         * `generateContent` with **404 — no longer available**. A name in this
+         * chain is a name Google can withdraw between one deploy and the next.
+         *
+         * Until now that threw, because it is neither 429 nor 503 — so the day
+         * the preferred model is retired, every upload in the archive fails
+         * with a 404 while six other models sit there answering. That is the
+         * exact shape of the 503 bug this function already carries a paragraph
+         * about, and it deserved the same fix rather than a second outage.
+         */
+        if (status === 404 || /NOT_FOUND|no longer available|is not found/i.test(message)) {
+          console.error(`[gemini] ${model} is gone; moving to the next model`, message);
+          lastError = error;
+          break;
+        }
         if (status === 503 || /UNAVAILABLE/.test(message)) {
           if (attempt === 0) {
             await new Promise((r) => setTimeout(r, 900));
@@ -232,29 +357,53 @@ export function createGeminiProvider(): AIProvider {
         ),
       ];
 
+      /*
+       * Inline for a photograph, a reference for a two-hour interview.
+       *
+       * Resolved once and reused across the whole fallback chain: three models
+       * asking about the same recording must not mean three uploads of it.
+       */
+      const source = await sourcePart(client, input.bytes, input.mimeType);
+
       const { response, model: usedModel } = await withFallback(client, (model) => ({
         model,
         contents: [
           {
             role: 'user',
             parts: [
-              { inlineData: { mimeType: input.mimeType, data: toBase64(input.bytes) } },
+              source.part,
               // Contributor text only. The rules live in systemInstruction, in
               // a turn nobody outside this codebase can write into.
-              { text: buildContributorNote(input.title, input.fileName, input.known, input.language) },
+              { text: buildContributorNote(input.title, input.fileName, input.known) },
             ],
           },
         ],
         config: {
-          systemInstruction: buildInstructions(vocabulary),
+          systemInstruction: buildInstructions(vocabulary, input.language),
           responseMimeType: 'application/json',
           responseSchema: responseSchema(allowed),
           temperature: 0.2,
         },
-      }));
+      })).finally(() => discard(client, source.uploaded));
 
       const text = response.text;
       if (!text) throw new Error('Gemini returned an empty response.');
+
+      /*
+       * A reading that ran out of room is a broken reading, and it has to say so.
+       *
+       * The response is schema-constrained JSON, so a transcript that fills the
+       * output budget does not come back short — it comes back as JSON with no
+       * closing brace, and `JSON.parse` throws a SyntaxError three lines below
+       * that reaches the contributor as an internal error. This is the same
+       * shape as every other fault this file guards against: work that failed
+       * while reporting something other than failure.
+       */
+      if (response.candidates?.[0]?.finishReason === 'MAX_TOKENS') {
+        throw new Error(
+          'The reading was longer than one answer can hold. A recording this long has to be split before the archive can transcribe it.',
+        );
+      }
 
       const parsed = JSON.parse(text) as Record<string, unknown>;
 

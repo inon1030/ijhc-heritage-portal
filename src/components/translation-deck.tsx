@@ -68,7 +68,25 @@ const FIELD_LABEL: Record<string, string> = {
   origin_place: 'review.field.originPlace',
 };
 
-export function TranslationDeck({ itemId }: { itemId: string }) {
+export function TranslationDeck({
+  itemId,
+  siteLanguage,
+}: {
+  itemId: string;
+  /**
+   * The language the site is set to, which is the language this review is in.
+   *
+   * The deck used to open on whichever language `archive_languages` returned
+   * first, so a knowledge expert working in Hebrew set the site to Hebrew, got
+   * a Hebrew interface, and then had to click Hebrew again on this panel. The
+   * language control at the top is how they choose what they are reviewing in;
+   * this is the panel obeying it.
+   *
+   * It is a *default*, not a lock: the whole purpose of the deck is moving
+   * between languages to check them, so the tabs still work.
+   */
+  siteLanguage: string;
+}) {
   const t = useMessages();
   const [deck, setDeck] = useState<Deck | null>(null);
   const [active, setActive] = useState<string | null>(null);
@@ -94,7 +112,7 @@ export function TranslationDeck({ itemId }: { itemId: string }) {
       try {
         const res = await fetch(`/api/items/${itemId}/translations`);
         const body = await res.json();
-        if (!res.ok || !body.ok) throw new Error(body?.error?.message ?? 'Could not load the languages.');
+        if (!res.ok || !body.ok) throw new Error(body?.error?.message ?? t('error.languagesUnavailable'));
         return body.data as Deck;
       } catch (e) {
         return e instanceof Error ? e : new Error(String(e));
@@ -109,13 +127,26 @@ export function TranslationDeck({ itemId }: { itemId: string }) {
         return;
       }
       setDeck(result);
-      setActive((current) => current ?? result.languages[0]?.code ?? null);
+      setActive(
+        (current) =>
+          current ??
+          // The site's language when the record has that language at all,
+          // and the first one otherwise — a source-language site (English)
+          // has no tab of its own here, and an empty panel would be worse
+          // than the wrong tab.
+          (result.languages.some((l) => l.code === siteLanguage)
+            ? siteLanguage
+            : (result.languages[0]?.code ?? null)),
+      );
     });
 
     return () => {
       live = false;
     };
-  }, [itemId]);
+    // `t` is memoised on the catalogue and the catalogue cannot change without
+    // a reload, so this does not re-run — it is here because the effect reads
+    // it and a dependency list that lies is worse than one that is long.
+  }, [itemId, t, siteLanguage]);
 
   const rows = useMemo(() => (active && deck ? (deck.byLanguage[active] ?? []) : []), [active, deck]);
   const language = deck?.languages.find((l) => l.code === active) ?? null;
@@ -136,7 +167,7 @@ export function TranslationDeck({ itemId }: { itemId: string }) {
     try {
       const res = await fetch(`/api/items/${itemId}/translations`, { method: 'POST' });
       const body = await res.json();
-      if (!res.ok || !body.ok) throw new Error(body?.error?.message ?? 'The translator could not be reached.');
+      if (!res.ok || !body.ok) throw new Error(body?.error?.message ?? t('error.translatorUnreachable'));
       setDeck(body.data);
       setDrafts({});
       if (body.data.quota) setError(t('review.quotaGone'));
@@ -158,7 +189,7 @@ export function TranslationDeck({ itemId }: { itemId: string }) {
         body: JSON.stringify({ lang: active, field, value }),
       });
       const body = await res.json();
-      if (!res.ok || !body.ok) throw new Error(body?.error?.message ?? 'That did not save.');
+      if (!res.ok || !body.ok) throw new Error(body?.error?.message ?? t('error.didNotSave'));
       setDeck(body.data);
       setDrafts((d) => {
         const next = { ...d };

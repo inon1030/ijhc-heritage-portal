@@ -27,7 +27,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
     const response = await fetch(url, init);
     if (!response.ok) {
       const body = await response.json().catch(() => null);
-      setError(body?.error?.message ?? 'That did not go through. Try again.');
+      setError(body?.error?.message ?? t('error.didNotGoThrough'));
       return;
     }
     startTransition(() => router.refresh());
@@ -81,7 +81,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
             {waiting.map((profile) => (
               <li key={profile.id} className="flex flex-wrap items-center gap-3 py-4">
                 <span className="min-w-[14rem] flex-1">
-                  <span className="block font-medium">{profile.full_name ?? 'No name given'}</span>
+                  <span className="block font-medium">{profile.full_name ?? t('accounts.noName')}</span>
                   <span className="machine block text-muted">{profile.email}</span>
                   <span className="text-xs text-muted">Asked {formatDate(profile.created_at)}</span>
                 </span>

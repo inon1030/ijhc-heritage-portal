@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Eye, Loader2, Plus, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Eye, Languages, Loader2, Plus, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import { FieldSheet } from '@/components/field-sheet';
+import type { PickableLanguage } from '@/components/language-picker';
 import { SimulatedNotice } from '@/components/primitives';
 import type { AnalysisResult } from '@/lib/ai/types';
 import type { FieldValue } from '@/lib/fields/registry';
@@ -49,6 +50,25 @@ export interface PreReviewEntry {
   analysisError: string | null;
   metadata: { mimeType: string; byteSize: number; width?: number; height?: number };
   durationMs: number | null;
+  /**
+   * The path this reading came from and the proof it is the caller's.
+   *
+   * Carried here only so the language switch under the scanned text can spend
+   * it: at pre-review there is no record and no session, so the grant minted at
+   * /api/uploads/sign is the only claim a contributor has to make.
+   */
+  path: string;
+  grant: string;
+  expiresAt: number;
+  /**
+   * Every language of this reading, made in one call as the screen opened.
+   *
+   * Null until it lands, and null forever for a passage too long to render
+   * five times over. The switch reads it first and falls through to a single
+   * call when a language is not here, so a missing head start costs a wait and
+   * never a feature.
+   */
+  translations: Record<string, Record<string, string>> | null;
 }
 
 export interface OfferedTerm {
@@ -68,6 +88,8 @@ export function PreReview({
   submitting,
   blocked,
   vocabulary,
+  languages,
+  readingLanguage,
 }: {
   entries: PreReviewEntry[];
   drafts: Record<string, Draft>;
@@ -83,14 +105,27 @@ export function PreReview({
   blocked: boolean;
   /** The archive's own tag list. Contributors may pick from it, not add to it. */
   vocabulary: OfferedTerm[];
+  /**
+   * The languages the archive publishes in, for the switch under the scanned
+   * text. Read from `archive_languages` on the server and handed down, so
+   * adding Judeo-Arabic stays a row rather than a deploy.
+   */
+  languages: PickableLanguage[];
+  /**
+   * The language the machine wrote this reading in.
+   *
+   * The switch does not offer it: that is what the "Original" chip is, and a
+   * chip that re-renders Marathi into Marathi spends a model call to produce
+   * the text already on the screen.
+   */
+  readingLanguage: string | null;
 }) {
   const t = useMessages();
   const submitButton = (
     <>
     {blocked && (
       <p className="mb-3 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-sm text-caution">
-        Tick the box under &ldquo;Tell us what you know&rdquo; to confirm you may share this
-        material.
+        {t('prereview.tickTheBox')}
       </p>
     )}
     <button
@@ -145,7 +180,7 @@ export function PreReview({
       </header>
 
       <div className="space-y-8 px-6 py-6">
-        {simulated && <SimulatedNotice />}
+        {simulated && <SimulatedNotice label={t('common.simulated')} />}
 
         {entries.map((entry, index) => (
           <EntryPanel
@@ -158,6 +193,7 @@ export function PreReview({
             onChange={(draft) => onDraftChange(entry.id, draft)}
             showTitle={perItemTitles}
             showFields={perItemTitles}
+            languages={languages.filter((l) => l.code !== readingLanguage)}
           />
         ))}
 
@@ -192,6 +228,7 @@ function EntryPanel({
   showTitle,
   showFields,
   vocabulary,
+  languages,
 }: {
   entry: PreReviewEntry;
   index: number;
@@ -202,6 +239,7 @@ function EntryPanel({
   /** Only when each file is its own record. Otherwise the sheet sits above. */
   showFields: boolean;
   vocabulary: OfferedTerm[];
+  languages: PickableLanguage[];
 }) {
   const t = useMessages();
   const { analysis } = entry;
@@ -211,7 +249,7 @@ function EntryPanel({
     <article className={total > 1 ? 'border-l-2 border-rule pl-5' : undefined}>
       {total > 1 && (
         <p className="eyebrow mb-3">
-          File {index + 1} of {total} · {entry.fileName}
+          {t('prereview.fileOf', { n: index + 1, total })} · {entry.fileName}
         </p>
       )}
 
@@ -328,10 +366,7 @@ function EntryPanel({
             more thing to scroll past and one more place to disagree with.
           */}
 
-          {analysis.ocrText && (
-            <Excerpt label={t('prereview.textFound')} text={analysis.ocrText} />
-          )}
-          {analysis.transcript && <Excerpt label={t('prereview.transcript')} text={analysis.transcript} />}
+          <Reading entry={entry} analysis={analysis} languages={languages} />
         </>
       )}
     </article>
@@ -456,7 +491,7 @@ function TagPicker({
               className="rounded-full p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
             >
               <X size={13} />
-              <span className="sr-only">Remove {term}</span>
+              <span className="sr-only">{t('prereview.removeTag', { term })}</span>
             </button>
           </li>
         ))}
@@ -541,12 +576,212 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function Excerpt({ label, text }: { label: string; text: string }) {
+/**
+ * What was read off the document, and the switch that renders it in a language
+ * the contributor actually reads.
+ *
+ * ── the question this answers ───────────────────────────────────────────────
+ *
+ * Pre-review asks one thing: did the machine read your document correctly? A
+ * family bringing a Marathi ketubah or a Malayalam letter was being asked that
+ * about a transcription they could not read, which is not a question, it is a
+ * form. The switch is what turns it back into one.
+ *
+ * ── three decisions worth keeping ───────────────────────────────────────────
+ *
+ * **The original is a chip, not a back button.** It is first in the row and it
+ * is where the panel starts. A translation is a lens over the reading, never a
+ * replacement for it, and the thing that gets submitted is always the original
+ * — which the note under the row says outright.
+ *
+ * **A language is fetched when it is asked for, and once.** Translating into
+ * five languages the moment a file is read would spend five times the day's
+ * allowance to answer a question nobody asked; the archive runs on twenty model
+ * calls a day per model. Clicking Hebrew costs one call, clicking back to the
+ * original costs nothing, and clicking Hebrew again costs nothing.
+ *
+ * **The text and the transcript move together.** They are two halves of one
+ * document — a recording's transcript and the text on its label — and one call
+ * carries both, so a page that has both does not cost two.
+ */
+function Reading({
+  entry,
+  analysis,
+  languages,
+}: {
+  entry: PreReviewEntry;
+  analysis: AnalysisResult;
+  languages: PickableLanguage[];
+}) {
+  const t = useMessages();
+  const [lang, setLang] = useState<string | null>(null);
+  const [fetched, setFetched] = useState<Record<string, Record<string, string>>>({});
+
+  /*
+   * What is known, worked out during render rather than copied into state.
+   *
+   * The batch arrives after this component has mounted, so holding it in state
+   * would mean an effect that writes state on every render where the two agree.
+   * The prefetch is a prop and the on-demand calls are state; the switch reads
+   * the union, and a language present in both is the same translation twice.
+   */
+  const made = useMemo(
+    () => ({ ...(entry.translations ?? {}), ...fetched }),
+    [entry.translations, fetched],
+  );
+  const [busy, setBusy] = useState<string | null>(null);
+  const [failed, setFailed] = useState<string | null>(null);
+
+  const blocks = useMemo(() => {
+    const found: { key: 'ocrText' | 'transcript'; label: string; text: string }[] = [];
+    if (analysis.ocrText) found.push({ key: 'ocrText', label: t('prereview.textFound'), text: analysis.ocrText });
+    if (analysis.transcript) found.push({ key: 'transcript', label: t('prereview.transcript'), text: analysis.transcript });
+    return found;
+  }, [analysis.ocrText, analysis.transcript, t]);
+
+  if (!blocks.length) return null;
+
+  const showing = lang ? made[lang] : null;
+  const chosen = languages.find((l) => l.code === lang) ?? null;
+
+  async function choose(code: string | null) {
+    setFailed(null);
+    if (code === null || made[code]) return setLang(code);
+
+    setBusy(code);
+    try {
+      const response = await fetch('/api/analyze/translate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          path: entry.path,
+          grant: entry.grant,
+          expiresAt: entry.expiresAt,
+          lang: code,
+          sourceLanguage: analysis.language,
+          blocks: blocks.map((block) => ({ key: block.key, text: block.text })),
+        }),
+      });
+      const body = await response.json();
+
+      /*
+       * The status is not the answer; the envelope is.
+       *
+       * Every route in this app answers `{ ok, data | error }`, and a 200 with
+       * `ok: false` is a failure however encouraging the status line looks.
+       * Checking both is what stops a failed switch from clearing the text and
+       * showing nothing.
+       */
+      if (!response.ok || !body?.ok) {
+        setFailed(body?.error?.message ?? t('reading.failed'));
+        return;
+      }
+
+      setFetched((held) => ({ ...held, [code]: body.data.values as Record<string, string> }));
+      setLang(code);
+    } catch {
+      setFailed(t('reading.failed'));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <div className="mt-5">
+      {blocks.map((block) => (
+        <Excerpt
+          key={block.key}
+          label={block.label}
+          text={showing?.[block.key] ?? block.text}
+          rtl={showing?.[block.key] ? chosen?.rtl : undefined}
+        />
+      ))}
+
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <span className="flex items-center gap-1.5 text-muted">
+          <Languages size={15} aria-hidden />
+          <span className="eyebrow text-[0.7rem]">{t('reading.readIn')}</span>
+        </span>
+
+        <Chip label={t('reading.original')} active={lang === null} onClick={() => choose(null)} />
+        {languages.map((language) => (
+          <Chip
+            key={language.code}
+            label={language.label_native}
+            rtl={language.rtl}
+            active={lang === language.code}
+            pending={busy === language.code}
+            disabled={busy !== null}
+            onClick={() => choose(language.code)}
+          />
+        ))}
+      </div>
+
+      {/* Said where it is read, not once at the top of the panel: somebody
+          looking at Marathi they cannot check needs to know, right there,
+          that a machine wrote it and that the original is one click away. */}
+      {lang !== null && !failed && (
+        <p className="mt-2 text-sm leading-relaxed text-muted">{t('reading.machine')}</p>
+      )}
+      {failed && (
+        <p
+          role="status"
+          className="mt-2 rounded-lg border-s-[3px] border-caution bg-accent-wash px-3 py-2 text-sm text-caution"
+        >
+          {failed}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Chip({
+  label,
+  active,
+  pending,
+  disabled,
+  rtl,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  pending?: boolean;
+  disabled?: boolean;
+  rtl?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      disabled={disabled && !active}
+      onClick={onClick}
+      dir={rtl ? 'rtl' : undefined}
+      className={
+        active
+          ? // 44px on a phone, which is the tap target, and tighter once there
+          // is a mouse. The switch is a thing people use at a table with a
+          // document in one hand.
+            'flex h-11 items-center gap-1.5 rounded-full border border-accent-strong bg-accent-strong px-3.5 text-sm text-paper sm:h-9'
+          : 'flex h-11 items-center gap-1.5 rounded-full border border-rule bg-paper px-3.5 text-sm text-ink-2 transition-colors hover:border-accent hover:text-ink disabled:opacity-50 sm:h-9'
+      }
+    >
+      {pending && <Loader2 size={13} className="animate-spin" aria-hidden />}
+      {label}
+    </button>
+  );
+}
+
+function Excerpt({ label, text, rtl }: { label: string; text: string; rtl?: boolean }) {
+  return (
+    <div className="mt-5 first:mt-0">
       <p className="eyebrow mb-1.5">{label}</p>
       <p
-        dir="auto"
+        /* `auto` reads the first strong character, which is right for a
+           document quoted back. A translation knows its own direction, so it
+           says so — a Hebrew rendering of an English page opens with a Latin
+           name often enough that guessing gets it wrong. */
+        dir={rtl === undefined ? 'auto' : rtl ? 'rtl' : 'ltr'}
         className="transcription max-h-56 overflow-auto border border-rule bg-paper p-3"
       >
         {text}

@@ -37,7 +37,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
     const response = await fetch(`/api/manage/bin/${id}`, { method });
     if (!response.ok) {
       const body = await response.json().catch(() => null);
-      setError(body?.error?.message ?? 'That did not go through. Try again.');
+      setError(body?.error?.message ?? t('error.didNotGoThrough'));
       setBusyId(null);
       return;
     }
@@ -52,8 +52,8 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
     return (
       <EmptyState
         title={t('bin.empty')}
-        body="Records a knowledge expert removes land here rather than disappearing. Nothing has been removed yet."
-        action={{ href: '/review', label: 'Go to the review queue' }}
+        body={t('bin.emptyBody')}
+        action={{ href: '/review', label: t('bin.goToQueue') }}
       />
     );
   }
@@ -70,9 +70,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
       )}
 
       <p className="max-w-2xl leading-relaxed text-muted">
-        {items.length === 1 ? 'One record is' : `${items.length} records are`} in the bin. They are
-        off the portal and out of the review queue, and they are still here in full — restoring one
-        puts back the decision it already carried.
+        {items.length === 1 ? t('bin.oneInBin') : t('bin.manyInBin', { count: items.length })}
       </p>
 
       <ul className="space-y-3">

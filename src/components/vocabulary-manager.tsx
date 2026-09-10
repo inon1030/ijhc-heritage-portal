@@ -7,6 +7,7 @@ import { Check, Loader2, Merge, Plus, Trash2, X } from 'lucide-react';
 import { buttonClass } from '@/components/primitives';
 import { COMMUNITY_COLORS, COMMUNITY_ORDER } from '@/lib/communities';
 import { FIELD_GROUPS, GROUP_ORDER, MODEL_FIELDS, fieldDef } from '@/lib/fields/registry';
+import { fieldLabel } from '@/lib/fields/labels';
 import { byBranch, unplaced, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
 import { COMMUNITY_LABELS, type Community, type KeywordCandidate } from '@/lib/types';
 
@@ -57,7 +58,7 @@ export function VocabularyManager({
     const response = await fetch(url, init);
     if (!response.ok) {
       const body = await response.json().catch(() => null);
-      setError(body?.error?.message ?? 'That did not go through. Try again.');
+      setError(body?.error?.message ?? t('error.didNotGoThrough'));
       return false;
     }
     startTransition(() => router.refresh());
@@ -165,11 +166,12 @@ export function VocabularyManager({
         {homeless.length > 0 && (
           <div className="mb-8 rounded-xl border-s-[3px] border-caution bg-accent-wash px-4 py-4">
             <h2 className="font-display text-lg">
-              {homeless.length === 1 ? 'One term has no home' : `${homeless.length} terms have no home`}
+              {homeless.length === 1
+                ? t('vocab.oneTermNoHome')
+                : t('vocab.termsNoHome', { count: homeless.length })}
             </h2>
             <p className="mt-1.5 text-sm leading-relaxed text-caution">
-              These predate the tree. Until a term says which branch it subdivides, nothing can
-              reason about it — and the model is never offered it as a proposal target.
+              {t('vocab.noHomeBody')}
             </p>
             <ul className="mt-4 space-y-2.5">
               {homeless.map((row) => (
@@ -367,7 +369,7 @@ export function VocabularyManager({
                   <span className="min-w-0 flex-1">
                     <span className="block truncate">{candidate.term}</span>
                     <span className="block truncate text-sm text-muted">
-                      {def ? def.label : 'No branch — from before the tree'}
+                      {def ? fieldLabel(t, def) : t('vocab.noBranch')}
                       {candidate.community && ` · ${COMMUNITY_LABELS[candidate.community]}`}
                     </span>
                   </span>

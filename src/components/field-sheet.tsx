@@ -5,7 +5,6 @@ import { Eye, HelpCircle, Lightbulb, Pencil, Plus, Undo2, X } from 'lucide-react
 import { useMessages } from '@/lib/i18n/provider';
 import {
   FIELDS,
-  FIELD_GROUPS,
   GROUP_ORDER,
   ROW_FIELDS,
   fieldDef,
@@ -14,7 +13,14 @@ import {
   type FieldDef,
   type FieldValue,
 } from '@/lib/fields/registry';
-import { EVIDENCE_BASIS_LABELS, type EvidenceBasis } from '@/lib/types';
+import { type EvidenceBasis } from '@/lib/types';
+import {
+  basisLabel,
+  fieldHint,
+  fieldLabel,
+  groupLabelKey,
+  optionLabel,
+} from '@/lib/fields/labels';
 import { cn } from '@/lib/utils';
 
 /**
@@ -130,13 +136,15 @@ export function FieldSheet({
       <div>
         <p className="eyebrow">{t('fields.heading')}</p>
         <p className="mt-1 text-sm leading-relaxed text-muted">
-          {tone === 'contributor'
-            ? present.length > 0
-              ? 'Only what it could read with reasonable certainty. Correct anything you know better — you are holding the original and it is not — and add whatever it missed.'
-              : 'It could not read anything about this item with enough certainty to suggest it. Add whatever you know, or leave it and a knowledge expert will.'
-            : present.length > 0
-              ? 'Suggestions that cleared the archive’s threshold, plus anything added by hand. Everything the model was less sure of was discarded and is not shown.'
-              : 'Nothing the model proposed cleared the threshold. Add the fields this record should carry.'}
+          {t(
+            tone === 'contributor'
+              ? present.length > 0
+                ? 'fields.someContributor'
+                : 'fields.noneContributor'
+              : present.length > 0
+                ? 'fields.someVolunteer'
+                : 'fields.noneVolunteer',
+          )}
         </p>
       </div>
 
@@ -145,7 +153,7 @@ export function FieldSheet({
           {groups.map(({ group, rows }) => (
             <div key={group}>
               <p className="mb-2.5 border-b border-rule pb-1.5 text-sm font-medium text-ink-2">
-                {FIELD_GROUPS[group].label}
+                {t(groupLabelKey(group))}
               </p>
               <div className="space-y-4">
                 {rows.map((row) => (
@@ -172,9 +180,7 @@ export function FieldSheet({
             {t('fields.add')}
           </label>
           <p className="mb-2.5 text-sm text-muted">
-            {tone === 'contributor'
-              ? 'Anything you know that is not above. Nothing here is required.'
-              : 'Any branch of the tree the model did not fill.'}
+            {t(tone === 'contributor' ? 'fields.addContributor' : 'fields.addVolunteer')}
           </p>
           {/*
             A native select, not a custom popover. It is one tap on a phone, it
@@ -197,10 +203,10 @@ export function FieldSheet({
               const options = available.filter((field) => field.group === group);
               if (!options.length) return null;
               return (
-                <optgroup key={group} label={FIELD_GROUPS[group].label}>
+                <optgroup key={group} label={t(groupLabelKey(group))}>
                   {options.map((field) => (
                     <option key={field.key} value={field.key}>
-                      {field.label}
+                      {fieldLabel(t, field)}
                     </option>
                   ))}
                 </optgroup>
@@ -245,7 +251,7 @@ function FieldRow({
         <option value="">{t('common.notDetermined')}</option>
         {(def.options ?? []).map((option) => (
           <option key={option.value} value={option.value}>
-            {option.label}
+            {optionLabel(t, def, option)}
           </option>
         ))}
       </select>
@@ -268,10 +274,10 @@ function FieldRow({
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
         <span className="flex items-baseline gap-1.5">
           {def.type === 'facet' ? (
-            <span className="text-sm font-medium">{def.label}</span>
+            <span className="text-sm font-medium">{fieldLabel(t, def)}</span>
           ) : (
             <label htmlFor={id} className="text-sm font-medium">
-              {def.label}
+              {fieldLabel(t, def)}
             </label>
           )}
           {corrected && <CorrectedMark />}
@@ -283,11 +289,11 @@ function FieldRow({
               type="button"
               onClick={onRevert}
               disabled={disabled}
-              title={`Put back what the archive read: ${row.suggested}`}
+              title={t('fields.putBack', { value: row.suggested ?? '' })}
               className="rounded p-1 text-muted transition-colors hover:bg-paper-3 hover:text-ink disabled:opacity-40"
             >
               <Undo2 size={13} aria-hidden />
-              <span className="sr-only">Undo your change to {def.label}</span>
+              <span className="sr-only">{t('fields.undoChange', { field: fieldLabel(t, def) })}</span>
             </button>
           )}
           <button
@@ -297,7 +303,7 @@ function FieldRow({
             className="rounded p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
           >
             <X size={14} aria-hidden />
-            <span className="sr-only">Remove the {def.label} field</span>
+            <span className="sr-only">{t('fields.removeField', { field: fieldLabel(t, def) })}</span>
           </button>
         </span>
       </div>
@@ -307,7 +313,7 @@ function FieldRow({
       {def.type !== 'facet' && control}
 
       <p className={cn('text-sm leading-relaxed text-muted', def.type === 'facet' ? '' : 'mt-1.5')}>
-        {def.hint}
+        {fieldHint(t, def)}
       </p>
 
       {/*
@@ -347,12 +353,13 @@ function CorrectedMark() {
 }
 
 function Basis({ basis, note }: { basis: EvidenceBasis; note: string | null }) {
+  const t = useMessages();
   const { icon: Icon, className } = BASIS_STYLE[basis];
   return (
     <p className={cn('machine mt-1 flex items-start gap-1.5 text-sm', className)}>
       <Icon size={14} className="mt-0.5 shrink-0" aria-hidden />
       <span>
-        {EVIDENCE_BASIS_LABELS[basis]}
+        {basisLabel(t, basis)}
         {note && <span className="text-muted"> — {note}</span>}
       </span>
     </p>

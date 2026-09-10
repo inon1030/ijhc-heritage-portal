@@ -1,0 +1,43 @@
+{
+  "note": "The archive's model chains, in one place. src/lib/env.ts imports this and scripts/quota.mjs reads it, so the report can no longer describe a chain the site is not using. Every name was verified distinct by asking it a real question and reading modelVersion off the reply. Env vars GEMINI_MODEL, GEMINI_FALLBACK_MODELS and GEMINI_TRANSLATE_MODEL still override.",
+  "primary": "gemini-3.6-flash",
+  "fallbacks": [
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+    "gemini-3.7-flash",
+    "gemini-3-flash-preview",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite"
+  ],
+  "translate": {
+    "note": "Ordered by what was measured on 08.09.2026 — the same bilingual plaque into four scripts, checking the answer and not only the clock. gemini-3.1-flash-lite 2.5s, and the only model that rendered the headline itself instead of leaving KENESETH ELIYAHOO SYNAGOGUE standing in Latin. gemini-3.7-flash 4.7s, correct. gemini-3.5-flash 28.0s, correct. gemini-3.5-flash-lite 1.8s but it left the English headline, so it is last. The chain also used to start on the analyser's own model, so the two shared one allowance of twenty and every translation after that walked the chain paying refusals — which is where the fifteen to thirty seconds a contributor waited actually came from.",
+    "chain": [
+      "gemini-3.1-flash-lite",
+      "gemini-3.7-flash",
+      "gemini-3.8-flash",
+      "gemini-3.6-flash",
+      "gemini-3.5-flash",
+      "gemini-3-flash-preview",
+      "gemini-3.5-flash-lite"
+    ]
+  },
+  "thinking": {
+    "note": "Kept as the record of a change made and reverted. Setting thinkingBudget to 0 made gemini-3.5-flash return the English unchanged in 7.2s, with a STOP finish reason and a well-formed answer — the fastest possible way to do nothing. Thinking is not overhead on a translation; on the full models it is the translation. Nothing reads this list any more.",
+    "accepts": []
+  },
+  "withdrawn": {
+    "note": "Listed by models.list, refused by generateContent with 404 on 08.09.2026. Kept so nobody adds them back from the catalogue of models.",
+    "models": [
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite"
+    ]
+  },
+  "aliases": {
+    "note": "Names that resolve to a model already in a chain and share its allowance. gemini-flash-lite-latest was in the chain until its modelVersion was read back.",
+    "models": [
+      "gemini-flash-latest",
+      "gemini-flash-lite-latest",
+      "gemini-pro-latest"
+    ]
+  }
+}

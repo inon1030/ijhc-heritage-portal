@@ -28,7 +28,22 @@ export const ALLOWED_MIME_TYPES = [
 
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
-export type FileRejection = { code: 'unsupported_type' | 'too_large'; message: string };
+/**
+ * Why a file was refused, in a form both sides of the wire can say out loud.
+ *
+ * `message` is the English and stays the fallback. `key` and `vars` are the
+ * same sentence as a catalogue entry, because this function is pure — it runs
+ * in the browser for fast feedback and again in the route handler, which is the
+ * copy that counts — and neither place can hand it a reader without making it
+ * something other than pure. So it reports what happened and lets the caller,
+ * which does have a reader, choose the words.
+ */
+export type FileRejection = {
+  code: 'unsupported_type' | 'too_large';
+  message: string;
+  key: 'err.unsupportedType' | 'err.tooLarge' | 'err.fileEmpty';
+  vars: Record<string, string>;
+};
 
 /**
  * Runs on the client for fast feedback and again on the server, which is the
@@ -36,16 +51,29 @@ export type FileRejection = { code: 'unsupported_type' | 'too_large'; message: s
  */
 export function validateFile(input: { mimeType: string; byteSize: number }): FileRejection | null {
   if (!(ALLOWED_MIME_TYPES as readonly string[]).includes(input.mimeType)) {
+    const type = input.mimeType || 'That file type';
     return {
       code: 'unsupported_type',
-      message: `${input.mimeType || 'That file type'} is not accepted. Upload an image, PDF, audio, or video file — or paste a link and let the archive read the page.`,
+      message: `${type} is not accepted. Upload an image, PDF, audio, or video file — or paste a link and let the archive read the page.`,
+      key: 'err.unsupportedType',
+      vars: { type },
     };
   }
   if (input.byteSize > MAX_FILE_BYTES) {
-    return { code: 'too_large', message: 'Files are limited to 50 MB.' };
+    return {
+      code: 'too_large',
+      message: 'Files are limited to 50 MB.',
+      key: 'err.tooLarge',
+      vars: { size: '50 MB' },
+    };
   }
   if (input.byteSize <= 0) {
-    return { code: 'too_large', message: 'That file appears to be empty.' };
+    return {
+      code: 'too_large',
+      message: 'That file appears to be empty.',
+      key: 'err.fileEmpty',
+      vars: {},
+    };
   }
   return null;
 }

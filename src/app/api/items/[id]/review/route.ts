@@ -6,7 +6,7 @@ import { ACCESS_LEVELS } from '@/lib/access';
 import { FIELD_KEYS, fieldDef, isValidValue } from '@/lib/fields/registry';
 import { binItem, reviewItem } from '@/lib/items/mutations';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
-import { translateRecord } from '@/lib/translate';
+import { translateRecord, verifyRecord } from '@/lib/translate';
 import { setItemFamilies } from '@/lib/vocabulary/mutations';
 import { readVocabulary } from '@/lib/vocabulary/load';
 import { resolveTerms } from '@/lib/vocabulary/thesaurus';
@@ -116,6 +116,35 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       after(async () => {
         try {
           await translateRecord(id);
+
+          /*
+           * And then check that it worked.
+           *
+           * Making the translations and assuming they were made is the fault
+           * this project keeps finding: a batch that lost Malayalam to the
+           * script check, a language refused for quota, a 503 on the way out —
+           * each leaves a record that reads as published in five languages and
+           * is not. The check costs a select and no model call.
+           *
+           * One retry, because the common causes are transient and the second
+           * attempt is the difference between a record that is complete now and
+           * one that is complete tomorrow night. If it is still short, the
+           * sweep has it, and the line below is what says so out loud instead
+           * of the archive quietly believing itself finished.
+           */
+          const first = await verifyRecord(id);
+          if (first.complete) return;
+
+          console.warn('[review] incomplete after publication, retrying', first.missing);
+          await translateRecord(id);
+
+          const second = await verifyRecord(id);
+          if (!second.complete) {
+            console.error(
+              '[review] still incomplete; the nightly sweep will finish it',
+              second.missing,
+            );
+          }
         } catch (error) {
           console.error('[review] translating after publication', error);
         }

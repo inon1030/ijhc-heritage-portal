@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { verifyGrant } from '@/lib/files/grant';
 import { receiptFor } from '@/lib/items/receipt';
@@ -117,13 +118,15 @@ const Body = z.object({
 
 /** Anyone may submit. Everything lands as pending, no exceptions. */
 export async function POST(request: NextRequest) {
+  const { t } = await getMessages();
+
   try {
     // Anonymous contribution is a product requirement; unlimited anonymous row
     // creation is not. Ten submissions in ten minutes is far more than a person
     // makes and far less than a script wants.
     const limit = rateLimit(`submit:${clientKey(request)}`, { limit: 10, windowMs: 10 * 60_000 });
     if (!limit.allowed) {
-      return fail(429, 'rate_limited', `Too many submissions. Try again in ${limit.retryAfterSeconds} seconds.`);
+      return fail(429, 'rate_limited', t('err.tooManySubmissions', { seconds: limit.retryAfterSeconds }));
     }
 
     const parsed = Body.safeParse(await readJson(request));
@@ -140,7 +143,7 @@ export async function POST(request: NextRequest) {
      */
     const ungranted = body.files.find((file) => !verifyGrant(file.path, file.expiresAt, file.grant));
     if (ungranted) {
-      return fail(403, 'forbidden', 'One of those uploads was not created here, or it has expired.');
+      return fail(403, 'forbidden', t('err.oneUploadNotOurs'));
     }
     const item = await createItem({
       title: body.title,

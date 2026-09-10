@@ -54,7 +54,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('the languages a record will be published in', () => {
   it('shows one tab per language with how much of it is done', async () => {
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
 
     // Hebrew: two fields, one current and one stale, so one of two.
     expect(await screen.findByText('עברית')).toBeInTheDocument();
@@ -66,24 +66,24 @@ describe('the languages a record will be published in', () => {
   });
 
   it('marks a stale translation, because it is the one that reads as finished', async () => {
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     expect(await screen.findByText('made from older text')).toBeInTheDocument();
   });
 
   it("marks a volunteer's own words so the next volunteer does not take them for the machine's", async () => {
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     expect(await screen.findByText('corrected by hand')).toBeInTheDocument();
   });
 
   it('shows the English above every box, because checking without it is guessing', async () => {
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     expect(await screen.findByText('A Torah ark curtain')).toBeInTheDocument();
     expect(screen.getByText('Embroidered silk.')).toBeInTheDocument();
   });
 
   it('says which fields have nothing yet', async () => {
     const user = userEvent.setup();
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     await user.click(await screen.findByText('മലയാളം'));
     expect(await screen.findByText('not translated yet')).toBeInTheDocument();
   });
@@ -92,7 +92,7 @@ describe('the languages a record will be published in', () => {
     // A Hebrew box inside an English page has to carry its own `dir`, or the
     // volunteer types right-to-left text into a left-to-right field and cannot
     // tell where the cursor is.
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     const boxes = await screen.findAllByRole('textbox');
     expect(boxes[0]).toHaveAttribute('dir', 'rtl');
     expect(boxes[0]).toHaveAttribute('lang', 'he');
@@ -102,7 +102,7 @@ describe('the languages a record will be published in', () => {
     // Four calls per record against an allowance of twenty a day. Opening five
     // records to look at them would exhaust it before anything was published.
     const fetcher = stubFetch();
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     await screen.findByText('עברית');
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher.mock.calls.every((call) => !call[1]?.method)).toBe(true);
@@ -110,12 +110,37 @@ describe('the languages a record will be published in', () => {
 
   it('offers to save only once something has actually been changed', async () => {
     const user = userEvent.setup();
-    render(<TranslationDeck itemId="abc" />);
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
     await screen.findByText('עברית');
     expect(screen.queryByText('Save correction')).not.toBeInTheDocument();
 
     const boxes = screen.getAllByRole('textbox');
     await user.type(boxes[0], '!');
     await waitFor(() => expect(screen.getByText('Save correction')).toBeInTheDocument());
+  });
+});
+
+/**
+ * The panel obeys the control at the top of the page.
+ *
+ * A knowledge expert reviewing in Hebrew sets the site to Hebrew — that is how
+ * they say what language they are working in — and the deck used to open on
+ * whichever language `archive_languages` happened to return first, so they had
+ * to say it again here. The tabs still work; this is only where it starts.
+ */
+describe('which language the deck opens on', () => {
+  it('opens on the language the site is set to', async () => {
+    render(<TranslationDeck itemId="abc" siteLanguage="ml" />);
+    const tabs = await screen.findAllByRole('tab');
+    const malayalam = tabs.find((tab) => tab.textContent?.includes('മലയാളം'));
+    expect(malayalam).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('falls back to the first language when the site is in one the record has no tab for', async () => {
+    // English is the source language, so it has no tab of its own. An empty
+    // panel would be worse than the wrong tab.
+    render(<TranslationDeck itemId="abc" siteLanguage="en" />);
+    const tabs = await screen.findAllByRole('tab');
+    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
   });
 });

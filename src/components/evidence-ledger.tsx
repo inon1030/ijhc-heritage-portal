@@ -2,11 +2,11 @@ import { Eye, HelpCircle, Lightbulb } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import { inTreeOrder, fieldDef } from '@/lib/fields/registry';
 import {
-  EVIDENCE_BASIS_LABELS,
   LEGACY_EVIDENCE_LABELS,
   type EvidenceBasis,
   type EvidenceLedger as Ledger,
 } from '@/lib/types';
+import { basisLabel, fieldLabel, type Translate } from '@/lib/fields/labels';
 
 /**
  * What each suggestion rests on.
@@ -33,8 +33,9 @@ const BASIS_STYLE: Record<EvidenceBasis, { icon: typeof Eye; className: string }
   guess: { icon: HelpCircle, className: 'text-muted' },
 };
 
-function labelFor(key: string): string {
-  return fieldDef(key)?.label ?? LEGACY_EVIDENCE_LABELS[key] ?? key;
+function labelFor(t: Translate, key: string): string {
+  const def = fieldDef(key);
+  return def ? fieldLabel(t, def) : (LEGACY_EVIDENCE_LABELS[key] ?? key);
 }
 
 export function EvidenceLedger({
@@ -71,10 +72,10 @@ export function EvidenceLedger({
           return (
             <li key={key} className="flex items-start gap-3 py-2.5">
               <Icon size={16} className={`mt-0.5 shrink-0 ${className}`} aria-hidden />
-              <span className="w-28 shrink-0 text-sm font-medium">{labelFor(key)}</span>
+              <span className="w-28 shrink-0 text-sm font-medium">{labelFor(t, key)}</span>
               <span className="flex-1">
                 <span className={`machine block ${className}`}>
-                  {EVIDENCE_BASIS_LABELS[entry.basis]}
+                  {basisLabel(t, entry.basis)}
                 </span>
                 {entry.note && <span className="block text-sm text-muted">{entry.note}</span>}
               </span>

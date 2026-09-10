@@ -1,5 +1,7 @@
 import { COMMUNITY_COLORS, COMMUNITY_ORDER, FOUNDING_STREAMS } from '@/lib/communities';
-import { COMMUNITY_LABELS, type Community } from '@/lib/types';
+import { type Community } from '@/lib/types';
+import { communityKey } from '@/lib/i18n/labels';
+import { getMessages } from '@/lib/i18n';
 
 /**
  * The signature element: one rule, four segments, sized by how much of the
@@ -13,13 +15,14 @@ import { COMMUNITY_LABELS, type Community } from '@/lib/types';
  * A fifth segment, General India, appears only once something is filed there.
  * It is not one of the founding four and does not pad the empty state.
  */
-export function StreamRule({ counts }: { counts: Record<Community, number> }) {
+export async function StreamRule({ counts }: { counts: Record<Community, number> }) {
+  const { t } = await getMessages();
   const total = COMMUNITY_ORDER.reduce((sum, c) => sum + (counts[c] ?? 0), 0);
   const label =
     total === 0
-      ? 'Nothing published yet'
+      ? t('streams.nothingPublished')
       : COMMUNITY_ORDER.filter((c) => counts[c] > 0)
-          .map((c) => `${COMMUNITY_LABELS[c]} ${counts[c]}`)
+          .map((c) => `${t(communityKey(c))} ${counts[c]}`)
           .join(', ');
 
   // Five segments now, since General India was added on 2026-08-27. It sits

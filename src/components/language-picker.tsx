@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Languages } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
+import { useLanguageLocked } from '@/lib/i18n/language-lock';
 
 /**
  * The reader's choice of language.
@@ -39,11 +40,23 @@ export interface PickableLanguage {
 export function LanguagePicker({
   languages,
   current,
+  exempt = false,
 }: {
   languages: PickableLanguage[];
   current: string;
+  /**
+   * Whether this viewer keeps the control even while a screen has asked for it
+   * to go away.
+   *
+   * True for a knowledge expert, and the reason is the review screen: changing
+   * the site language there is how they read the record in another language,
+   * so taking the control away would remove the feature rather than protect
+   * anything. False for a contributor, whose page has unsaved files on it.
+   */
+  exempt?: boolean;
 }) {
   const t = useMessages();
+  const locked = useLanguageLocked();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -65,6 +78,16 @@ export function LanguagePicker({
   const active = languages.find((l) => l.code === current) ?? languages[0];
   if (!active || languages.length < 2) return null;
 
+  /*
+   * Gone rather than disabled while a contribution is open.
+   *
+   * Choosing a language reloads the page, and mid-contribution that discards
+   * the files, the address, the consent and the reading with nothing to say so.
+   * A greyed-out button is a question a person has to answer for themselves;
+   * an absent one is not. It returns when the contribution is sent.
+   */
+  if (locked && !exempt) return null;
+
   return (
     <div ref={box} className="relative">
       <button
@@ -73,16 +96,16 @@ export function LanguagePicker({
         aria-expanded={open}
         aria-label={t('language.reading', { language: active.label_native })}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-8 items-center gap-1.5 rounded-full border border-rule px-2.5 text-muted transition-colors hover:border-accent hover:text-ink"
+        className="flex h-9 items-center gap-2 rounded-full border border-rule px-3 text-muted transition-colors hover:border-accent hover:text-ink"
       >
-        <Languages size={15} aria-hidden />
-        <span className="eyebrow text-[0.7rem]">{active.code}</span>
+        <Languages size={17} aria-hidden />
+        <span className="eyebrow text-[0.78rem]">{active.code}</span>
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute end-0 top-10 z-50 w-56 overflow-hidden rounded-xl border border-rule bg-paper shadow-lift"
+          className="absolute end-0 top-11 z-50 w-56 overflow-hidden rounded-xl border border-rule bg-paper shadow-lift"
         >
           <p className="border-b border-rule px-4 py-2.5 text-xs leading-snug text-muted">
             {t('language.prompt')}

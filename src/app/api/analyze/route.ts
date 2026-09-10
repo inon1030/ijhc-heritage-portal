@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { getAIProvider } from '@/lib/ai';
+import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { resolveMimeType } from '@/lib/files/detect';
 import { readImageDimensions } from '@/lib/files/dimensions';
@@ -57,6 +58,16 @@ function outOfAllowance(error: unknown): boolean {
 }
 
 export async function POST(request: NextRequest) {
+    /*
+     * The reader, before anything can be refused.
+     *
+     * A route handler has the cookie like any other server code — it simply
+     * never asked for it, so every refusal from here arrived in English however
+     * the contributor had set the archive. Being told, in a language you do not
+     * read, that your file was rejected is being refused twice.
+     */
+  const { t } = await getMessages();
+
   try {
     /*
      * Two gates, and they close different doors.
@@ -72,19 +83,19 @@ export async function POST(request: NextRequest) {
      */
     const limit = rateLimit(`analyse:${clientKey(request)}`, { limit: 20, windowMs: 60_000 });
     if (!limit.allowed) {
-      return fail(429, 'rate_limited', `Too many readings. Try again in ${limit.retryAfterSeconds} seconds.`);
+      return fail(429, 'rate_limited', t('err.tooManyReadings', { seconds: limit.retryAfterSeconds }));
     }
 
     const parsed = Body.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
     if (!verifyGrant(parsed.data.path, parsed.data.expiresAt, parsed.data.grant)) {
-      return fail(403, 'forbidden', 'That upload was not created here, or it has expired.');
+      return fail(403, 'forbidden', t('err.uploadNotOurs'));
     }
 
     const admin = createAdminSupabase();
     const { data: blob, error } = await admin.storage.from('heritage').download(parsed.data.path);
-    if (error || !blob) return fail(404, 'file_not_found', 'That upload could not be found. Try uploading again.');
+    if (error || !blob) return fail(404, 'file_not_found', t('err.uploadNotFound'));
 
     const bytes = new Uint8Array(await blob.arrayBuffer());
 
@@ -95,7 +106,7 @@ export async function POST(request: NextRequest) {
     const mimeType = resolveMimeType(bytes, blob.type || 'application/octet-stream');
 
     const rejection = validateFile({ mimeType, byteSize: bytes.byteLength });
-    if (rejection) return fail(415, rejection.code, rejection.message);
+    if (rejection) return fail(415, rejection.code, t(rejection.key, rejection.vars));
 
     const dimensions = readImageDimensions(bytes, mimeType);
 
@@ -221,8 +232,8 @@ export async function POST(request: NextRequest) {
          * not in.
          */
         error: outOfAllowance(analysisError)
-          ? 'The archive has used its reading allowance for today. Your file is safely uploaded — describe it yourself below, or come back tomorrow and it will be read then.'
-          : 'The analysis service did not respond. You can still submit and describe the item yourself.',
+          ? t('err.allowanceSpent')
+          : t('err.noResponse'),
         metadata: { mimeType, byteSize: bytes.byteLength, ...(dimensions ?? decodedSize ?? {}) },
       });
     }

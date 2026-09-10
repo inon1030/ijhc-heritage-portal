@@ -123,6 +123,20 @@
   /* Between h-12 and h-14. Form fields want the extra 4px on a 17px base. */
   --spacing-13: 3.25rem;
 
+  /*
+   * The strip's own height, so nothing else has to guess at it.
+   *
+   * The contribution screen claims the viewport less the header, and it did so
+   * with a hard-coded `8rem` written when the strip was 36px tall. The strip
+   * has since grown twice, and each time that number was quietly wrong — the
+   * form lost room at the bottom and screen two came within a few pixels of
+   * scrolling again, which is the exact fault the compacting fixed.
+   *
+   * `sm:` and up is 3.5rem; below it the strip is 4rem, because a phone needs a
+   * 44px target and gets more room in return.
+   */
+  --masthead-h: 4rem;
+
   /* Soft and warm rather than a grey drop shadow. */
   --shadow-soft:  0 1px 2px rgb(68 52 30 / 0.04), 0 4px 16px rgb(68 52 30 / 0.05);
   --shadow-lift:  0 2px 6px rgb(68 52 30 / 0.07), 0 12px 32px rgb(68 52 30 / 0.09);
@@ -130,6 +144,13 @@
 }
 
 @layer base {
+  /* The strip is slimmer once there is a pointer to aim with. */
+  @media (min-width: 40rem) {
+    :root {
+      --masthead-h: 3.5rem;
+    }
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
     /*

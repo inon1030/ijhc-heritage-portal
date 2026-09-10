@@ -149,6 +149,9 @@ export const en = {
   'controls.viewNamed': '{view} view',
   'controls.all': 'All',
   'streams.noneYet': 'none yet',
+  'streams.nothingPublished': 'Nothing published yet',
+  'common.simulated':
+    'DEMO — SIMULATED. No AI model examined this file. Set GEMINI_API_KEY to get real analysis.',
   'streams.share': '{share}% of the four streams',
   'streams.communityNotIdentified': 'Community not yet identified',
 
@@ -247,6 +250,10 @@ export const en = {
   'prereview.tagsNoMatch': 'No tag matches that.',
   'prereview.tagsAll': 'Browse all tags',
   'prereview.addTagAction': 'Add tag',
+  'prereview.removeTag': 'Remove {term}',
+  'prereview.tickTheBox':
+    'Tick the box under “Tell us what you know” to confirm you may share this material.',
+  'prereview.fileOf': 'File {n} of {total}',
   'prereview.submit': 'Submit for review',
   'prereview.submitMany': 'Submit {count} items',
   'prereview.submitting': 'Submitting…',
@@ -257,6 +264,16 @@ export const en = {
   'prereview.duration': 'Duration',
   'prereview.textFound': 'Text found in the item',
   'prereview.transcript': 'Transcript',
+
+  // The language switch under the scanned text, at pre-review. A contributor
+  // who reads only Marathi is being asked whether the machine read their
+  // document correctly, so they have to be able to read the reading.
+  'reading.readIn': 'Read this in',
+  'reading.original': 'Original',
+  'reading.translating': 'Translating…',
+  'reading.machine':
+    'Machine translation of the text above, made for you to check it. The original is one click away, and it is the original that is submitted.',
+  'reading.failed': 'That translation could not be made. The text above is unchanged.',
 
   // ── files ─────────────────────────────────────────────────────────────────
   'file.none': 'No file attached',
@@ -631,6 +648,222 @@ export const en = {
   'translation.inProgress': 'Translating into {language}…',
   'translation.unavailable': 'This record is not available in {language} yet.',
   'translation.original': 'As it was written',
+
+  // ── what a value rests on ─────────────────────────────────────────────────
+  'basis.read': 'Read from the material',
+  'basis.inferred': 'Inferred from style',
+  'basis.guess': 'Guess',
+
+  // ── the field sheet's own prose ───────────────────────────────────────────
+  'fields.someContributor':
+    'Only what it could read with reasonable certainty. Correct anything you know better — you are holding the original and it is not — and add whatever it missed.',
+  'fields.noneContributor':
+    'It could not read anything about this item with enough certainty to suggest it. Add whatever you know, or leave it and a knowledge expert will.',
+  'fields.someVolunteer':
+    'Suggestions that cleared the archive’s threshold, plus anything added by hand. Everything the model was less sure of was discarded and is not shown.',
+  'fields.noneVolunteer':
+    'Nothing the model proposed cleared the threshold. Add the fields this record should carry.',
+  'fields.addContributor': 'Anything you know that is not above. Nothing here is required.',
+  'fields.addVolunteer': 'Any branch of the tree the model did not fill.',
+  'fields.undoChange': 'Undo your change to {field}',
+  'fields.removeField': 'Remove the {field} field',
+  'fields.putBack': 'Put back what the archive read: {value}',
+  'fields.corrected': 'You changed this',
+
+  // ── things that go wrong, said to the person they went wrong for ──────────
+  'error.didNotGoThrough': 'That did not go through. Try again.',
+  'error.decisionNotSaved': 'The decision did not save. Try again.',
+  'error.notDeleted': 'The record was not deleted. Try again.',
+  'error.languagesUnavailable': 'Could not load the languages.',
+  'error.translatorUnreachable': 'The translator could not be reached.',
+  'error.didNotSave': 'That did not save.',
+
+  'bin.emptyBody':
+    'Records a knowledge expert removes land here rather than disappearing. Nothing has been removed yet.',
+  'bin.goToQueue': 'Go to the review queue',
+  'bin.oneInBin':
+    'One record is in the bin. It is off the portal and out of the review queue, and it is still here in full — restoring it puts back the decision it already carried.',
+  'bin.manyInBin':
+    '{count} records are in the bin. They are off the portal and out of the review queue, and they are still here in full — restoring one puts back the decision it already carried.',
+
+  'vocab.oneTermNoHome': 'One term has no home',
+  'vocab.termsNoHome': '{count} terms have no home',
+  'vocab.noHomeBody':
+    'These predate the tree. Until a term says which branch it subdivides, nothing can reason about it — and the model is never offered it as a proposal target.',
+  'upload.done.linkExplain':
+    'It shows you whether a knowledge expert has published it yet. Save it somewhere; we have no other way to reach you.',
+  'upload.done.linksExplainMany':
+    'They show you whether a knowledge expert has published each contribution yet. Save them somewhere; we have no other way to reach you.',
+  'vocab.noBranch': 'No branch — from before the tree',
+  'accounts.noName': 'No name given',
+  'wb.periodPlaceholder': '1890s, late 19th century, before 1948',
+  'wb.noFamiliesYet': 'No families registered for {community} yet.',
+  'flow.together': 'Front and back, or the pages of one letter.',
+  'flow.separate': 'Different photographs, each its own record.',
+  'receipt.copyWholeAddress':
+    'Contribution links are long and are easily broken by an email client or a chat app. Copy the whole address, including everything after the question mark.',
+  'receipt.noRecordUnderLink':
+    'The archive no longer has a record under this link. If that is unexpected, get in touch and quote the reference below.',
+
+  // ── what the server says when it refuses ──────────────────────────────────
+  //
+  // Every one of these is reachable by an ordinary contributor, which is the
+  // whole reason they are here: a person who set the archive to Marathi and is
+  // then told in English that their file is too large has been refused twice.
+  //
+  // The guards a contributor cannot reach — "Sign in as an approved volunteer",
+  // "This endpoint is for the scheduler" — are deliberately not in the
+  // catalogue. They are read by people who administer the archive, and one of
+  // them is read by nobody at all.
+  'err.tooManyReadings': 'Too many readings. Try again in {seconds} seconds.',
+  'err.tooManyUploads': 'Too many uploads. Try again in {seconds} seconds.',
+  'err.tooManySubmissions': 'Too many submissions. Try again in {seconds} seconds.',
+  'err.tooManyLinks': 'Too many links. Try again in {seconds} seconds.',
+  'err.tooManyTranslations': 'Too many translations at once. Try again in {seconds} seconds.',
+
+  'err.uploadNotOurs': 'That upload was not created here, or it has expired. Try uploading it again.',
+  'err.oneUploadNotOurs':
+    'One of those uploads was not created here, or it has expired. Try uploading it again.',
+  'err.uploadNotFound': 'That upload could not be found. Try uploading again.',
+  'err.uploadNotPrepared': 'Could not prepare the upload. Try again.',
+  'err.uploadNotStarted': 'Could not start the upload. Try again.',
+
+  'err.unsupportedType':
+    '{type} is not accepted. Upload an image, PDF, audio, or video file \u2014 or paste a link and let the archive read the page.',
+  'err.tooLarge': 'Files are limited to {size}.',
+  'err.fileEmpty': 'That file appears to be empty.',
+  'file.unidentified':
+    'your browser could not identify this file type. An iPhone HEIC photo often does this; convert it to JPEG.',
+
+  'err.fileNotFound': 'File not found.',
+  'err.fileNotPublic': 'This file is not publicly available.',
+  'err.fileNotOpened': 'Could not open that file.',
+
+  'err.pageNotStored': 'The page was read but could not be stored. Try again.',
+
+  'err.unknownLanguage': 'This archive does not publish in that language.',
+  'err.readingTooLong':
+    'This reading is too long to translate in one go. A knowledge expert can translate the record after it is accepted.',
+  'err.translationFailed': 'That translation could not be made. The original is unchanged.',
+  'err.translatorAllowance':
+    'The translator has reached its daily allowance. The reading itself is unaffected \u2014 you can submit as you are.',
+
+  // The two a contributor is most likely to meet, and the reason they are not
+  // failures: the file is already stored either way, so what is lost is the
+  // machine's help and not the contribution.
+  'err.allowanceSpent':
+    'The archive has used its reading allowance for today. Your file is safely uploaded \u2014 describe it yourself below, or come back tomorrow and it will be read then.',
+  'err.noResponse':
+    'The analysis service did not respond. You can still submit and describe the item yourself.',
+
+  // ── The logical tree, as a reader sees it ─────────────────────────────────
+  //
+  // Generated from src/lib/fields/registry.ts by scripts/tmp/emit-field-keys.ts
+  // and then owned here. The registry keeps the English as the *stored* value
+  // — `item_fields.value` is a facet's own name and queries match on it — and
+  // these are what is drawn on a screen. A test pins the two together.
+
+  'group.record.label': 'Record basics',
+  'group.record.blurb': 'What the portal files and colours the record by.',
+  'group.item_detail.label': 'The item itself',
+  'group.item_detail.blurb': 'What an archivist writes down looking at it.',
+  'group.lifestyle.label': 'Lifestyle and Customs',
+  'group.lifestyle.blurb': 'Content Domains',
+  'group.religious_art.label': 'Religious and Art',
+  'group.religious_art.blurb': 'Content Domains',
+  'group.culture.label': 'Culture',
+  'group.culture.blurb': 'Content Domains',
+  'group.circle_of_life.label': 'Circle of Life',
+  'group.circle_of_life.blurb': 'Content Domains',
+  'group.digital_media.label': 'Digital Media',
+  'group.digital_media.blurb': 'Content Media Types',
+  'group.physical_printed.label': 'Physical and Printed',
+  'group.physical_printed.blurb': 'Content Media Types',
+  'group.geography.label': 'Geography',
+  'group.geography.blurb': 'Communities Mapping',
+  'group.social_infrastructure.label': 'Social Infrastructure',
+  'group.social_infrastructure.blurb': 'Communities Mapping',
+  'group.history_data.label': 'History and Data',
+  'group.history_data.blurb': 'Communities Mapping',
+
+  'fields.filedUnder': 'Filed under {path}.',
+
+  'field.category.label': 'Kind of item',
+  'field.category.hint': 'The three kinds the portal filters by. The media-type branches below are finer.',
+  'field.community.label': 'Community',
+  'field.community.hint': 'One of the four streams. Anything that cannot be placed in one is proposed as General India, the fifth.',
+  'field.period.label': 'Period',
+  'field.period.hint': 'A range. A single year only if the item states one.',
+  'field.origin_place.label': 'Place of origin',
+  'field.origin_place.hint': 'Town and country. "Calcutta, India".',
+  'field.language.label': 'Language',
+  'field.language.hint': 'The language of the material, not of this website.',
+  'field.provenance.label': 'Provenance',
+  'field.provenance.hint': 'Who owned it, and how it reached the archive.',
+  'field.date_on_item.label': 'Date written on the item',
+  'field.date_on_item.hint': 'Transcribed as it appears, in its own calendar. Not converted.',
+  'field.inscription.label': 'Inscription',
+  'field.inscription.hint': 'Text carried by the object itself, in its original script.',
+  'field.maker.label': 'Maker or photographer',
+  'field.maker.hint': 'A studio stamp, a silversmith’s mark, a printer’s name.',
+  'field.material.label': 'Material',
+  'field.material.hint': 'What it is made of, as far as the image shows.',
+  'field.condition.label': 'Condition',
+  'field.condition.hint': 'Visible damage only. Nothing about what caused it.',
+  'field.domain.lifestyle.traditions.label': 'Traditions',
+  'field.domain.lifestyle.day_to_day.label': 'Day-to-day life',
+  'field.domain.lifestyle.food.label': 'Food',
+  'field.domain.lifestyle.professions.label': 'Professions',
+  'field.domain.religious.temples.label': 'Temples',
+  'field.domain.religious.artifacts.label': 'Artifacts',
+  'field.domain.religious.judaica.label': 'Judaica items',
+  'field.domain.religious.art.label': 'Art',
+  'field.domain.culture.literature.label': 'Literature and Poetry',
+  'field.domain.culture.music_dance.label': 'Music and dance',
+  'field.domain.culture.dress.label': 'Dress code',
+  'field.domain.culture.homes.label': 'Homes and neighborhoods',
+  'field.domain.life.birth_objects.label': 'Birth — objects',
+  'field.domain.life.birth_stories.label': 'Birth — stories',
+  'field.domain.life.birth_games.label': 'Birth — games',
+  'field.domain.life.childhood.label': 'Childhood',
+  'field.domain.life.maturity.label': 'Maturity',
+  'field.domain.life.marriage.label': 'Marriage',
+  'field.media.digital.images.label': 'Images',
+  'field.media.digital.video.label': 'Video',
+  'field.media.digital.sound.label': 'Sound',
+  'field.media.digital.three_d.label': '3D',
+  'field.media.printed.manuscripts.label': 'Documents and manuscripts',
+  'field.media.printed.books.label': 'Printed books',
+  'field.media.printed.newspapers.label': 'Newspaper articles',
+  'field.media.printed.clothing.label': 'Clothing',
+  'field.media.printed.jewelry.label': 'Jewelry',
+  'field.media.printed.furniture.label': 'Furniture',
+  'field.map.geo.district_state.label': 'District and State',
+  'field.map.geo.district_state.hint': 'The Indian state or district, when the item names one.',
+  'field.map.geo.cities_villages.label': 'Cities and Villages',
+  'field.map.geo.cities_villages.hint': 'The settlement, as the item spells it.',
+  'field.map.geo.markets.label': 'Markets',
+  'field.map.geo.markets.hint': 'A named market or bazaar.',
+  'field.map.social.education.label': 'Educational institutions',
+  'field.map.social.education.hint': 'A named school, seminary, or college.',
+  'field.map.social.doctors.label': 'Doctors',
+  'field.map.social.doctors.hint': 'A named physician.',
+  'field.map.social.birth_nurses.label': 'Birth nurses',
+  'field.map.social.birth_nurses.hint': 'A named midwife or birth attendant.',
+  'field.map.social.healers.label': 'Healers',
+  'field.map.social.healers.hint': 'A named traditional healer, and the practice if it is stated.',
+  'field.map.social.medications.label': 'Medications',
+  'field.map.social.medications.hint': 'A named remedy or preparation.',
+  'field.map.social.transportation.label': 'Transportation',
+  'field.map.social.transportation.hint': 'The means of travel the item documents.',
+  'field.map.history.events.label': 'Important events',
+  'field.map.history.events.hint': 'A named event the item records or belongs to.',
+  'field.map.history.key_people.label': 'Key people',
+  'field.map.history.key_people.hint': 'People the item names. Only names it carries — a face is not a name.',
+  'field.map.history.transformations.label': 'Social transformations',
+  'field.map.history.transformations.hint': 'A shift the item documents: migration, a change of trade, a change in observance.',
+  'field.map.history.statistics.label': 'Statistics',
+  'field.map.history.statistics.hint': 'Figures the item states — a census count, a membership roll, a subscription list.',
 } as const;
 
 export type MessageKey = keyof typeof en;

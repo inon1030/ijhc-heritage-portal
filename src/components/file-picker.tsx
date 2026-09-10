@@ -63,10 +63,13 @@ export function FilePicker({
       for (const file of incoming) {
         const rejection = validateFile({ mimeType: file.type, byteSize: file.size });
         if (rejection) {
+          // The rejection names a catalogue entry rather than carrying English:
+          // `validateFile` is pure and runs on both sides of the wire, so it
+          // reports what happened and this, which has a reader, chooses words.
           refused.push(
-            file.type
-              ? `${file.name} — ${rejection.message}`
-              : `${file.name} — your browser could not identify this file type. An iPhone HEIC photo often does this; convert it to JPEG.`,
+            `${file.name} — ${
+              file.type ? t(rejection.key, rejection.vars) : t('file.unidentified')
+            }`,
           );
           continue;
         }
@@ -80,7 +83,10 @@ export function FilePicker({
       setRejections(refused);
       if (accepted.length) onChange([...files, ...accepted]);
     },
-    [disabled, files, onChange],
+    // `t` is memoised on the catalogue, which cannot change without a reload,
+    // so listing it does not make this callback churn — and a dependency list
+    // that lies is worse than one that is long.
+    [disabled, files, onChange, t],
   );
 
   // A paste anywhere on the page, as long as the cursor is not in a text field —

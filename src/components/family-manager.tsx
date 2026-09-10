@@ -49,7 +49,7 @@ export function FamilyManager({
     const response = await fetch(url, init);
     if (!response.ok) {
       const body = await response.json().catch(() => null);
-      setError(body?.error?.message ?? 'That did not go through. Try again.');
+      setError(body?.error?.message ?? t('error.didNotGoThrough'));
       return false;
     }
     startTransition(() => router.refresh());

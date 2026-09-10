@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
 import { ConsentBlock } from '@/components/consent-block';
@@ -8,8 +8,11 @@ import { RingMark, buttonClass } from '@/components/primitives';
 import { FilePicker, type PickedFile } from '@/components/file-picker';
 import { LinkInput, type CapturedLink } from '@/components/link-input';
 import { PreReview, type Draft, type OfferedTerm } from '@/components/pre-review';
+import type { PickableLanguage } from '@/components/language-picker';
 import { CONSENT_VERSION } from '@/lib/consent';
-import { useMessages } from '@/lib/i18n/provider';
+import { MessagesProvider, useMessages } from '@/lib/i18n/provider';
+import { lockLanguage } from '@/lib/i18n/language-lock';
+import { en, format, type MessageKey } from '@/lib/i18n/messages';
 import { mergeSuggestions } from '@/lib/fields/suggestions';
 import { measureDuration } from '@/lib/files/measure';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
@@ -73,8 +76,18 @@ type Phase = 'describe' | 'analysing' | 'reviewing' | 'submitting' | 'done';
 export function UploadFlow({
   vocabulary,
   mark,
+  languages,
+  siteLanguage,
 }: {
   vocabulary: OfferedTerm[];
+  /** The code of the language the site is currently in. */
+  siteLanguage: string;
+  /**
+   * The languages the archive publishes in. Handed down for the switch under
+   * the scanned text at pre-review, so a contributor can read the machine's
+   * reading of their own document before anybody else sees it.
+   */
+  languages: PickableLanguage[];
   /**
    * The Center's mark, handed down rather than imported.
    *
@@ -114,8 +127,107 @@ export function UploadFlow({
    * knows whose grandmother that is. It goes to the model as fact.
    */
   const [known, setKnown] = useState('');
-  /** Which language the AI should write its reading in. */
-  const [analysisLang, setAnalysisLang] = useState('English');
+  /**
+   * Which language the AI should write its reading in.
+   *
+   * It starts at the language the site is in, rather than at English. Somebody
+   * who has already told the archive they read Marathi has answered this
+   * question; asking it again and defaulting to English is asking them to
+   * answer it twice and punishing them for missing it. English remains one
+   * choice of five rather than the assumption.
+   *
+   * The *value* is the language's English name, because that is what goes to
+   * the model in the prompt. The *label* is its own name in its own script,
+   * because that is what a person reads.
+   */
+  const [analysisLang, setAnalysisLang] = useState(
+    () => languages.find((l) => l.code === siteLanguage)?.label_en ?? 'English',
+  );
+
+  /** The chosen reading language as a row, for its code and its direction. */
+  const reading = languages.find((l) => l.label_en === analysisLang) ?? null;
+
+  /**
+   * Every language of each reading, made once, before anybody asks.
+   *
+   * Keyed by the entry's id. The switch under the scanned text reads from here
+   * first, so moving between Hebrew, Marathi and the original is instant rather
+   * than a round trip each. What is missing here — a passage too long to render
+   * five times, a language the model wrote in the wrong script — simply falls
+   * through to the on-demand call, which is what the switch did before.
+   */
+  const [readings, setReadings] = useState<
+    Record<string, Record<string, Record<string, string>>>
+  >({});
+
+  /*
+   * ── the pre-review belongs to the reading, not to the site ────────────────
+   *
+   * A contributor who asked for the machine to read their document in Marathi
+   * is then asked whether it read it correctly. Putting that question to them
+   * in English — because the kiosk, or the last person to use this browser, had
+   * the site in English — is asking somebody to check work in a language they
+   * have just told you they do not read.
+   *
+   * So screen three follows the reading language and the rest of the site does
+   * not move. The catalogue is fetched rather than shipped: five of them in
+   * every page would be five times the payload on every route in the archive,
+   * for a case that only arises when somebody changes the default.
+   *
+   * Nothing is blocked on it. Until it arrives, the site's own language is
+   * used — a screen in the wrong language is a great deal better than a screen
+   * that is not there.
+   */
+  const [catalogues, setCatalogues] = useState<Record<string, Record<string, string>>>({});
+
+  /*
+   * Which language screen three is in, worked out during render rather than
+   * stored.
+   *
+   * The first version kept `flowCatalogue` in state and cleared it from an
+   * effect, which is a state write on every render where the two languages
+   * agree — the common case — and the compiler is right to refuse it. Here the
+   * answer is a function of the reading language and what has been fetched, and
+   * the only thing state holds is the fetches themselves, keyed so that
+   * switching back and forth costs nothing the second time.
+   */
+  const overrideCode = reading && reading.code !== siteLanguage ? reading.code : null;
+  const flowCatalogue = overrideCode ? (catalogues[overrideCode] ?? null) : null;
+
+  useEffect(() => {
+    if (!overrideCode || catalogues[overrideCode]) return;
+    let live = true;
+    fetch(`/api/i18n/${overrideCode}`)
+      .then((response) => response.json())
+      .then((body) => {
+        if (!live || !body?.ok) return;
+        setCatalogues((held) => ({
+          ...held,
+          [overrideCode]: body.data.catalogue as Record<string, string>,
+        }));
+      })
+      .catch(() => {
+        // The words stay in the site's language. Nothing else changes.
+      });
+    return () => {
+      live = false;
+    };
+  }, [overrideCode, catalogues]);
+
+  /**
+   * `t` for screen three.
+   *
+   * A provider only reaches child components; the strings in this component's
+   * own JSX were resolved by the `useMessages` call at the top of it and would
+   * stay in the site's language however the subtree is wrapped. So the subtree
+   * gets the provider and this function covers what is drawn here.
+   */
+  const tFlow = useMemo(() => {
+    const table = flowCatalogue;
+    if (!table) return t;
+    return (key: MessageKey, vars?: Record<string, string | number>) =>
+      format(table[key] ?? en[key] ?? key, vars);
+  }, [flowCatalogue, t]);
   /** Fields the contributor has said outright they cannot answer. */
   const [dontKnow, setDontKnow] = useState<Record<string, boolean>>({});
 
@@ -130,6 +242,24 @@ export function UploadFlow({
   // contributor — who has no account and never will — come back to what they
   // sent, so it is kept alongside the id rather than thrown away.
   const [created, setCreated] = useState<{ id: string; receipt: string }[]>([]);
+
+  /*
+   * From the moment the reading language is chosen until the contribution is
+   * sent, the site's language control is not on the page.
+   *
+   * Screen two is where that choice is made, and from there the pre-review, the
+   * catalogue fields and the machine's own prose all belong to it. The control
+   * in the strip changes the *site* language by reloading — which mid-flow
+   * discards the files, the address, the consent and the reading, with nothing
+   * on the button to warn anybody. So it goes, and comes back on the receipt.
+   *
+   * A knowledge expert keeps it: they are exempt in `LanguagePicker`, because
+   * on the review screen changing the language is the feature.
+   */
+  useEffect(() => {
+    if (screen < 2 || phase === 'done') return;
+    return lockLanguage();
+  }, [screen, phase]);
 
   const busy = phase === 'analysing' || phase === 'submitting';
   /*
@@ -344,12 +474,63 @@ export function UploadFlow({
       setShowPreReview(true);
       setPhase('reviewing');
       setScreen(3);
+
+      /*
+       * The head start, fired as the screen appears rather than awaited.
+       *
+       * One call per file that actually carries text — a photograph with
+       * nothing written on it makes no request at all — and it is deliberately
+       * not awaited: the contributor should be reading the summary while this
+       * happens, not watching a second spinner after the first one finished.
+       * Whatever lands, lands; whatever does not is asked for on the click.
+       */
+      void prefetchReadings(results);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('upload.error.generic'));
       setPhase('describe');
     } finally {
       setProgress(null);
     }
+  }
+
+  /** Ask for every language of every reading that has one. Never throws. */
+  async function prefetchReadings(entries: Analysed[]) {
+    await Promise.all(
+      entries.map(async (entry) => {
+        const blocks = [
+          { key: 'ocrText' as const, text: entry.analysis?.ocrText ?? '' },
+          { key: 'transcript' as const, text: entry.analysis?.transcript ?? '' },
+        ].filter((block) => block.text.trim());
+        if (!blocks.length) return;
+
+        try {
+          const response = await fetch('/api/analyze/translate', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              path: entry.path,
+              grant: entry.grant,
+              expiresAt: entry.expiresAt,
+              // Every language but the one the reading is already in. The
+              // "Original" chip is that language, and asking the model to put
+              // Marathi into Marathi is a call spent on what is on screen.
+              langs: languages.filter((l) => l.code !== reading?.code).map((l) => l.code),
+              sourceLanguage: entry.analysis?.language,
+              blocks,
+            }),
+          });
+          const body = await response.json();
+          if (!response.ok || !body?.ok) return;
+
+          const made = body.data.languages as Record<string, Record<string, string>>;
+          if (!made || !Object.keys(made).length) return;
+          setReadings((held) => ({ ...held, [entry.id]: made }));
+        } catch {
+          // The switch still works one language at a time. Nothing is lost but
+          // the head start, and saying so on screen would be noise.
+        }
+      }),
+    );
   }
 
   async function submit() {
@@ -485,11 +666,15 @@ export function UploadFlow({
             <p className="font-medium">
               {created.length > 1 ? t('upload.done.keepLinks') : t('upload.done.keepLink')}
             </p>
+            {/*
+              One sentence per case, not one sentence assembled from six
+              fragments. Word order is not a constant: the English reads
+              "They show you whether…" and the Hebrew does not put those
+              pieces in that order, so a sentence stitched together here can
+              only ever be right in the language it was stitched for.
+            */}
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
-              {created.length > 1 ? 'They show you' : 'It shows you'} what happens next —
-              whether a knowledge expert has published{' '}
-              {created.length > 1 ? 'each contribution' : 'it'} yet. Save{' '}
-              {created.length > 1 ? 'them' : 'it'} somewhere; we have no other way to reach you.
+              {t(created.length > 1 ? 'upload.done.linksExplainMany' : 'upload.done.linkExplain')}
             </p>
             <ul className="mt-3 space-y-2">
               {created.map((row) => (
@@ -517,11 +702,14 @@ export function UploadFlow({
    * a form you can see and a form you have to scroll. It also read oddly
    * stacked: an eyebrow, then a heading larger than the page's own title.
    */
-  const heading = (title: string, hint: string) => (
+  const heading = (title: string, hint: string, say = t) => (
     <>
       <div className="flex flex-wrap items-baseline gap-x-3">
         <h2 className="font-display text-2xl leading-tight sm:text-3xl lg:text-4xl">{title}</h2>
-        <span className="eyebrow text-[0.82rem]">{t('flow.step', { n: screen })}</span>
+        {/* The step counter belongs to the screen it counts, so it takes the
+            same reader as the heading above it — screen three's is the
+            contributor's reading language, not the site's. */}
+        <span className="eyebrow text-[0.82rem]">{say('flow.step', { n: screen })}</span>
       </div>
       <p className="mt-2 text-[1.05rem] leading-snug text-muted lg:text-[1.15rem]">{hint}</p>
     </>
@@ -586,14 +774,14 @@ export function UploadFlow({
                   active={grouping === 'one'}
                   onClick={() => setGrouping('one')}
                   label={t('upload.step.onePages')}
-                  detail="Front and back, or the pages of one letter."
+                  detail={t('flow.together')}
                   disabled={busy}
                 />
                 <GroupingChoice
                   active={grouping === 'separate'}
                   onClick={() => setGrouping('separate')}
                   label={t('upload.step.separate')}
-                  detail="Different photographs, each its own record."
+                  detail={t('flow.separate')}
                   disabled={busy}
                 />
               </div>
@@ -735,9 +923,19 @@ export function UploadFlow({
                   onChange={(e) => setAnalysisLang(e.target.value)}
                   className="h-14 w-full rounded-lg border border-rule bg-paper px-4 text-[1.05rem] focus:border-accent-strong focus:outline-none"
                 >
-                  {ANALYSIS_LANGUAGES.map((l) => (
-                    <option key={l} value={l}>
-                      {l}
+                  {/*
+                    The archive's own languages, not a list beside them. This
+                    was five English words hard-coded here, so adding
+                    Judeo-Arabic as a row in `archive_languages` would have
+                    added it to the site and not to this menu — and a reader
+                    picking their language saw it named in a language they may
+                    not read.
+                  */}
+                  {languages.map((l) => (
+                    <option key={l.code} value={l.label_en}>
+                      {l.label_native === l.label_en
+                        ? l.label_en
+                        : `${l.label_native} · ${l.label_en}`}
                     </option>
                   ))}
                 </select>
@@ -793,8 +991,16 @@ export function UploadFlow({
 
       {/* ── 3. what the AI made of it ────────────────────────────────────── */}
       {screen === 3 && (
-        <section className="animate-rise">
-          {heading(t('flow.s3.title'), t('flow.s3.hint'))}
+        <section
+          className="animate-rise"
+          /*
+            The direction follows the reading too. Hebrew checked inside an
+            English page is still Hebrew, and a right-to-left passage laid out
+            left-to-right is not a styling detail — it is unreadable.
+          */
+          dir={reading && reading.code !== siteLanguage ? (reading.rtl ? 'rtl' : 'ltr') : undefined}
+        >
+          {heading(tFlow('flow.s3.title'), tFlow('flow.s3.hint'), tFlow)}
 
           {error && (
             <p role="alert" className="mt-5 rounded-lg border-s-[3px] border-critical bg-critical/8 px-4 py-3.5 text-critical">
@@ -802,6 +1008,14 @@ export function UploadFlow({
             </p>
           )}
 
+          {/*
+            Wrapped only when there is something to override with. Handing the
+            provider an empty catalogue would not be a no-op — `useMessages`
+            falls back to the English constant, not to the language above it —
+            so the pre-review would drop to English whenever the reading
+            language and the site's agreed. Which is almost always.
+          */}
+          <InReadingLanguage catalogue={flowCatalogue}>
           <div className="mt-6">
             <PreReview
               entries={analysed.map((entry) => ({
@@ -812,6 +1026,10 @@ export function UploadFlow({
                 analysisError: entry.analysisError,
                 metadata: entry.metadata,
                 durationMs: entry.durationMs,
+                path: entry.path,
+                grant: entry.grant,
+                expiresAt: entry.expiresAt,
+                translations: readings[entry.id] ?? null,
               }))}
               drafts={drafts}
               onDraftChange={(id, draft) => setDrafts((all) => ({ ...all, [id]: draft }))}
@@ -823,8 +1041,11 @@ export function UploadFlow({
               submitting={phase === 'submitting'}
               blocked={!agreed}
               vocabulary={vocabulary}
+              languages={languages}
+              readingLanguage={reading?.code ?? null}
             />
           </div>
+          </InReadingLanguage>
 
           <div className="mt-6">
             <button
@@ -925,14 +1146,6 @@ function Thinking({
  * in on purpose: a Judeo-Arabic ketubah is better described in Hebrew than in
  * an English the family will not read.
  */
-const ANALYSIS_LANGUAGES = [
-  'English',
-  'Hebrew',
-  'Hindi',
-  'Marathi',
-  'Malayalam',
-] as const;
-
 /**
  * A field somebody may simply not be able to answer.
  *
@@ -1063,3 +1276,20 @@ function GroupingChoice({
   );
 }
 
+/**
+ * The subtree in one language, or exactly as it was.
+ *
+ * `MessagesProvider` with an empty catalogue is not neutral — a missing key
+ * falls through to the English constant rather than to whatever provider sits
+ * above — so "no override" has to mean no provider at all, not an empty one.
+ */
+function InReadingLanguage({
+  catalogue,
+  children,
+}: {
+  catalogue: Record<string, string> | null;
+  children: React.ReactNode;
+}) {
+  if (!catalogue) return <>{children}</>;
+  return <MessagesProvider catalogue={catalogue}>{children}</MessagesProvider>;
+}
