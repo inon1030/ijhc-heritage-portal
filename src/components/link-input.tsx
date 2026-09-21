@@ -172,8 +172,7 @@ export function LinkInput({
       </div>
 
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        An article, a blog post, or a YouTube video. The archive keeps a copy of the text and the
-        picture rather than only the address, because pages disappear.
+        {t('upload.link.hint')}
       </p>
 
       {error && (

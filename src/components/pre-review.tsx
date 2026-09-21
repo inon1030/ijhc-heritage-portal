@@ -9,6 +9,7 @@ import { SimulatedNotice } from '@/components/primitives';
 import type { AnalysisResult } from '@/lib/ai/types';
 import type { FieldValue } from '@/lib/fields/registry';
 import { formatBytes } from '@/lib/utils';
+import { materialLanguage } from '@/lib/i18n/material';
 
 /**
  * What the archive found, before anything is submitted.
@@ -89,7 +90,6 @@ export function PreReview({
   blocked,
   vocabulary,
   languages,
-  readingLanguage,
 }: {
   entries: PreReviewEntry[];
   drafts: Record<string, Draft>;
@@ -111,14 +111,6 @@ export function PreReview({
    * adding Judeo-Arabic stays a row rather than a deploy.
    */
   languages: PickableLanguage[];
-  /**
-   * The language the machine wrote this reading in.
-   *
-   * The switch does not offer it: that is what the "Original" chip is, and a
-   * chip that re-renders Marathi into Marathi spends a model call to produce
-   * the text already on the screen.
-   */
-  readingLanguage: string | null;
 }) {
   const t = useMessages();
   const submitButton = (
@@ -193,7 +185,12 @@ export function PreReview({
             onChange={(draft) => onDraftChange(entry.id, draft)}
             showTitle={perItemTitles}
             showFields={perItemTitles}
-            languages={languages.filter((l) => l.code !== readingLanguage)}
+            /* Every language but the one the item's own text is in - that is
+               the "Original" chip. Not the language the reading was written
+               in: see materialLanguage. */
+            languages={languages.filter(
+              (l) => l.code !== materialLanguage(entry.analysis?.language, languages),
+            )}
           />
         ))}
 

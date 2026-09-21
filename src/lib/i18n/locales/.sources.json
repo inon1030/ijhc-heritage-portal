@@ -635,7 +635,12 @@
     "stats.heading": "b6d60727ef95ff4a",
     "stats.body": "697e74518d72d1c8",
     "stats.accept": "e213c161d5cefa52",
-    "stats.decline": "49780701dc2d7cc6"
+    "stats.decline": "49780701dc2d7cc6",
+    "upload.done.body": "1bf1e0dbf341021b",
+    "upload.link.hint": "c9fb0a419fbb7f47",
+    "wb.moveToBin": "aa9e47727bce86c7",
+    "wb.moveToBinConfirm": "a9f1b8ecae3d7331",
+    "wb.decisionNote": "199bf205f5f6d987"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -1273,7 +1278,12 @@
     "stats.heading": "b6d60727ef95ff4a",
     "stats.body": "697e74518d72d1c8",
     "stats.accept": "e213c161d5cefa52",
-    "stats.decline": "49780701dc2d7cc6"
+    "stats.decline": "49780701dc2d7cc6",
+    "upload.done.body": "1bf1e0dbf341021b",
+    "upload.link.hint": "c9fb0a419fbb7f47",
+    "wb.moveToBin": "aa9e47727bce86c7",
+    "wb.moveToBinConfirm": "a9f1b8ecae3d7331",
+    "wb.decisionNote": "199bf205f5f6d987"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -1911,7 +1921,12 @@
     "stats.heading": "b6d60727ef95ff4a",
     "stats.body": "697e74518d72d1c8",
     "stats.accept": "e213c161d5cefa52",
-    "stats.decline": "49780701dc2d7cc6"
+    "stats.decline": "49780701dc2d7cc6",
+    "upload.done.body": "1bf1e0dbf341021b",
+    "upload.link.hint": "c9fb0a419fbb7f47",
+    "wb.moveToBin": "aa9e47727bce86c7",
+    "wb.moveToBinConfirm": "a9f1b8ecae3d7331",
+    "wb.decisionNote": "199bf205f5f6d987"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -2549,6 +2564,11 @@
     "stats.heading": "b6d60727ef95ff4a",
     "stats.body": "697e74518d72d1c8",
     "stats.accept": "e213c161d5cefa52",
-    "stats.decline": "49780701dc2d7cc6"
+    "stats.decline": "49780701dc2d7cc6",
+    "upload.done.body": "1bf1e0dbf341021b",
+    "upload.link.hint": "c9fb0a419fbb7f47",
+    "wb.moveToBin": "aa9e47727bce86c7",
+    "wb.moveToBinConfirm": "a9f1b8ecae3d7331",
+    "wb.decisionNote": "199bf205f5f6d987"
   }
 }

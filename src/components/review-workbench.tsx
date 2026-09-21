@@ -144,7 +144,7 @@ export function ReviewWorkbench({
   }
 
   async function remove() {
-    if (!confirm(`Delete "${item.title}" and its file? This cannot be undone.`)) return;
+    if (!confirm(t('wb.moveToBinConfirm', { title: item.title }))) return;
     setBusy('delete');
     setError(null);
 
@@ -645,13 +645,12 @@ export function ReviewWorkbench({
             className="ms-auto flex items-center gap-1.5 px-3 py-2.5 text-sm text-critical hover:underline disabled:opacity-50"
           >
             {busy === 'delete' ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-            Delete permanently
+            {t('wb.moveToBin')}
           </button>
         </div>
 
         <p className="mt-4 text-xs leading-relaxed text-muted">
-          Rejecting keeps the record for the archive team and removes it from the public portal. It
-          can be returned to the queue later. Deleting removes the record and its file for good.
+          {t('wb.decisionNote')}
         </p>
       </div>
     </div>

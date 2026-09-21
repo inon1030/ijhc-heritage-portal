@@ -18,6 +18,7 @@ import { measureDuration } from '@/lib/files/measure';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 import type { AnalysisResult } from '@/lib/ai/types';
 import { cn } from '@/lib/utils';
+import { materialLanguage } from '@/lib/i18n/material';
 
 /**
  * Contribution, in the order a person actually does it.
@@ -511,10 +512,14 @@ export function UploadFlow({
               path: entry.path,
               grant: entry.grant,
               expiresAt: entry.expiresAt,
-              // Every language but the one the reading is already in. The
+              // Every language but the one the item's text is already in. The
               // "Original" chip is that language, and asking the model to put
-              // Marathi into Marathi is a call spent on what is on screen.
-              langs: languages.filter((l) => l.code !== reading?.code).map((l) => l.code),
+              // Marathi into Marathi is a call spent on what is on screen. It
+              // is the material's language, not the reading's - a Hebrew
+              // reading of an English banknote still needs Hebrew.
+              langs: languages
+                .filter((l) => l.code !== materialLanguage(entry.analysis?.language, languages))
+                .map((l) => l.code),
               sourceLanguage: entry.analysis?.language,
               blocks,
             }),
@@ -637,8 +642,7 @@ export function UploadFlow({
             : t('upload.done.one')}
         </h2>
         <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted">
-          A knowledge expert checks the description and the suggestions against the original. It appears in
-          the public portal once it is approved.
+          {t('upload.done.body')}
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <button
@@ -1042,7 +1046,6 @@ export function UploadFlow({
               blocked={!agreed}
               vocabulary={vocabulary}
               languages={languages}
-              readingLanguage={reading?.code ?? null}
             />
           </div>
           </InReadingLanguage>
