@@ -665,5 +665,13 @@
   "guides.step": "ഘട്ടം {current} / {total}",
   "guides.back": "പിന്നോട്ട്",
   "guides.next": "അടുത്തത്",
-  "guides.allSteps": "എല്ലാ ഘട്ടങ്ങളും"
+  "guides.allSteps": "എല്ലാ ഘട്ടങ്ങളും",
+  "file.play": "പ്ലേ ചെയ്യുക",
+  "guides.mode.label": "എത്ര പഠിക്കണം",
+  "guides.mode.quick": "വേഗത്തിലുള്ള പഠനം",
+  "guides.mode.quickHint": "പ്രധാന ഘട്ടങ്ങൾ മാത്രം, കുറച്ച് മിനിറ്റ്",
+  "guides.mode.deep": "വിശദമായി",
+  "guides.mode.deepHint": "എല്ലാ സ്ക്രീനും എല്ലാ ഓപ്ഷനും",
+  "guides.quickGuide": "ചുരുക്ക വഴികാട്ടി",
+  "guides.quickGuideHint": "പ്രധാന ഘട്ടങ്ങളുള്ള ഒരു പേജ്, അച്ചടിക്കാനോ സൂക്ഷിക്കാനോ. പുതിയ ടാബിൽ തുറക്കും."
 }

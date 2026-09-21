@@ -9,6 +9,10 @@
       "body": {
         "en": "Open the site and choose Contribute in the menu at the top. You do not need an account to send something to the archive.",
         "he": "פותחים את האתר ובוחרים \"תרומה\" בתפריט העליון. לא צריך חשבון כדי לשלוח משהו לארכיון."
+      },
+      "quick": {
+        "en": "Choose Contribute in the top menu. No account needed.",
+        "he": "בוחרים \"תרומה\" בתפריט העליון. לא צריך חשבון."
       }
     },
     {
@@ -20,6 +24,10 @@
       "body": {
         "en": "Click the box to choose files, drag them onto it, or paste an image you copied (Ctrl+V). You can add several files at once: images, PDFs, audio and video, up to 50 MB each.",
         "he": "לוחצים על התיבה כדי לבחור קבצים, גוררים אותם אליה, או מדביקים תמונה שהעתקתם (Ctrl+V). אפשר להוסיף כמה קבצים בבת אחת: תמונות, PDF, שמע ווידאו, עד 50 MB לקובץ."
+      },
+      "quick": {
+        "en": "Drop your files here, or click to choose them. Several at once is fine.",
+        "he": "גוררים לכאן את הקבצים או לוחצים כדי לבחור. אפשר כמה בבת אחת."
       }
     },
     {
@@ -53,6 +61,10 @@
       "body": {
         "en": "This is the only required field. It is never published. The knowledge expert uses it only if they have a question about what you sent.",
         "he": "זה השדה היחיד שחובה למלא. הכתובת לא מתפרסמת לעולם, ומומחה הידע משתמש בה רק אם יש לו שאלה על מה ששלחתם."
+      },
+      "quick": {
+        "en": "Give your email. It is the only required field and is never published.",
+        "he": "ממלאים כתובת דוא\"ל. זה השדה היחיד שחובה, והוא לא מתפרסם."
       }
     },
     {
@@ -86,6 +98,10 @@
       "body": {
         "en": "A detailed file can take up to half a minute. The page has not frozen; leave it open. The language button at the top disappears until you send the item, so the form does not switch language halfway through.",
         "he": "קובץ מפורט יכול לקחת עד חצי דקה. הדף לא נתקע, פשוט משאירים אותו פתוח. כפתור השפה למעלה נעלם עד שהפריט נשלח, כדי שהטופס לא יחליף שפה באמצע."
+      },
+      "quick": {
+        "en": "Tick the consent box and press Read it with AI. Give it up to half a minute.",
+        "he": "מסמנים את תיבת האישור ולוחצים \"קרא באמצעות בינה מלאכותית\". זה לוקח עד חצי דקה."
       }
     },
     {
@@ -97,6 +113,10 @@
       "body": {
         "en": "What you see now is a suggestion. The description is pre-filled with the AI’s reading; change anything you know better. The X at the top closes this panel, and nothing is lost: the knowledge expert still sees all of it.",
         "he": "מה שמופיע עכשיו הוא הצעה. התיאור מולא מראש לפי מה שה-AI קרא, ואפשר לשנות כל מה שאתם יודעים טוב יותר. ה-X למעלה סוגר את החלונית, ושום דבר לא הולך לאיבוד: מומחה הידע עדיין רואה הכל."
+      },
+      "quick": {
+        "en": "Check what the AI wrote and correct anything you know better.",
+        "he": "בודקים מה ה-AI כתב ומתקנים כל מה שאתם יודעים טוב יותר."
       }
     },
     {
@@ -141,6 +161,10 @@
       "body": {
         "en": "When you are happy with it, press Submit for review. A knowledge expert compares the description with the original before anything is published.",
         "he": "כשהכל נראה נכון לוחצים \"שליחה לאישור\". מומחה ידע משווה את התיאור למקור לפני שמשהו מתפרסם."
+      },
+      "quick": {
+        "en": "Press Submit for review. A knowledge expert checks it before it is published.",
+        "he": "לוחצים \"שליחה לאישור\". מומחה ידע בודק לפני שזה מתפרסם."
       }
     },
     {
@@ -152,6 +176,10 @@
       "body": {
         "en": "This link is your receipt. It shows whether the item has been published yet, and needs no account or password. Save it: the archive has no other way to send it to you. Anyone with the link can open that page.",
         "he": "הקישור הזה הוא הקבלה שלכם. הוא מראה אם הפריט כבר פורסם, ולא צריך בשבילו חשבון או סיסמה. שומרים אותו, כי לארכיון אין דרך אחרת לשלוח לכם אותו. כל מי שיש לו את הקישור יכול לפתוח את הדף."
+      },
+      "quick": {
+        "en": "Save this link: it is your receipt and shows when the item is published.",
+        "he": "שומרים את הקישור: זו הקבלה, והיא מראה מתי הפריט פורסם."
       }
     }
   ],
@@ -176,6 +204,10 @@
       "body": {
         "en": "Each card is an item waiting for review. Not catalogued means nobody has chosen a kind of item yet. Click the card to open it.",
         "he": "כל כרטיס הוא פריט שממתין לבדיקה. \"לא מקוטלג\" אומר שעוד לא נבחר סוג פריט. לוחצים על הכרטיס כדי לפתוח אותו."
+      },
+      "quick": {
+        "en": "Open Review in the archive row and click an item waiting in the queue.",
+        "he": "פותחים \"סקירה\" בשורת הארכיון ולוחצים על פריט שממתין בתור."
       }
     },
     {
@@ -187,6 +219,10 @@
       "body": {
         "en": "The file is on one side and the record on the other. Size, type and dimensions under the file are measured from it, not guessed. Check every suggestion against this file.",
         "he": "הקובץ בצד אחד והרשומה בצד השני. הגודל, הסוג והמידות שמתחת לקובץ נמדדו ממנו ולא נוחשו. כל הצעה בודקים מול הקובץ הזה."
+      },
+      "quick": {
+        "en": "Compare everything with the original file on the left.",
+        "he": "משווים הכל לקובץ המקורי שבצד."
       }
     },
     {
@@ -209,6 +245,10 @@
       "body": {
         "en": "Choose one of the four communities, or General India when it cannot be placed with confidence; the keyword and family lists narrow to it. Click a suggested keyword to add it, or filter the vocabulary for another term.",
         "he": "בוחרים אחת מארבע הקהילות, או \"כלל הודו\" כשאי אפשר לשייך בביטחון, ורשימות מילות המפתח והמשפחות מצטמצמות בהתאם. לוחצים על מילת מפתח מוצעת כדי להוסיף אותה, או מסננים את אוצר המילים כדי למצוא מונח אחר."
+      },
+      "quick": {
+        "en": "Choose the community and the keywords; take a suggestion only if the file supports it.",
+        "he": "בוחרים קהילה ומילות מפתח. לוקחים הצעה רק אם הקובץ תומך בה."
       }
     },
     {
@@ -231,6 +271,10 @@
       "body": {
         "en": "Publish puts the record on the portal. Reject takes it off the portal but keeps it for the archive team, and it can be returned to the queue later. Prefer Reject or Hold in Shadow Gallery to the bin: anyone can undo those.",
         "he": "\"פרסם\" מעלה את הרשומה לפורטל. \"דחה\" מורידה אותה מהפורטל אבל שומרת אותה לצוות הארכיון, ואפשר להחזיר אותה לתור אחר כך. עדיף לדחות או לשמור בגלריית הצללים מאשר להעביר לסל המחזור: את אלה כל אחד יכול לבטל."
+      },
+      "quick": {
+        "en": "Publish, or Reject. When unsure, Reject or Hold: both can be undone.",
+        "he": "מפרסמים או דוחים. כשלא בטוחים, דוחים או שומרים בגלריית הצללים: את שניהם אפשר לבטל."
       }
     },
     {
@@ -277,6 +321,10 @@
       "body": {
         "en": "Approve a request as a knowledge expert, which is the usual choice, or as an administrator, or decline it. An existing account’s role can be changed or suspended. The last administrator cannot be demoted, so promote someone else first.",
         "he": "מאשרים בקשה כמומחה ידע, שזו הבחירה הרגילה, או כמנהל מערכת, או דוחים אותה. אפשר לשנות תפקיד של חשבון קיים או להשעות אותו. את מנהל המערכת האחרון אי אפשר להוריד, לכן קודם מקדמים מישהו אחר."
+      },
+      "quick": {
+        "en": "Approve new accounts as knowledge experts, or decline them.",
+        "he": "מאשרים חשבונות חדשים כמומחי ידע, או דוחים."
       }
     },
     {
@@ -288,6 +336,10 @@
       "body": {
         "en": "Records removed in the review screen come here, off the portal and out of the queue but kept in full. Restore puts one back exactly as it was. Destroy deletes it and its file for good, after you type its title: the only action in the archive nobody can undo.",
         "he": "רשומות שהוסרו במסך הבדיקה מגיעות לכאן: מחוץ לפורטל ומחוץ לתור, אבל שמורות במלואן. \"שחזר\" מחזיר רשומה בדיוק כמו שהייתה. \"מחק לצמיתות\" מוחק אותה ואת הקובץ לצמיתות, אחרי שמקלידים את הכותרת שלה: זו הפעולה היחידה בארכיון שאי אפשר לבטל."
+      },
+      "quick": {
+        "en": "Restore a record from the bin, or delete it for good. Deleting cannot be undone.",
+        "he": "משחזרים רשומה מסל המחזור, או מוחקים לצמיתות. מחיקה אי אפשר לבטל."
       }
     }
   ]

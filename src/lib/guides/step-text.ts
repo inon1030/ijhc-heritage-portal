@@ -20,6 +20,8 @@ export interface StepText {
   id: string;
   title: Record<GuideLanguage, string>;
   body: Record<GuideLanguage, string>;
+  /** One sentence for the quick walkthrough. Steps without it are left out of it. */
+  quick?: Record<GuideLanguage, string>;
 }
 
 export const STEP_TEXT = text as Record<Audience, StepText[]>;

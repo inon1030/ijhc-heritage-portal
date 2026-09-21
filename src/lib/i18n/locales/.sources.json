@@ -666,7 +666,15 @@
     "guides.step": "dc1249ded00f30f1",
     "guides.back": "76900f1bfd16c8d4",
     "guides.next": "1ff57a29d7c9d11b",
-    "guides.allSteps": "7384c91d94c678a9"
+    "guides.allSteps": "7384c91d94c678a9",
+    "file.play": "436e61016e26fcb7",
+    "guides.mode.label": "a8450cf0f859f973",
+    "guides.mode.quick": "1edb5d1a870667af",
+    "guides.mode.quickHint": "832777dbb6ae1ed0",
+    "guides.mode.deep": "731b94f29f8acd1d",
+    "guides.mode.deepHint": "46b926b20e8df869",
+    "guides.quickGuide": "0ef0d8f4aacecacc",
+    "guides.quickGuideHint": "1d5186fbf65b3ada"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -1335,7 +1343,15 @@
     "guides.step": "dc1249ded00f30f1",
     "guides.back": "76900f1bfd16c8d4",
     "guides.next": "1ff57a29d7c9d11b",
-    "guides.allSteps": "7384c91d94c678a9"
+    "guides.allSteps": "7384c91d94c678a9",
+    "file.play": "436e61016e26fcb7",
+    "guides.mode.label": "a8450cf0f859f973",
+    "guides.mode.quick": "1edb5d1a870667af",
+    "guides.mode.quickHint": "832777dbb6ae1ed0",
+    "guides.mode.deep": "731b94f29f8acd1d",
+    "guides.mode.deepHint": "46b926b20e8df869",
+    "guides.quickGuide": "0ef0d8f4aacecacc",
+    "guides.quickGuideHint": "1d5186fbf65b3ada"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -2004,7 +2020,15 @@
     "guides.step": "dc1249ded00f30f1",
     "guides.back": "76900f1bfd16c8d4",
     "guides.next": "1ff57a29d7c9d11b",
-    "guides.allSteps": "7384c91d94c678a9"
+    "guides.allSteps": "7384c91d94c678a9",
+    "file.play": "436e61016e26fcb7",
+    "guides.mode.label": "a8450cf0f859f973",
+    "guides.mode.quick": "1edb5d1a870667af",
+    "guides.mode.quickHint": "832777dbb6ae1ed0",
+    "guides.mode.deep": "731b94f29f8acd1d",
+    "guides.mode.deepHint": "46b926b20e8df869",
+    "guides.quickGuide": "0ef0d8f4aacecacc",
+    "guides.quickGuideHint": "1d5186fbf65b3ada"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -2673,6 +2697,14 @@
     "guides.step": "dc1249ded00f30f1",
     "guides.back": "76900f1bfd16c8d4",
     "guides.next": "1ff57a29d7c9d11b",
-    "guides.allSteps": "7384c91d94c678a9"
+    "guides.allSteps": "7384c91d94c678a9",
+    "file.play": "436e61016e26fcb7",
+    "guides.mode.label": "a8450cf0f859f973",
+    "guides.mode.quick": "1edb5d1a870667af",
+    "guides.mode.quickHint": "832777dbb6ae1ed0",
+    "guides.mode.deep": "731b94f29f8acd1d",
+    "guides.mode.deepHint": "46b926b20e8df869",
+    "guides.quickGuide": "0ef0d8f4aacecacc",
+    "guides.quickGuideHint": "1d5186fbf65b3ada"
   }
 }

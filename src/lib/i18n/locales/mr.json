@@ -665,5 +665,13 @@
   "guides.step": "पायरी {current} / {total}",
   "guides.back": "मागे",
   "guides.next": "पुढे",
-  "guides.allSteps": "सर्व पायऱ्या"
+  "guides.allSteps": "सर्व पायऱ्या",
+  "file.play": "चालवा",
+  "guides.mode.label": "किती शिकायचे",
+  "guides.mode.quick": "झटपट शिकणे",
+  "guides.mode.quickHint": "फक्त महत्त्वाच्या पायऱ्या, काही मिनिटे",
+  "guides.mode.deep": "सविस्तर",
+  "guides.mode.deepHint": "प्रत्येक स्क्रीन आणि प्रत्येक पर्याय",
+  "guides.quickGuide": "संक्षिप्त मार्गदर्शिका",
+  "guides.quickGuideHint": "महत्त्वाच्या पायऱ्यांचे एक पान, छापण्यासाठी किंवा ठेवण्यासाठी. नवीन टॅबमध्ये उघडते."
 }

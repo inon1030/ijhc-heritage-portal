@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GUIDE_FILES, canOpen, resolveGuidePath } from '@/lib/guides/catalogue';
+import { GUIDE_FILES, canOpen, depthOf, resolveGuidePath } from '@/lib/guides/catalogue';
+import { walkthrough } from '@/lib/guides/steps';
 import { STEP_TEXT } from '@/lib/guides/step-text';
 import shots from '@/lib/guides/shots.json';
 
@@ -71,5 +72,33 @@ describe('the walkthrough data', () => {
   it('never uses an em or en dash, which the Center’s house style forbids', () => {
     const all = JSON.stringify(STEP_TEXT);
     expect(all).not.toMatch(/[–—]/);
+  });
+});
+
+describe('quick and in-depth learning', () => {
+  it('opens in quick mode unless in depth is asked for', () => {
+    expect(depthOf(undefined)).toBe('quick');
+    expect(depthOf('deep')).toBe('deep');
+    expect(depthOf('anything')).toBe('quick');
+  });
+
+  it('keeps fewer steps in quick mode, in the same order, with the short sentence', () => {
+    for (const lang of ['he', 'en'] as const) {
+      const deep = walkthrough('contributor', lang, 'deep');
+      const quick = walkthrough('contributor', lang, 'quick');
+      expect(quick.length).toBeGreaterThan(0);
+      expect(quick.length).toBeLessThan(deep.length);
+      const order = deep.map((s) => s.id);
+      expect(quick.map((s) => order.indexOf(s.id))).toEqual([...quick.map((s) => order.indexOf(s.id))].sort((a, b) => a - b));
+      for (const step of quick) expect(step.body.length).toBeLessThan(deep.find((d) => d.id === step.id)!.body.length);
+    }
+  });
+
+  it('lists one PDF per language for each mode and role', () => {
+    for (const depth of ['quick', 'deep'] as const) {
+      for (const audience of ['contributor', 'expert', 'admin'] as const) {
+        expect(GUIDE_FILES.filter((f) => f.kind === 'pdf' && f.depth === depth && f.audience === audience)).toHaveLength(2);
+      }
+    }
   });
 });

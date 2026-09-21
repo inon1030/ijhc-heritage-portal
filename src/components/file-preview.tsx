@@ -1,6 +1,7 @@
 'use client';
 
-import { FileText, Music, Video } from 'lucide-react';
+import { FileText, Music, Play, Video } from 'lucide-react';
+import { PlayableVideo } from '@/components/playable-video';
 import { fileKind } from '@/lib/files/validate';
 import { useMessages } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
@@ -80,7 +81,7 @@ export function FilePreview({
        * on the record's own page, where somebody asked for it.
        */
       return (
-        <span className={cn('relative block h-full w-full overflow-hidden bg-ink', className)}>
+        <span className={cn('relative block h-full w-full overflow-hidden bg-surface-2', className)}>
           {file.preview_path && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -91,14 +92,24 @@ export function FilePreview({
             />
           )}
           <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paper/85 backdrop-blur-sm">
-              <Video size={18} className="text-ink" aria-hidden />
+            {/* The same round play mark the record page presses, so a tile
+                says "recording" in the shape it will have when it plays. */}
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-lift ring-4 ring-white/70">
+              <Play size={26} fill="currentColor" className="translate-x-[2px]" aria-hidden />
             </span>
           </span>
         </span>
       );
     }
-    return <video controls preload="metadata" src={src} className={cn('h-full w-full bg-ink', className)} />;
+    // Large, light, and started from the button in its middle (21.09.2026).
+    return (
+      <PlayableVideo
+        src={src}
+        poster={file.preview_path ? thumbUrl(file) : null}
+        label={`${t('file.play')}: ${alt}`}
+        className={cn('aspect-video w-full rounded-xl', className)}
+      />
+    );
   }
 
   // A captured web page. Named for what it is rather than by its MIME type,

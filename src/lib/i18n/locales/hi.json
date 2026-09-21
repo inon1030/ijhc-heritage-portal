@@ -665,5 +665,13 @@
   "guides.step": "चरण {current} / {total}",
   "guides.back": "पीछे",
   "guides.next": "आगे",
-  "guides.allSteps": "सभी चरण"
+  "guides.allSteps": "सभी चरण",
+  "file.play": "चलाएँ",
+  "guides.mode.label": "कितना सीखें",
+  "guides.mode.quick": "त्वरित सीखना",
+  "guides.mode.quickHint": "केवल ज़रूरी चरण, कुछ मिनट",
+  "guides.mode.deep": "विस्तार से",
+  "guides.mode.deepHint": "हर स्क्रीन और हर विकल्प",
+  "guides.quickGuide": "संक्षिप्त मार्गदर्शिका",
+  "guides.quickGuideHint": "ज़रूरी चरणों वाला एक पन्ना, छापने या रखने के लिए। नए टैब में खुलता है।"
 }

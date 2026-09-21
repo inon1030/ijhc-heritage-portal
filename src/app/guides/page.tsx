@@ -1,19 +1,21 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { FileText, Lock, LogIn, PlayCircle } from 'lucide-react';
+import { BookOpen, FileText, Lock, LogIn, Zap } from 'lucide-react';
 import { getMessages } from '@/lib/i18n';
 import { getCurrentProfile } from '@/lib/supabase/server';
 import {
   AUDIENCES,
   GUIDE_FILES,
-  SCANNING_VIDEO,
   canOpen,
+  depthOf,
   guideLanguage,
   type Audience,
+  type Depth,
   type GuideFile,
 } from '@/lib/guides/catalogue';
 import { walkthrough } from '@/lib/guides/steps';
 import { Walkthrough } from '@/components/walkthrough';
+import { PlayableVideo } from '@/components/playable-video';
 import type { MessageKey } from '@/lib/i18n/messages';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -31,9 +33,11 @@ export async function generateMetadata(): Promise<Metadata> {
  * - and `/api/guides/...` refuses the files on its own, so the page is a
  * courtesy and not the lock.
  *
- * Each section has the same three things, in the order a person reaches for
- * them: the walkthrough to click through now, the full guide as a PDF to keep,
- * and the video.
+ * At the top, the choice Inon asked for on 21.09.2026: quick learning or in
+ * depth. It is a link (`?mode=deep`), not a client toggle, so it survives a
+ * refresh, can be sent to someone, and needs no JavaScript. Quick shows the few
+ * steps that get the job done and a one-page PDF; in depth shows every step and
+ * the full guide. The videos are in both.
  */
 
 const HEADING: Record<Audience, MessageKey> = {
@@ -52,9 +56,16 @@ const LOCKED: Record<Audience, MessageKey> = {
   admin: 'guides.admin.locked',
 };
 
-export default async function GuidesPage() {
-  const [{ t, language }, profile] = await Promise.all([getMessages(), getCurrentProfile().catch(() => null)]);
+type T = Awaited<ReturnType<typeof getMessages>>['t'];
+
+export default async function GuidesPage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
+  const [{ t, language }, profile, params] = await Promise.all([
+    getMessages(),
+    getCurrentProfile().catch(() => null),
+    searchParams,
+  ]);
   const lang = guideLanguage(language.code);
+  const depth = depthOf(params.mode);
 
   return (
     <div className="mx-auto max-w-6xl px-6 pb-8 pt-12 sm:pt-16">
@@ -64,7 +75,9 @@ export default async function GuidesPage() {
         <p className="mt-5 text-lg leading-relaxed text-muted">{t('guides.standfirst')}</p>
       </header>
 
-      <nav aria-label={t('guides.sections')} className="mt-8 flex flex-wrap gap-2">
+      <ModeSwitch depth={depth} t={t} />
+
+      <nav aria-label={t('guides.sections')} className="mt-6 flex flex-wrap gap-2">
         {AUDIENCES.map((audience) => (
           <a
             key={audience}
@@ -80,7 +93,7 @@ export default async function GuidesPage() {
       <div className="mt-14 flex flex-col gap-20">
         {AUDIENCES.map((audience) =>
           canOpen(audience, profile?.role) ? (
-            <GuideSection key={audience} audience={audience} lang={lang} t={t} />
+            <GuideSection key={audience} audience={audience} lang={lang} depth={depth} t={t} />
           ) : (
             <section key={audience} id={audience} className="scroll-mt-28">
               <h2 className="text-3xl sm:text-[2rem]">{t(HEADING[audience])}</h2>
@@ -107,15 +120,56 @@ export default async function GuidesPage() {
   );
 }
 
-type T = Awaited<ReturnType<typeof getMessages>>['t'];
+/**
+ * Two large choices side by side, the current one filled. Big enough to read
+ * as the first decision on the page, not a filter tucked into a corner.
+ */
+function ModeSwitch({ depth, t }: { depth: Depth; t: T }) {
+  const options = [
+    { value: 'quick' as const, icon: Zap, title: t('guides.mode.quick'), hint: t('guides.mode.quickHint') },
+    { value: 'deep' as const, icon: BookOpen, title: t('guides.mode.deep'), hint: t('guides.mode.deepHint') },
+  ];
+  return (
+    <nav aria-label={t('guides.mode.label')} className="mt-10 grid gap-2 rounded-[1.75rem] bg-surface p-2 sm:grid-cols-2">
+      {options.map(({ value, icon: Icon, title, hint }) => {
+        const current = value === depth;
+        return (
+          <Link
+            key={value}
+            href={value === 'quick' ? '/guides' : '/guides?mode=deep'}
+            scroll={false}
+            aria-current={current ? 'page' : undefined}
+            className={[
+              'flex items-center gap-4 rounded-[1.4rem] px-5 py-4 transition-colors duration-200',
+              current ? 'bg-paper shadow-soft ring-2 ring-primary' : 'text-muted hover:bg-surface-2',
+            ].join(' ')}
+          >
+            <span
+              className={[
+                'flex h-12 w-12 shrink-0 items-center justify-center rounded-full',
+                current ? 'bg-primary text-white' : 'bg-surface-2 text-muted',
+              ].join(' ')}
+            >
+              <Icon size={22} aria-hidden />
+            </span>
+            <span className="flex flex-col">
+              <span className={['text-lg font-medium', current ? 'text-ink' : ''].join(' ')}>{title}</span>
+              <span className="text-sm">{hint}</span>
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
-function GuideSection({ audience, lang, t }: { audience: Audience; lang: 'he' | 'en'; t: T }) {
-  const steps = walkthrough(audience, lang);
+function GuideSection({ audience, lang, depth, t }: { audience: Audience; lang: 'he' | 'en'; depth: Depth; t: T }) {
+  const steps = walkthrough(audience, lang, depth);
   const files = GUIDE_FILES.filter((f) => f.audience === audience);
-  const pdfs = files.filter((f) => f.kind === 'pdf');
+  const pdfs = files.filter((f) => f.kind === 'pdf' && f.depth === depth);
   // The reader's own language first; the other one is still there.
   const videos = files
-    .filter((f) => f.kind === 'video' && f.path !== SCANNING_VIDEO.path)
+    .filter((f) => f.kind === 'video')
     .sort((a, b) => Number(b.language === lang) - Number(a.language === lang));
 
   return (
@@ -125,69 +179,60 @@ function GuideSection({ audience, lang, t }: { audience: Audience; lang: 'he' | 
 
       {steps.length > 0 && (
         <div className="mt-8">
-          <Walkthrough steps={steps} label={t(HEADING[audience])} />
+          <Walkthrough key={depth} steps={steps} label={t(HEADING[audience])} />
         </div>
       )}
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_2fr]">
-        <div>
-          <h3 className="text-lg">{t('guides.fullGuide')}</h3>
-          <p className="mt-1 text-sm text-muted">{t('guides.fullGuideHint')}</p>
-          <ul className="mt-4 flex flex-col gap-2">
-            {pdfs.map((file) => (
-              <li key={file.path}>
-                <FileLink file={file} t={t} />
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="mt-10">
+        <h3 className="text-xl">{t('guides.videos')}</h3>
+        <ul className="mt-4 grid gap-6 sm:grid-cols-2">
+          {videos.map((file) => (
+            <li key={file.path}>
+              <VideoCard file={file} />
+            </li>
+          ))}
+        </ul>
+      </div>
 
-        <div>
-          <h3 className="text-lg">{t('guides.videos')}</h3>
-          <div className="mt-4 grid gap-5 sm:grid-cols-2">
-            {videos.map((file) => (
-              <figure key={file.path} className="m-0">
-                <video
-                  controls
-                  preload="none"
-                  src={`/api/guides/${file.path}`}
-                  poster={`/guides/posters/${file.path.replace('video/', '').replace('.mp4', '.png')}`}
-                  className="aspect-video w-full rounded-2xl bg-surface-2"
-                  data-full
-                />
-                <figcaption className="mt-2 flex items-center gap-2 text-sm text-muted">
-                  <PlayCircle size={15} aria-hidden />
-                  {file.language === 'he' ? 'עברית' : 'English'}
-                  {file.duration && <span className="font-mono text-xs">{file.duration}</span>}
-                </figcaption>
-              </figure>
-            ))}
-
-            {audience === 'contributor' && (
-              <figure className="m-0 flex flex-col items-center gap-3 rounded-2xl bg-surface p-4 sm:col-span-2 sm:flex-row sm:items-start sm:gap-6">
-                {/* A phone recording, so it is portrait: shown at phone proportions
-                    rather than letterboxed inside a wide frame. */}
-                <video
-                  controls
-                  preload="none"
-                  src={`/api/guides/${SCANNING_VIDEO.path}`}
-                  poster="/guides/posters/scanning-he.jpg"
-                  className="aspect-[9/20] max-h-[32rem] w-auto rounded-xl bg-surface-2"
-                  data-full
-                />
-                <figcaption className="text-sm leading-relaxed text-muted">
-                  <span className="block text-base font-medium text-ink">{t('guides.scanning')}</span>
-                  <span className="mt-1 block">{t('guides.scanningHint')}</span>
-                  <span className="mt-3 block font-mono text-xs">
-                    {SCANNING_VIDEO.duration} · <bdi dir="ltr">© {SCANNING_VIDEO.credit}</bdi>
-                  </span>
-                </figcaption>
-              </figure>
-            )}
-          </div>
-        </div>
+      <div className="mt-10">
+        <h3 className="text-xl">{depth === 'quick' ? t('guides.quickGuide') : t('guides.fullGuide')}</h3>
+        <p className="mt-1 text-sm text-muted">{depth === 'quick' ? t('guides.quickGuideHint') : t('guides.fullGuideHint')}</p>
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {pdfs.map((file) => (
+            <li key={file.path}>
+              <FileLink file={file} t={t} />
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
+  );
+}
+
+/**
+ * A video as an item in the archive: a large card, the picture first, a round
+ * play button in its middle, and the title under it.
+ */
+function VideoCard({ file }: { file: GuideFile }) {
+  const poster = `/guides/posters/${file.path.replace('video/', '').replace('.mp4', '.png')}`;
+  return (
+    <article className="card overflow-hidden">
+      <div className="aspect-video">
+        <PlayableVideo src={`/api/guides/${file.path}`} poster={poster} label={file.title ?? ''} />
+      </div>
+      <div className="px-5 py-4" dir={file.language === 'he' ? 'rtl' : 'ltr'} lang={file.language}>
+        <h4 className="text-lg font-medium leading-snug">{file.title}</h4>
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted">
+          <span>{file.language === 'he' ? 'עברית' : 'English'}</span>
+          {file.duration && <span className="font-mono text-xs">· {file.duration}</span>}
+          {file.credit && (
+            <span className="font-mono text-xs">
+              · <bdi dir="ltr">{file.credit}</bdi>
+            </span>
+          )}
+        </p>
+      </div>
+    </article>
   );
 }
 

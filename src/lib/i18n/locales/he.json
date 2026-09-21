@@ -665,5 +665,13 @@
   "guides.step": "שלב {current} מתוך {total}",
   "guides.back": "הקודם",
   "guides.next": "הבא",
-  "guides.allSteps": "כל השלבים"
+  "guides.allSteps": "כל השלבים",
+  "file.play": "הפעלה",
+  "guides.mode.label": "כמה ללמוד",
+  "guides.mode.quick": "למידה מקוצרת",
+  "guides.mode.quickHint": "רק השלבים החשובים, כמה דקות",
+  "guides.mode.deep": "למידה מעמיקה",
+  "guides.mode.deepHint": "כל מסך וכל אפשרות",
+  "guides.quickGuide": "המדריך המקוצר",
+  "guides.quickGuideHint": "עמוד אחד עם השלבים החשובים, להדפסה או לשמירה. נפתח בכרטיסייה חדשה."
 }
