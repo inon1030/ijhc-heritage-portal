@@ -289,6 +289,28 @@
     line-height: 1.65;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+
+    /* A run of characters with no space in it - a file name, a pasted address,
+       a line of transcription - used to run past the edge of its box. Measured
+       on a record page: one 130-character word made the document 991px wider
+       than the window. `break-word` breaks such a run only when it cannot fit,
+       and it inherits, so every box on the site is covered rather than the two
+       that happened to be reported. */
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * Where the text is somebody's content rather than an interface label.
+   *
+   * `break-word` above stops the overflow but does not change how wide a grid
+   * or flex track thinks it must be, so a long unbroken word could still widen
+   * the column that holds it and push the page sideways. `anywhere` counts the
+   * break in that measurement too, and it is limited to these elements on
+   * purpose: applied to everything it also collapsed the menu button's own
+   * label to one letter a line, measured at 390px.
+   */
+  p, li, dd, dt, h1, h2, h3, td, th, blockquote, figcaption {
+    overflow-wrap: anywhere;
   }
 
   h1, h2, h3 {
@@ -1036,6 +1058,11 @@
 /* A transcription is a block of somebody else's writing, and it reads better
    with its own measure and a little more line height than interface copy. */
 .transcription {
+  /* OCR of a stamped or handwritten page arrives with runs that have no spaces
+     at all, so this box needs the stronger break: `anywhere` may break inside a
+     word even when a later opportunity exists, which is what keeps a scan of a
+     ledger column inside its frame. */
+  overflow-wrap: anywhere;
   /* Plex Mono first, then the script faces, and only then the generics.
      `--font-mono` already ends in `monospace`, which matches every character,
      so expanding it here would put a generic ahead of the Hebrew face and the
