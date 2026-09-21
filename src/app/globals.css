@@ -115,15 +115,15 @@
   --font-mono:    var(--font-plex-mono), ui-monospace, monospace;
 
   /*
-   * The content column. It was 1180px, elevenlabs.io's own; on the Center's
-   * wide screens that left a third of the width empty on either side, and Inon
-   * asked for the page to fill the screen (21.09.2026). 1600px, with the page's
-   * own side padding, fills a laptop and most desktop monitors; text blocks
-   * keep their own narrower measure (max-w-3xl) so lines stay readable.
-   * `max-w-6xl` is on every page, so redefining it moves them all at once.
+   * The content column. It was 1180px, elevenlabs.io's own, then 1600px; both
+   * left empty margins on a wide screen, and Inon asked twice for the page to
+   * fill the browser (21.09.2026). So the column is the whole width, with only
+   * the page's own side padding; text blocks keep their narrower measure
+   * (max-w-3xl) so lines stay readable. `max-w-6xl` is on every page, so
+   * redefining it moves them all at once.
    */
-  --container-6xl: 100rem;
-  --container-7xl: 110rem;
+  --container-6xl: 100%;
+  --container-7xl: 100%;
 
   /* The surface a card sits on: warm grey on near-white, no border to speak of. */
   --color-surface:     #f4f1ea;

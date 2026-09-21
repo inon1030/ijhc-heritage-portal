@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
@@ -23,6 +23,11 @@ import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/
  *
  * An approved knowledge expert gets a second, quieter row for the archive's own
  * tools, so they never compete with the three things everyone else came for.
+ * It shows for 3.5 seconds after a page opens and then folds away, and comes
+ * back when the reader scrolls or pulls upward - the way the folded strip used
+ * to behave (Inon, 21.09.2026). It floats over the page rather than sitting in
+ * the flow, so folding it never moves a line of the page beneath. A mouse over
+ * the header or keyboard focus inside it keeps it open.
  *
  * Logical properties throughout - `start`/`end`, `ms`/`me` - because in Hebrew
  * the whole bar mirrors.
@@ -51,6 +56,46 @@ export function MastheadShell({
   const open = openOn === pathname;
   const header = useRef<HTMLElement>(null);
   const approved = profile?.role === 'volunteer' || profile?.role === 'admin';
+  const hasRow = approved || profile?.role === 'pending';
+
+  // The tools row: open on arrival, folded after 3.5 seconds of nobody using
+  // it. Folded means folded on this page; a new page shows it again, with no
+  // effect needed to reset it.
+  const [foldedOn, setFoldedOn] = useState<string | null>(null);
+  const rowOpen = foldedOn !== pathname;
+  const [holding, setHolding] = useState(false);
+  const [shownAt, setShownAt] = useState(0);
+  const reveal = useCallback(() => {
+    setFoldedOn(null);
+    setShownAt((n) => n + 1);
+  }, []);
+
+  useEffect(() => {
+    if (!hasRow || !rowOpen || holding) return;
+    const timer = window.setTimeout(() => setFoldedOn(pathname), 3500);
+    return () => window.clearTimeout(timer);
+  }, [hasRow, rowOpen, holding, shownAt, pathname]);
+
+  // Scrolling up, or pulling up at the very top where there is nothing left to
+  // scroll, brings it back.
+  useEffect(() => {
+    if (!hasRow) return;
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y < last - 4) reveal();
+      last = y;
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY < 0 && window.scrollY <= 0) reveal();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('wheel', onWheel, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('wheel', onWheel);
+    };
+  }, [hasRow, reveal]);
 
   // Escape or a tap outside closes the phone menu too.
   useEffect(() => {
@@ -94,16 +139,36 @@ export function MastheadShell({
         </div>
       </div>
 
-      {(approved || profile?.role === 'pending') && (
-        <div className="hidden border-t border-rule lg:block">
-          <div className="mx-auto flex min-h-12 max-w-6xl items-center gap-4 px-6 py-1.5">
-            <ArchiveNav profile={profile} queueCount={queueCount} layout="bar" />
-            <PendingNotice profile={profile} />
+      {rule}
+
+      {hasRow && (
+        <div className="relative hidden lg:block">
+          <div
+            onPointerEnter={(e) => e.pointerType === 'mouse' && setHolding(true)}
+            onPointerLeave={(e) => e.pointerType === 'mouse' && setHolding(false)}
+            onFocus={() => {
+              setHolding(true);
+              setFoldedOn(null);
+            }}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) setHolding(false);
+            }}
+            className={[
+              'absolute inset-x-0 top-0 grid transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              rowOpen
+                ? 'grid-rows-[1fr] border-b border-rule bg-paper/95 opacity-100 shadow-lift backdrop-blur-md'
+                : 'pointer-events-none grid-rows-[0fr] opacity-0',
+            ].join(' ')}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="mx-auto flex min-h-12 max-w-6xl items-center gap-4 px-6 py-1.5">
+                <ArchiveNav profile={profile} queueCount={queueCount} layout="bar" />
+                <PendingNotice profile={profile} />
+              </div>
+            </div>
           </div>
         </div>
       )}
-
-      {rule}
 
       {open && (
         <div
