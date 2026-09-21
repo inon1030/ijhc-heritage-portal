@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ImagePlus, Loader2, RotateCw, ScanLine, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
-import { loadOpenCV } from '@/lib/scan/opencv';
-import { finish, findPage, flatten, wholeFrame, type CV, type Finish, type Quad } from '@/lib/scan/document';
+import { wholeFrame, type Finish, type Quad } from '@/lib/scan/document';
+import { ScanWorker } from '@/lib/scan/worker-client';
 
 /**
  * The scanner: the phone's camera inside the page, the page found live, and
@@ -16,6 +16,11 @@ import { finish, findPage, flatten, wholeFrame, type CV, type Finish, type Quad 
  * shown for a moment to check and adjust (the corners can be dragged, the look
  * changed, the page turned), then kept. "Done" hands the pages back in order.
  * Separate documents are separate sessions, started from the upload screen.
+ *
+ * The image work - finding the page, straightening, cleaning - runs in a Web
+ * Worker (lib/scan/worker-client.ts), because OpenCV cannot start under the
+ * site's Content-Security-Policy and the policy is not loosened for it. The
+ * page sends pixels and gets pixels back.
  *
  * If the browser will not give us the camera - permission refused, an old
  * phone, an in-app browser - the same button falls back to the phone's own
@@ -36,10 +41,20 @@ function toCanvas(source: CanvasImageSource, width: number, height: number): HTM
   return canvas;
 }
 
+const pixels = (canvas: HTMLCanvasElement) => canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
+
 async function fileToCanvas(file: File): Promise<HTMLCanvasElement> {
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   const scale = Math.min(1, 3000 / Math.max(bitmap.width, bitmap.height));
   return toCanvas(bitmap, Math.round(bitmap.width * scale), Math.round(bitmap.height * scale));
+}
+
+/** Finds the page on a small copy of `canvas`, in `canvas`'s own pixels. */
+async function detectOn(worker: ScanWorker, canvas: HTMLCanvasElement | HTMLVideoElement, width: number, height: number) {
+  const k = width / DETECT_WIDTH;
+  const small = toCanvas(canvas, DETECT_WIDTH, Math.round(height / k));
+  const found = await worker.detect(pixels(small));
+  return found ? (found.map((p) => ({ x: p.x * k, y: p.y * k })) as Quad) : null;
 }
 
 export function SmartScanner({
@@ -57,34 +72,32 @@ export function SmartScanner({
   const overlay = useRef<HTMLCanvasElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
   const fallback = useRef<HTMLInputElement>(null);
-  const cvRef = useRef<CV | null>(null);
+  const workerRef = useRef<ScanWorker | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const liveQuad = useRef<Quad | null>(null);
 
-  // OpenCV in state as well as in a ref: rendering reads the state (the
-  // preview is computed from it), the timer loop reads the ref.
-  const [cv, setCv] = useState<CV | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
+  const [ready, setReady] = useState(false);
   const [noCamera, setNoCamera] = useState(false);
   const [shot, setShot] = useState<HTMLCanvasElement | null>(null);
   const [quad, setQuad] = useState<Quad | null>(null);
   const [look, setLook] = useState<Finish>('document');
   const [turns, setTurns] = useState(0);
   const [editing, setEditing] = useState(false);
+  const [preview, setPreview] = useState<{ key: string; url: string } | null>(null);
   const [kept, setKept] = useState(pageCount);
   const [busy, setBusy] = useState(false);
 
-  // OpenCV and the camera, together; either may be slow on a phone.
+  // The worker (OpenCV) and the camera, together; either may be slow on a phone.
   useEffect(() => {
     let cancelled = false;
+    const worker = new ScanWorker();
+    workerRef.current = worker;
+    worker.ready().then(
+      () => !cancelled && setReady(true),
+      () => {},
+    );
     (async () => {
-      try {
-        const loaded = await loadOpenCV();
-        cvRef.current = loaded;
-        if (!cancelled) setCv(loaded);
-      } catch {
-        cvRef.current = null;
-      }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
@@ -104,41 +117,40 @@ export function SmartScanner({
     return () => {
       cancelled = true;
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      worker.close();
     };
   }, []);
 
   // The live outline: a few times a second, on a small copy of the frame.
   useEffect(() => {
-    if (phase !== 'camera' || noCamera) return;
+    if (phase !== 'camera' || noCamera || !ready) return;
     let timer = 0;
-    const tick = () => {
+    let stopped = false;
+    const tick = async () => {
       const v = video.current;
       const o = overlay.current;
-      const cv = cvRef.current;
-      if (v && o && cv && v.videoWidth) {
-        const h = Math.round((v.videoHeight / v.videoWidth) * DETECT_WIDTH);
-        const small = toCanvas(v, DETECT_WIDTH, h);
-        const mat = cv.imread(small);
-        const found = findPage(cv, mat);
-        mat.delete();
-        const k = v.videoWidth / DETECT_WIDTH;
-        liveQuad.current = found ? (found.map((p) => ({ x: p.x * k, y: p.y * k })) as Quad) : null;
-        drawOutline(o, v, liveQuad.current);
+      const worker = workerRef.current;
+      if (v && o && worker && v.videoWidth) {
+        try {
+          liveQuad.current = await detectOn(worker, v, v.videoWidth, v.videoHeight);
+        } catch {
+          liveQuad.current = null;
+        }
+        if (!stopped) drawOutline(o, v, liveQuad.current);
       }
-      timer = window.setTimeout(tick, 220);
+      if (!stopped) timer = window.setTimeout(tick, 200);
     };
-    tick();
-    return () => window.clearTimeout(timer);
-  }, [phase, noCamera]);
+    void tick();
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+    };
+  }, [phase, noCamera, ready]);
 
-  const review = useCallback((canvas: HTMLCanvasElement, found: Quad | null) => {
-    const cv = cvRef.current;
+  const review = useCallback(async (canvas: HTMLCanvasElement, found: Quad | null) => {
     let q = found;
-    if (!q && cv) {
-      const mat = cv.imread(canvas);
-      q = findPage(cv, mat);
-      mat.delete();
-    }
+    const worker = workerRef.current;
+    if (!q && worker) q = await detectOn(worker, canvas, canvas.width, canvas.height).catch(() => null);
     setShot(canvas);
     setQuad(q ?? wholeFrame(canvas.width, canvas.height));
     setLook(q ? 'document' : 'photo');
@@ -150,52 +162,51 @@ export function SmartScanner({
   function shoot() {
     const v = video.current;
     if (!v || !v.videoWidth) return;
-    review(toCanvas(v, v.videoWidth, v.videoHeight), liveQuad.current);
+    void review(toCanvas(v, v.videoWidth, v.videoHeight), liveQuad.current);
   }
 
   async function fromFile(file: File | undefined) {
     if (!file) return;
     setBusy(true);
     try {
-      review(await fileToCanvas(file), null);
+      await review(await fileToCanvas(file), null);
     } finally {
       setBusy(false);
     }
   }
 
-  // The result, redrawn whenever the corners, the look or the turn change.
-  const result = useCallback((): HTMLCanvasElement | null => {
-    if (!shot || !quad) return null;
-    if (!cv) return shot;
-    const src = cv.imread(shot);
-    const flat = flatten(cv, src, quad);
-    const done = finish(cv, flat, look);
-    let turned = done;
-    for (let i = 0; i < turns % 4; i++) {
-      const next = new cv.Mat();
-      cv.rotate(turned, next, cv.ROTATE_90_CLOCKWISE);
-      if (turned !== done) turned.delete();
-      turned = next;
-    }
+  // The finished page, from the worker, as a canvas.
+  const result = useCallback(async (): Promise<HTMLCanvasElement | null> => {
+    const worker = workerRef.current;
+    if (!shot || !quad || !worker) return null;
+    const image = await worker.render(pixels(shot), quad, look, turns);
     const out = document.createElement('canvas');
-    cv.imshow(out, turned);
-    src.delete();
-    flat.delete();
-    done.delete();
-    if (turned !== done) turned.delete();
+    out.width = image.width;
+    out.height = image.height;
+    out.getContext('2d')!.putImageData(image, 0, 0);
     return out;
-  }, [cv, shot, quad, look, turns]);
+  }, [shot, quad, look, turns]);
 
-  const preview = useMemo(() => {
-    if (phase !== 'review' || editing) return null;
-    return result()?.toDataURL('image/jpeg', 0.8) ?? null;
-  }, [phase, editing, result]);
+  // Redrawn whenever the corners, the look or the turn change. Keyed, so a
+  // slow answer for an older setting never replaces a newer one.
+  const wanted = phase === 'review' && !editing && ready ? `${look}|${turns}|${JSON.stringify(quad)}` : null;
+  useEffect(() => {
+    if (!wanted) return;
+    let current = true;
+    result().then(
+      (canvas) => current && canvas && setPreview({ key: wanted, url: canvas.toDataURL('image/jpeg', 0.8) }),
+      () => {},
+    );
+    return () => {
+      current = false;
+    };
+  }, [wanted, result]);
+  const shown = preview && preview.key === wanted ? preview.url : null;
 
   async function keep() {
-    const canvas = result();
-    if (!canvas) return;
     setBusy(true);
-    const blob = await new Promise<Blob | null>((done) => canvas.toBlob(done, 'image/jpeg', 0.9));
+    const canvas = await result().catch(() => null);
+    const blob = canvas ? await new Promise<Blob | null>((done) => canvas.toBlob(done, 'image/jpeg', 0.9)) : null;
     setBusy(false);
     if (!blob) return;
     onPage(new File([blob], `scan-page-${kept + 1}.jpg`, { type: 'image/jpeg' }));
@@ -262,9 +273,9 @@ export function SmartScanner({
         {phase === 'review' && shot && quad && (
           editing ? (
             <CornerEditor shot={shot} quad={quad} onChange={setQuad} />
-          ) : preview ? (
+          ) : shown ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview} alt={t('scan.preview')} className="max-h-full max-w-full object-contain p-3" />
+            <img src={shown} alt={t('scan.preview')} className="max-h-full max-w-full object-contain p-3" />
           ) : (
             <Loader2 size={22} className="animate-spin text-muted" aria-hidden />
           )

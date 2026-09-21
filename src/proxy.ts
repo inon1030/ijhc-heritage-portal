@@ -79,10 +79,11 @@ function contentSecurityPolicy(nonce: string, isDev: boolean): string {
 
   return [
     `default-src 'self'`,
-    // 'wasm-unsafe-eval' lets the phone scanner compile OpenCV's WebAssembly
-    // (21.09.2026). It permits WebAssembly.compile and nothing else: eval and
-    // new Function stay blocked in production.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}${scriptHosts ? ` ${scriptHosts}` : ''}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}${scriptHosts ? ` ${scriptHosts}` : ''}`,
+    // The phone scanner runs OpenCV in a worker from /vendor/ (21.09.2026):
+    // the page may start a worker from this origin and nothing else. What
+    // runs inside it is governed by the worker file's own headers, not this.
+    "worker-src 'self'",
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' blob: data: ${supabase}${measured ? ' https://www.google-analytics.com https://www.googletagmanager.com' : ''}`,
     `media-src 'self' blob: ${supabase}`,
@@ -176,5 +177,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  // /vendor/ is the scanner's worker and OpenCV: static files the worker
+  // loads, which must reach it without the page policy attached - see
+  // scripts/copy-opencv.mjs for why.
+  matcher: ['/((?!_next/static|_next/image|vendor/|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };

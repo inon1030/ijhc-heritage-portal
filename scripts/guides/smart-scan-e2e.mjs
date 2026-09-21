@@ -34,9 +34,10 @@ await page.getByRole('button', { name: L.open }).click();
 await page.getByRole('button', { name: L.shoot }).waitFor();
 await page.waitForFunction(() => {
   const v = document.querySelector('[role=dialog] video');
-  return v && v.videoWidth > 0 && window.cv && window.cv.Mat;
+  return v && v.videoWidth > 0;
 }, null, { timeout: 60000 });
-await page.waitForTimeout(1500);
+// OpenCV loads in the scanner's worker; the outline appears once it is ready.
+await page.waitForTimeout(6000);
 await page.screenshot({ path: `${out}/scan-${lang}-1-camera.png` });
 
 await page.getByRole('button', { name: L.shoot }).click();
