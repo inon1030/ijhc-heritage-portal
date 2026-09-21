@@ -43,7 +43,7 @@ export interface LegalDocument {
 }
 
 /** The day these documents were last written. Changed by hand, with the text. */
-export const LEGAL_UPDATED = '2026-09-16';
+export const LEGAL_UPDATED = '2026-09-21';
 
 const aiParagraphEn = GEMINI_PAID_TIER
   ? 'The Center uses this service on a paid account. Under Google’s paid terms the material sent is not used to train or improve Google’s models. It still leaves the Center’s systems to be read.'
@@ -73,7 +73,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         body: ['Three kinds of thing, and nothing else:'],
         list: [
           'What a contributor sends: the file itself, and the description, dates, places and names given with it. This is the archive’s subject matter and it is kept for as long as the archive exists.',
-          'An email address, and a name if one is given. The address is required in order to contribute, so that a Moderator can come back with a question about the item. It is never published beside a record and it is never used for a newsletter.',
+          'An email address, and a name if one is given. The address is required in order to contribute. It is used for three things only: a Moderator coming back with a question about the item, a message with the receipt link when the item is sent, and a message with the item’s public link when it is published. It is never published beside a record and it is never used for a newsletter.',
           'An account, for the Moderators who review items: a name, an email address, and a password the Center never sees in readable form.',
         ],
       },
@@ -89,6 +89,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         body: [
           'Every uploaded file is read by an automated service, Google Gemini, which proposes a description, a period, a place and keywords. A person checks that reading against the original before anything is published; nothing the machine produces is published unread.',
           'To be read, the file is sent to Google. It leaves the Center’s systems at that moment.',
+          'While reading, the service may also search the web for background on what it sees — a place, a community, a kind of object. What such a search finds is shown to the Moderator as unverified background, apart from the catalogue, and is never written into a record as fact.',
           aiParagraphEn,
         ],
       },
@@ -96,6 +97,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         heading: 'Where the data sits',
         body: [
           'Records, files and accounts are held by Supabase in Frankfurt, in the European Union. The site itself is served by Vercel, also from Frankfurt. Both keep technical logs of requests, which include IP addresses, for their own operation and security.',
+          'The messages the archive sends a contributor go out through the Center’s Google (Gmail) account, so the recipient’s address and the message pass through Google.',
           'The Center also keeps its own copies of the database and the files, so that an accident at a supplier does not end the archive.',
         ],
       },
@@ -156,7 +158,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         body: ['שלושה סוגים של מידע, ולא מעבר לכך:'],
         list: [
           'מה שהתורם שולח: הקובץ עצמו, והתיאור, התאריכים, המקומות והשמות שנמסרו איתו. זה החומר של הארכיון, והוא נשמר כל עוד הארכיון קיים.',
-          'כתובת מייל, ושם אם נמסר. הכתובת נדרשת כדי לתרום, כדי שמודרטור יוכל לחזור עם שאלה על הפריט. היא לא מתפרסמת לצד רשומה ולא משמשת לדיוור.',
+          'כתובת מייל, ושם אם נמסר. הכתובת נדרשת כדי לתרום, והיא משמשת לשלושה דברים בלבד: מודרטור שחוזר עם שאלה על הפריט, מייל עם קישור הקבלה כשהפריט נשלח, ומייל עם הקישור הציבורי לפריט כשהוא מתפרסם. היא לא מתפרסמת לצד רשומה ולא משמשת לדיוור.',
           'חשבון, למודרטורים שבודקים פריטים: שם, כתובת מייל, וסיסמה שהמרכז אינו רואה בשום שלב בצורה קריאה.',
         ],
       },
@@ -172,6 +174,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         body: [
           'כל קובץ שמועלה נקרא על ידי שירות אוטומטי, Google Gemini, שמציע תיאור, תקופה, מקום ומילות מפתח. אדם בודק את הקריאה הזאת מול המקור לפני כל פרסום, ושום דבר שהמכונה מייצרת אינו מתפרסם בלי שנקרא.',
           'כדי שהקובץ ייקרא, הוא נשלח לגוגל. באותו רגע הוא יוצא מהמערכות של המרכז.',
+          'תוך כדי הקריאה השירות עשוי גם לחפש ברשת רקע על מה שהוא רואה - מקום, קהילה, סוג של חפץ. מה שחיפוש כזה מוצא מוצג למודרטור כרקע שלא אומת, בנפרד מהקטלוג, ולעולם אינו נכתב לרשומה כעובדה.',
           aiParagraphHe,
         ],
       },
@@ -179,6 +182,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         heading: 'איפה המידע יושב',
         body: [
           'הרשומות, הקבצים והחשבונות מאוחסנים אצל Supabase בפרנקפורט, באיחוד האירופי. האתר עצמו מוגש על ידי Vercel, גם הוא מפרנקפורט. שתי החברות שומרות יומני בקשות טכניים, הכוללים כתובות IP, לצורכי תפעול ואבטחה.',
+          'המיילים שהארכיון שולח לתורמים יוצאים דרך חשבון Google (ג׳ימייל) של המרכז, ולכן הכתובת של הנמען ותוכן המייל עוברים דרך Google.',
           'המרכז שומר גם עותקים משלו של מסד הנתונים ושל הקבצים, כדי שתקלה אצל ספק לא תחסל את הארכיון.',
         ],
       },

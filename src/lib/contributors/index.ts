@@ -282,3 +282,25 @@ export async function setContributorName(id: string, fullName: string | null) {
 
   if (error) throw error;
 }
+
+/**
+ * The address a record came from, for the notice sent when it is published.
+ *
+ * Read through the Moderator's own session — they already see this address on
+ * the review screen, so nothing here reaches further than the screen does.
+ * Null when the record arrived without one, or before addresses were kept.
+ */
+export async function contributorEmailForItem(itemId: string): Promise<string | null> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from('items')
+    .select('contributors(email)')
+    .eq('id', itemId)
+    .maybeSingle();
+
+  if (error) throw error;
+  const row = (data as { contributors: { email: string | null } | { email: string | null }[] | null } | null)
+    ?.contributors;
+  const email = Array.isArray(row) ? row[0]?.email : row?.email;
+  return email?.trim() || null;
+}

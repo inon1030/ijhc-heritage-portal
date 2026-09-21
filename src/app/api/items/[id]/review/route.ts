@@ -4,7 +4,11 @@ import { z } from 'zod';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { ACCESS_LEVELS } from '@/lib/access';
 import { FIELD_KEYS, fieldDef, isValidValue } from '@/lib/fields/registry';
+import { contributorEmailForItem } from '@/lib/contributors';
 import { binItem, reviewItem } from '@/lib/items/mutations';
+import { sendMail } from '@/lib/mail';
+import { publishedMail } from '@/lib/mail/templates';
+import { siteUrl } from '@/lib/site';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { translateRecord, verifyRecord } from '@/lib/translate';
 import { setItemFamilies } from '@/lib/vocabulary/mutations';
@@ -149,6 +153,21 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           console.error('[review] translating after publication', error);
         }
       });
+    }
+
+    /*
+     * The contributor hears about it once: on the move into the published
+     * archive, and only when anyone can open the link it carries. A record
+     * edited after publication, or published as restricted, sends nothing.
+     * The address is read now, on the Moderator's session, because `after`
+     * runs once the request — and its cookies — are gone.
+     */
+    if (body.status === 'accepted' && result.from !== 'accepted' && result.item.access === 'public') {
+      const to = await contributorEmailForItem(id).catch(() => null);
+      if (to) {
+        const mail = publishedMail(to, result.item.title, `${siteUrl()}/portal/${id}`);
+        after(() => sendMail(mail).then(() => undefined));
+      }
     }
 
     revalidatePath('/review');

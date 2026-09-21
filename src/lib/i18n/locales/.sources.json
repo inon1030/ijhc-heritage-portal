@@ -411,7 +411,7 @@
     "flow.s3.title": "f760618ec7e45c2d",
     "flow.s3.hint": "fb1ae09d6e8cd653",
     "flow.email": "3fa7c5ef191f6fdd",
-    "flow.emailWhy": "25b68913641451a3",
+    "flow.emailWhy": "d55b49a3855ce8ac",
     "flow.emailInvalid": "06fffa2f755e6328",
     "flow.emailMissing": "6ca82f29d410ae54",
     "flow.whatYouKnow": "824d7722ff402133",
@@ -705,7 +705,10 @@
     "scan.keep": "ae021902547a3747",
     "scan.fromGallery": "3015e76badac36bf",
     "scan.shoot": "fa7abf5bb2b3b703",
-    "scan.auto": "28c2d571110c7a53"
+    "scan.auto": "28c2d571110c7a53",
+    "bg.heading": "8f83535edf0a091b",
+    "bg.explain": "f6d346267ebd7ea3",
+    "bg.sources": "533aaf8b7ab505ae"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -1119,7 +1122,7 @@
     "flow.s3.title": "f760618ec7e45c2d",
     "flow.s3.hint": "fb1ae09d6e8cd653",
     "flow.email": "3fa7c5ef191f6fdd",
-    "flow.emailWhy": "25b68913641451a3",
+    "flow.emailWhy": "d55b49a3855ce8ac",
     "flow.emailInvalid": "06fffa2f755e6328",
     "flow.emailMissing": "6ca82f29d410ae54",
     "flow.whatYouKnow": "824d7722ff402133",
@@ -1413,7 +1416,10 @@
     "scan.keep": "ae021902547a3747",
     "scan.fromGallery": "3015e76badac36bf",
     "scan.shoot": "fa7abf5bb2b3b703",
-    "scan.auto": "28c2d571110c7a53"
+    "scan.auto": "28c2d571110c7a53",
+    "bg.heading": "8f83535edf0a091b",
+    "bg.explain": "f6d346267ebd7ea3",
+    "bg.sources": "533aaf8b7ab505ae"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -1827,7 +1833,7 @@
     "flow.s3.title": "f760618ec7e45c2d",
     "flow.s3.hint": "fb1ae09d6e8cd653",
     "flow.email": "3fa7c5ef191f6fdd",
-    "flow.emailWhy": "25b68913641451a3",
+    "flow.emailWhy": "d55b49a3855ce8ac",
     "flow.emailInvalid": "06fffa2f755e6328",
     "flow.emailMissing": "6ca82f29d410ae54",
     "flow.whatYouKnow": "824d7722ff402133",
@@ -2121,7 +2127,10 @@
     "scan.keep": "ae021902547a3747",
     "scan.fromGallery": "3015e76badac36bf",
     "scan.shoot": "fa7abf5bb2b3b703",
-    "scan.auto": "28c2d571110c7a53"
+    "scan.auto": "28c2d571110c7a53",
+    "bg.heading": "8f83535edf0a091b",
+    "bg.explain": "f6d346267ebd7ea3",
+    "bg.sources": "533aaf8b7ab505ae"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -2535,7 +2544,7 @@
     "flow.s3.title": "f760618ec7e45c2d",
     "flow.s3.hint": "fb1ae09d6e8cd653",
     "flow.email": "3fa7c5ef191f6fdd",
-    "flow.emailWhy": "25b68913641451a3",
+    "flow.emailWhy": "d55b49a3855ce8ac",
     "flow.emailInvalid": "06fffa2f755e6328",
     "flow.emailMissing": "6ca82f29d410ae54",
     "flow.whatYouKnow": "824d7722ff402133",
@@ -2829,6 +2838,9 @@
     "scan.keep": "ae021902547a3747",
     "scan.fromGallery": "3015e76badac36bf",
     "scan.shoot": "fa7abf5bb2b3b703",
-    "scan.auto": "28c2d571110c7a53"
+    "scan.auto": "28c2d571110c7a53",
+    "bg.heading": "8f83535edf0a091b",
+    "bg.explain": "f6d346267ebd7ea3",
+    "bg.sources": "533aaf8b7ab505ae"
   }
 }

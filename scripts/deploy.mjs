@@ -37,6 +37,10 @@ const OPTIONAL = [
   // Without it in production the nightly translation sweep refuses every
   // request — which is the safe failure, and a silent one, so it is pushed.
   'CRON_SECRET',
+  // Contributor mail. Without both, nothing is sent and nothing fails.
+  'GMAIL_USER',
+  'GMAIL_APP_PASSWORD',
+  'GEMINI_WEB_SEARCH',
 ];
 
 function readEnvLocal() {

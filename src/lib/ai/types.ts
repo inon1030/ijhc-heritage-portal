@@ -54,6 +54,14 @@ export interface AnalysisResult {
   /** Speech transcription, for audio and video. */
   transcript: string | null;
   /**
+   * Context the model adds without being able to point at it, possibly from a
+   * web search. Unverified by definition: shown apart from the catalogue and
+   * never copied into a record. See background.ts.
+   */
+  background: string | null;
+  /** The web pages the search behind `background` actually used. */
+  backgroundSources: import('./background').BackgroundSource[];
+  /**
    * Which of the three kinds of item this is, as the model reads it. Nobody
    * asks the contributor any more — see migration 0011 — so this is the
    * archive's first pass at cataloguing, and a reviewer's to confirm.

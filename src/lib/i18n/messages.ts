@@ -312,6 +312,10 @@ export const en = {
   'review.history': 'History',
 
   // ── the pre-review panel a contributor edits ──────────────────────────────
+  'bg.heading': 'Background from the web · not verified',
+  'bg.explain':
+    'What the AI adds about this kind of item, sometimes after searching the web. It is not evidence and it is never saved to the record. Check anything here before you use it.',
+  'bg.sources': 'Pages it used',
   'prereview.heading': 'What the AI found',
   'prereview.aiSuggested': 'The AI suggested:',
   'prereview.useThis': 'use this',
@@ -690,7 +694,7 @@ export const en = {
   'flow.s3.hint': 'Correct anything before it goes to the knowledge expert.',
 
   'flow.email': 'Your email address',
-  'flow.emailWhy': 'Never published. It is how we come back to you with a question.',
+  'flow.emailWhy': 'Never published. We send you the link to your item here, and it is how we come back to you with a question.',
   'flow.emailInvalid': 'That does not look like an email address.',
   'flow.emailMissing': 'An email address is needed before the AI reads the file.',
 

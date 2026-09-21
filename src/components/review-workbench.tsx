@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMessages } from '@/lib/i18n/provider';
 import { communityKey } from '@/lib/i18n/labels';
 import { ArrowLeft, Check, EyeOff, Loader2, RotateCcw, Trash2, X } from 'lucide-react';
+import { BackgroundNote } from '@/components/background-note';
 import { EvidenceLedger } from '@/components/evidence-ledger';
 import { FieldSheet } from '@/components/field-sheet';
 import { FilePreview } from '@/components/file-preview';
@@ -30,6 +31,7 @@ import {
 } from '@/lib/types';
 import { byBranch, termsFor, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
 import { cn, formatBytes, formatDuration } from '@/lib/utils';
+import { backgroundOf } from '@/lib/ai/background';
 
 /**
  * The verification workbench.
@@ -267,6 +269,8 @@ export function ReviewWorkbench({
             </p>
           </details>
         )}
+
+        <BackgroundNote background={backgroundOf(analysis?.raw)} />
       </div>
 
       {/* The record */}
