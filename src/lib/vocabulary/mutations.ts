@@ -287,6 +287,23 @@ export async function setAccountRole(id: string, role: UserRole, actorId: string
 }
 
 /**
+ * Which mail an account receives. Written on the administrator's own session,
+ * so `profiles_admin_update` is what allows it.
+ */
+export async function setAccountNotices(
+  id: string,
+  notices: { notifyUploads?: boolean; notifyPublications?: boolean },
+) {
+  const supabase = await createServerSupabase();
+  const patch: Record<string, boolean> = {};
+  if (notices.notifyUploads !== undefined) patch.notify_uploads = notices.notifyUploads;
+  if (notices.notifyPublications !== undefined) patch.notify_publications = notices.notifyPublications;
+  const { error, count } = await supabase.from('profiles').update(patch, { count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  if (!count) throw new Error('That account was not changed.');
+}
+
+/**
  * Decline a request outright.
  *
  * Deletes the auth user, which cascades to the profile. The alternative —

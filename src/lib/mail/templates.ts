@@ -75,3 +75,52 @@ export function publishedMail(to: string, title: string, publicUrl: string): Mai
     ),
   };
 }
+
+/*
+ * The two messages the archive sends its own people (22.09.2026). Who gets them
+ * is decided in `recipients.ts`; an administrator sets it per account on
+ * /manage/accounts.
+ */
+
+/** A new submission is waiting. Sent to moderators marked to hear about uploads. */
+export function newSubmissionMail(to: string, title: string, reviewUrl: string): Mail {
+  const t = escape(title);
+  return {
+    to,
+    subject: `פריט חדש ממתין לבדיקה · New item to review: ${title}`,
+    text: [
+      `פריט חדש הגיע לארכיון וממתין לבדיקה: "${title}".`,
+      `לבדיקה: ${reviewUrl}`,
+      '',
+      `A new item has arrived and is waiting for review: "${title}".`,
+      `Review it: ${reviewUrl}`,
+      '',
+      'את ההתראות האלה מנהל מערכת מדליק ומכבה בעמוד החשבונות. · An administrator turns these on and off on the accounts page.',
+    ].join('\n'),
+    html: shell(
+      `<p>פריט חדש הגיע לארכיון וממתין לבדיקה: <strong>${t}</strong>.</p>${button(reviewUrl, 'לבדיקת הפריט')}<p style="font-size:13px;color:#6b645a">את ההתראות האלה מנהל מערכת מדליק ומכבה בעמוד החשבונות.</p>`,
+      `<p>A new item has arrived and is waiting for review: <strong>${t}</strong>.</p>${button(reviewUrl, 'Review it')}<p style="font-size:13px;color:#6b645a">An administrator turns these on and off on the accounts page.</p>`,
+    ),
+  };
+}
+
+/** A record went into the portal. Sent to the moderator who published it and to administrators who asked. */
+export function publicationNoticeMail(to: string, title: string, publicUrl: string, publishedBy: string): Mail {
+  const t = escape(title);
+  const by = escape(publishedBy);
+  return {
+    to,
+    subject: `פורסם בפורטל · Published: ${title}`,
+    text: [
+      `"${title}" פורסם בפורטל על ידי ${publishedBy}.`,
+      `בפורטל: ${publicUrl}`,
+      '',
+      `"${title}" was published to the portal by ${publishedBy}.`,
+      `In the portal: ${publicUrl}`,
+    ].join('\n'),
+    html: shell(
+      `<p><strong>${t}</strong> פורסם בפורטל על ידי ${by}.</p>${button(publicUrl, 'לפריט בפורטל')}`,
+      `<p><strong>${t}</strong> was published to the portal by ${by}.</p>${button(publicUrl, 'See it in the portal')}`,
+    ),
+  };
+}

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMessages } from '@/lib/i18n/provider';
-import { Loader2, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { Loader2, Mail, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import { ROLE_LABELS, type Profile, type UserRole } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
@@ -39,6 +39,17 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ role }),
+    });
+    setBusyId(null);
+  }
+
+  // Which mail an account gets (22.09.2026). Saved on each tick.
+  async function setNotice(profile: Profile, notice: 'notifyUploads' | 'notifyPublications', value: boolean) {
+    setBusyId(profile.id);
+    await send(`/api/manage/accounts/${profile.id}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ [notice]: value }),
     });
     setBusyId(null);
   }
@@ -146,6 +157,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
 
       <section>
         <h2 className="font-display text-xl">{t('manage.accounts')}</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{t('accounts.mailNote')}</p>
         <ul className="mt-4 divide-y divide-rule border-y border-rule">
           {approved.map((profile) => {
             const isSelf = profile.id === currentId;
@@ -191,6 +203,36 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                     {t('accounts.onlyAdmin')}
                   </span>
                 )}
+
+                <fieldset className="flex basis-full flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                  <legend className="sr-only">{t('accounts.mail')}</legend>
+                  <span aria-hidden className="flex items-center gap-1.5 text-muted">
+                    <Mail size={15} />
+                    {t('accounts.mail')}
+                  </span>
+                  <label className="flex min-h-10 cursor-pointer items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(profile.notify_uploads)}
+                      onChange={(e) => setNotice(profile, 'notifyUploads', e.target.checked)}
+                      disabled={busyId === profile.id}
+                      className="h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                    {t('accounts.notifyUploads')}
+                  </label>
+                  {profile.role === 'admin' && (
+                    <label className="flex min-h-10 cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(profile.notify_publications)}
+                        onChange={(e) => setNotice(profile, 'notifyPublications', e.target.checked)}
+                        disabled={busyId === profile.id}
+                        className="h-4 w-4 accent-[var(--color-primary)]"
+                      />
+                      {t('accounts.notifyPublications')}
+                    </label>
+                  )}
+                </fieldset>
               </li>
             );
           })}

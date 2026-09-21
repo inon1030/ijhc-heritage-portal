@@ -5,7 +5,9 @@ import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { verifyGrant } from '@/lib/files/grant';
 import { receiptFor } from '@/lib/items/receipt';
 import { sendMail } from '@/lib/mail';
-import { receiptMail } from '@/lib/mail/templates';
+import { newSubmissionMail, receiptMail } from '@/lib/mail/templates';
+import { uploadRecipients } from '@/lib/mail/recipients';
+import { readWatchers } from '@/lib/mail/watchers';
 import { siteUrl } from '@/lib/site';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { FIELD_KEYS, isValidValue } from '@/lib/fields/registry';
@@ -187,6 +189,19 @@ export async function POST(request: NextRequest) {
         if (await sendMail(mail)) console.info('[mail] receipt sent', item.id);
       });
     }
+
+    // And the moderators who asked to hear about new submissions, each in a
+    // message of their own (see lib/mail/recipients.ts for who and why).
+    after(async () => {
+      try {
+        const recipients = uploadRecipients(await readWatchers(), to ?? null);
+        const reviewUrl = `${siteUrl()}/review/${item.id}`;
+        const sent = await Promise.all(recipients.map((address) => sendMail(newSubmissionMail(address, item.title, reviewUrl))));
+        if (recipients.length) console.info('[mail] new submission notices', item.id, `${sent.filter(Boolean).length}/${recipients.length}`);
+      } catch (error) {
+        console.error('[mail] new submission notices', item.id, error);
+      }
+    });
     return ok({ id: item.id, receipt }, { status: 201 });
   } catch (error) {
     return unexpected(error);

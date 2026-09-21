@@ -7,7 +7,9 @@ import { FIELD_KEYS, fieldDef, isValidValue } from '@/lib/fields/registry';
 import { contributorEmailForItem } from '@/lib/contributors';
 import { binItem, reviewItem } from '@/lib/items/mutations';
 import { sendMail } from '@/lib/mail';
-import { publishedMail } from '@/lib/mail/templates';
+import { publicationNoticeMail, publishedMail } from '@/lib/mail/templates';
+import { publicationRecipients } from '@/lib/mail/recipients';
+import { readWatchers } from '@/lib/mail/watchers';
 import { siteUrl } from '@/lib/site';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { translateRecord, verifyRecord } from '@/lib/translate';
@@ -51,7 +53,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     // 401 instead of a confusing empty result. It asks for an *approved*
     // volunteer: since 0008 a requested account has a profile row and no
     // rights, and "has a profile" would have let it through this door.
-    if (!(await getCurrentVolunteer())) {
+    const approver = await getCurrentVolunteer();
+    if (!approver) {
       return fail(401, 'unauthenticated', 'Sign in as an approved volunteer to review submissions.');
     }
 
@@ -162,19 +165,51 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
      * The address is read now, on the Moderator's session, because `after`
      * runs once the request — and its cookies — are gone.
      */
-    if (body.status === 'accepted' && result.from !== 'accepted' && result.item.access === 'public') {
-      const to = await contributorEmailForItem(id).catch((error) => {
-        console.error('[mail] published notice: could not read the address', error);
-        return null;
-      });
-      if (to) {
-        const mail = publishedMail(to, result.item.title, `${siteUrl()}/portal/${id}`);
+    const published = body.status === 'accepted' && result.from !== 'accepted';
+    const contributorEmail = published
+      ? await contributorEmailForItem(id).catch((error) => {
+          console.error('[mail] published notice: could not read the address', error);
+          return null;
+        })
+      : null;
+
+    if (published && result.item.access === 'public') {
+      if (contributorEmail) {
+        const mail = publishedMail(contributorEmail, result.item.title, `${siteUrl()}/portal/${id}`);
         after(async () => {
           if (await sendMail(mail)) console.info('[mail] published notice sent', id);
         });
       } else {
         console.info('[mail] published notice skipped: no address on record', id);
       }
+    }
+
+    /*
+     * The moderators' side of the same event (22.09.2026): the knowledge
+     * expert who published it, and every administrator who asked to hear about
+     * publications. On every move into the published archive, restricted
+     * records included, because "what did we publish" is a moderator's
+     * question either way. Who, and why the contributor is left out of this
+     * list, is in lib/mail/recipients.ts.
+     */
+    if (published) {
+      const title = result.item.title;
+      const by = approver.full_name?.trim() || approver.email;
+      after(async () => {
+        try {
+          const recipients = publicationRecipients(
+            approver.email,
+            await readWatchers(),
+            // Left out only when they are getting their own notice above.
+            result.item.access === 'public' ? contributorEmail : null,
+          );
+          const url = `${siteUrl()}/portal/${id}`;
+          const sent = await Promise.all(recipients.map((address) => sendMail(publicationNoticeMail(address, title, url, by))));
+          if (recipients.length) console.info('[mail] publication notices', id, `${sent.filter(Boolean).length}/${recipients.length}`);
+        } catch (error) {
+          console.error('[mail] publication notices', id, error);
+        }
+      });
     }
 
     revalidatePath('/review');

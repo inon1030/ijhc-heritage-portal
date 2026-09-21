@@ -785,6 +785,11 @@ export const en = {
     'They show you whether a knowledge expert has published each contribution yet. Save them somewhere; we have no other way to reach you.',
   'vocab.noBranch': 'No branch — from before the tree',
   'accounts.noName': 'No name given',
+  'accounts.mail': 'Mail',
+  'accounts.notifyUploads': 'Every new item to review',
+  'accounts.notifyPublications': 'Every publication to the portal',
+  'accounts.mailNote':
+    'Whoever sent an item always gets a receipt and a note when it is published, and whoever publishes an item is always told. The boxes below choose who else is sent mail.',
   'wb.periodPlaceholder': '1890s, late 19th century, before 1948',
   'wb.noFamiliesYet': 'No families registered for {community} yet.',
   'flow.together': 'Front and back, or the pages of one letter.',

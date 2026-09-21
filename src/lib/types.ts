@@ -11,6 +11,10 @@ export interface Profile {
   full_name: string | null;
   role: UserRole;
   created_at: string;
+  /** Mail on every new submission. Knowledge experts and administrators; set by an administrator. */
+  notify_uploads?: boolean;
+  /** Mail on every publication to the portal. Administrators; set by an administrator. */
+  notify_publications?: boolean;
 }
 
 export interface Item {
