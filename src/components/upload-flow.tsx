@@ -6,6 +6,8 @@ import { Check, Sparkles } from 'lucide-react';
 import { ConsentBlock } from '@/components/consent-block';
 import { RingMark, buttonClass } from '@/components/primitives';
 import { FilePicker, type PickedFile } from '@/components/file-picker';
+import { PhoneScanner } from '@/components/phone-scanner';
+import { groupFiles, looseCount } from '@/lib/upload/groups';
 import { LinkInput, type CapturedLink } from '@/components/link-input';
 import { PreReview, type Draft, type OfferedTerm } from '@/components/pre-review';
 import type { PickableLanguage } from '@/components/language-picker';
@@ -271,8 +273,16 @@ export function UploadFlow({
    * is also why a link and a pile of files are not mixed in one submission:
    * "are these one thing or several" has no sensible answer across both.
    */
-  const many = files.length > 1;
-  const needsTitle = Boolean(captured) || grouping === 'one' || !many;
+  /*
+   * Which files become which records: one per scanned document, and ordinary
+   * files as the contributor answered below (lib/upload/groups.ts). A captured
+   * page is always one record, so it never reaches this.
+   */
+  const groups = captured ? [files.map((f) => f.id)] : groupFiles(files, grouping);
+  const oneRecord = Boolean(captured) || groups.length <= 1;
+  // The "one item or several?" question is about ordinary files only.
+  const askGrouping = !captured && looseCount(files) > 1;
+  const needsTitle = oneRecord;
   const hasSomething = captured ? true : files.length > 0;
   /*
    * The address is the one thing the archive insists on now.
@@ -455,21 +465,46 @@ export function UploadFlow({
         }));
 
       const fieldsFor = (entry: Analysed) => asValues(entry.analysis?.fields ?? []);
-      const mergedFields = asValues(mergeSuggestions(results.map((entry) => entry.analysis?.fields ?? [])));
 
-      const perRecord = !captured && grouping === 'separate' && files.length > 1;
+      /*
+       * One draft per file, as before; the first file of each record carries
+       * the record's title and its catalogue sheet. A record of several files
+       * gets the merged findings of all of them, because the imprint is usually
+       * on page one and the date on page three.
+       */
+      const byId = new Map(results.map((entry) => [entry.id, entry]));
+      const recordOf = new Map<string, { first: boolean; members: Analysed[]; n: number }>();
+      // A captured page has no picked files; its parts are the analysed ones.
+      (captured ? [results.map((entry) => entry.id)] : groups).forEach((ids, n) => {
+        const members = ids.map((id) => byId.get(id)).filter((e): e is Analysed => Boolean(e));
+        ids.forEach((id, i) => recordOf.set(id, { first: i === 0, members, n }));
+      });
+      const isScan = (entry: Analysed) => files.find((f) => f.id === entry.id)?.doc;
 
       setDrafts(
         Object.fromEntries(
-          results.map((entry, index) => [
-            entry.id,
-            {
-              title: needsTitle ? title.trim() : stemOf(entry.fileName),
-              description: entry.analysis?.summary ?? '',
-              keywords: entry.analysis?.keywords ?? [],
-              fields: perRecord ? fieldsFor(entry) : index === 0 ? mergedFields : [],
-            },
-          ]),
+          results.map((entry) => {
+            const record = recordOf.get(entry.id);
+            const members = record?.members ?? [entry];
+            const fields = !record?.first
+              ? []
+              : members.length > 1
+                ? asValues(mergeSuggestions(members.map((m) => m.analysis?.fields ?? [])))
+                : fieldsFor(entry);
+            return [
+              entry.id,
+              {
+                title: needsTitle
+                  ? title.trim()
+                  : isScan(entry)
+                    ? t('upload.scan.docTitle', { n: (record?.n ?? 0) + 1 })
+                    : stemOf(entry.fileName),
+                description: entry.analysis?.summary ?? '',
+                keywords: entry.analysis?.keywords ?? [],
+                fields,
+              },
+            ];
+          }),
         ),
       );
       setShowPreReview(true);
@@ -547,33 +582,28 @@ export function UploadFlow({
     setError(null);
     setPhase('submitting');
 
-    // One record with every file, or one record per file. The contributor said
-    // which; nothing here is inferred.
-    const payloads =
-      captured || grouping === 'one' || !many
-        ? [
-            {
-              /*
-               * The file name when nothing was typed.
-               *
-               * The screen says "blanks are fine" and means it, but the record
-               * needs something to be called: submitting without a title used
-               * to reach the API, fail its length check, and come back as
-               * "Some fields need attention" naming no field. The analysis step
-               * already falls back to the file name, and a record called
-               * "ketuba-detail" that a volunteer renames is a better outcome
-               * than a submission a contributor cannot get past.
-               */
-              title: title.trim() || captured?.title || stemOf(analysed[0].fileName),
-              draftKey: analysed[0].id,
-              entries: analysed,
-            },
-          ]
-        : analysed.map((entry) => ({
-            title: drafts[entry.id]?.title?.trim() || stemOf(entry.fileName),
-            draftKey: entry.id,
-            entries: [entry],
-          }));
+    // One record per group - a scanned document, the ordinary files together,
+    // or each ordinary file alone. The contributor said which; nothing here is
+    // inferred.
+    const byId = new Map(analysed.map((entry) => [entry.id, entry]));
+    const payloads = (captured ? [analysed.map((entry) => entry.id)] : groups)
+      .map((ids) => ids.map((id) => byId.get(id)).filter((e): e is Analysed => Boolean(e)))
+      .filter((entries) => entries.length > 0)
+      .map((entries) => ({
+        /*
+         * The file name when nothing was typed.
+         *
+         * The screen says "blanks are fine" and means it, but the record needs
+         * something to be called: submitting without a title used to reach the
+         * API, fail its length check, and come back as "Some fields need
+         * attention" naming no field.
+         */
+        title: oneRecord
+          ? title.trim() || captured?.title || drafts[entries[0].id]?.title?.trim() || stemOf(entries[0].fileName)
+          : drafts[entries[0].id]?.title?.trim() || stemOf(entries[0].fileName),
+        draftKey: entries[0].id,
+        entries,
+      }));
 
     try {
       const made: { id: string; receipt: string }[] = [];
@@ -755,7 +785,18 @@ export function UploadFlow({
             the choice they are, and the screen is half as tall.
           */}
           <div className={cn('mt-5 gap-6', files.length === 0 && !captured && 'lg:grid lg:grid-cols-2')}>
-            {!captured && <FilePicker files={files} onChange={setFiles} disabled={busy} />}
+            {!captured && (
+              <div className="space-y-4">
+                {/* Ordinary files here, scanned pages in the scanner below;
+                    both live in one list, told apart by `doc`. */}
+                <FilePicker
+                  files={files.filter((f) => !f.doc)}
+                  onChange={(loose) => setFiles([...loose, ...files.filter((f) => f.doc)])}
+                  disabled={busy}
+                />
+                <PhoneScanner files={files} onChange={setFiles} disabled={busy} />
+              </div>
+            )}
             {files.length === 0 && (
               <div className={cn(!captured && 'mt-6 lg:mt-0')}>
                 {!captured && <p className="eyebrow mb-2.5">{t('upload.step.orAddress')}</p>}
@@ -769,7 +810,7 @@ export function UploadFlow({
             )}
           </div>
 
-          {many && !captured && (
+          {askGrouping && (
             <div className="mt-8 border-t border-rule pt-6">
               <p className="eyebrow mb-1">{t('upload.step.grouping')}</p>
               <p className="mb-3 text-sm text-muted">{t('upload.step.groupingOpen')}</p>
@@ -1037,7 +1078,7 @@ export function UploadFlow({
               }))}
               drafts={drafts}
               onDraftChange={(id, draft) => setDrafts((all) => ({ ...all, [id]: draft }))}
-              perItemTitles={grouping === 'separate' && many}
+              groups={captured ? [analysed.map((entry) => entry.id)] : groups}
               simulated={simulated}
               hidden={!showPreReview}
               onHiddenChange={(nowHidden) => setShowPreReview(!nowHidden)}

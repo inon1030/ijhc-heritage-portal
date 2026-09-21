@@ -81,7 +81,7 @@ export function PreReview({
   entries,
   drafts,
   onDraftChange,
-  perItemTitles,
+  groups,
   simulated,
   hidden,
   onHiddenChange,
@@ -94,8 +94,12 @@ export function PreReview({
   entries: PreReviewEntry[];
   drafts: Record<string, Draft>;
   onDraftChange: (id: string, draft: Draft) => void;
-  /** True when each file becomes its own record and so needs its own title. */
-  perItemTitles: boolean;
+  /**
+   * Which files become which records, as file ids (lib/upload/groups.ts). One
+   * group is one record: its first file carries the title and the catalogue
+   * sheet. A single group is the old "one item" layout.
+   */
+  groups: string[][];
   simulated: boolean;
   hidden: boolean;
   onHiddenChange: (hidden: boolean) => void;
@@ -113,6 +117,8 @@ export function PreReview({
   languages: PickableLanguage[];
 }) {
   const t = useMessages();
+  const many = groups.length > 1;
+  const byId = new Map(entries.map((entry) => [entry.id, entry]));
   const submitButton = (
     <>
     {blocked && (
@@ -129,8 +135,8 @@ export function PreReview({
         <>
           <Loader2 size={17} className="animate-spin" /> {t('prereview.submitting')}
         </>
-      ) : entries.length > 1 && perItemTitles ? (
-        t('prereview.submitMany', { count: entries.length })
+      ) : many ? (
+        t('prereview.submitMany', { count: groups.length })
       ) : (
         t('prereview.submit')
       )}
@@ -174,39 +180,62 @@ export function PreReview({
       <div className="space-y-8 px-6 py-6">
         {simulated && <SimulatedNotice label={t('common.simulated')} />}
 
-        {entries.map((entry, index) => (
-          <EntryPanel
+        {groups.map((ids, g) => {
+          const members = ids.map((id) => byId.get(id)).filter((e): e is PreReviewEntry => Boolean(e));
+          if (!members.length) return null;
+          const first = members[0];
+          // A record of one file keeps its sheet inside its own panel; a record
+          // of several pages gets one sheet under them all, seeded from every
+          // page, because per-page sheets would ask the same question of each.
+          const pages = members.length > 1;
+          const panels = members.map((entry, index) => (
+            <EntryPanel
               vocabulary={vocabulary}
-            key={entry.id}
-            entry={entry}
-            index={index}
-            total={entries.length}
-            draft={drafts[entry.id] ?? EMPTY_DRAFT}
-            onChange={(draft) => onDraftChange(entry.id, draft)}
-            showTitle={perItemTitles}
-            showFields={perItemTitles}
-            /* Every language but the one the item's own text is in - that is
-               the "Original" chip. Not the language the reading was written
-               in: see materialLanguage. */
-            languages={languages.filter(
-              (l) => l.code !== materialLanguage(entry.analysis?.language, languages),
-            )}
-          />
-        ))}
-
-        {/* One record from several files gets one sheet, seeded from all of
-            them. Per-file sheets would ask the same question of every page. */}
-        {!perItemTitles && entries[0] && (
-          <FieldSheet
-            tone="contributor"
-            includeBasics
-            values={(drafts[entries[0].id] ?? EMPTY_DRAFT).fields}
-            onChange={(fields) =>
-              onDraftChange(entries[0].id, { ...(drafts[entries[0].id] ?? EMPTY_DRAFT), fields })
-            }
-            disabled={submitting}
-          />
-        )}
+              key={entry.id}
+              entry={entry}
+              index={index}
+              total={members.length}
+              draft={drafts[entry.id] ?? EMPTY_DRAFT}
+              onChange={(draft) => onDraftChange(entry.id, draft)}
+              showTitle={many && index === 0}
+              showFields={many && !pages}
+              /* Every language but the one the item's own text is in - that is
+                 the "Original" chip. Not the language the reading was written
+                 in: see materialLanguage. */
+              languages={languages.filter(
+                (l) => l.code !== materialLanguage(entry.analysis?.language, languages),
+              )}
+            />
+          ));
+          const sheet = (many ? pages : true) && (
+            <FieldSheet
+              tone="contributor"
+              includeBasics
+              values={(drafts[first.id] ?? EMPTY_DRAFT).fields}
+              onChange={(fields) => onDraftChange(first.id, { ...(drafts[first.id] ?? EMPTY_DRAFT), fields })}
+              disabled={submitting}
+            />
+          );
+          if (!many) {
+            return (
+              <div key={first.id} className="space-y-8">
+                {panels}
+                {sheet}
+              </div>
+            );
+          }
+          return (
+            <section key={first.id} className="space-y-6 rounded-2xl border border-rule bg-paper p-4 sm:p-5">
+              <p className="eyebrow">
+                {pages
+                  ? t('prereview.recordPages', { n: g + 1, count: members.length })
+                  : t('prereview.record', { n: g + 1 })}
+              </p>
+              {panels}
+              {pages && sheet}
+            </section>
+          );
+        })}
 
         {submitButton}
       </div>

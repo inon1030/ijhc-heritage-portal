@@ -673,5 +673,20 @@
   "guides.mode.deep": "विस्तार से",
   "guides.mode.deepHint": "हर स्क्रीन और हर विकल्प",
   "guides.quickGuide": "संक्षिप्त मार्गदर्शिका",
-  "guides.quickGuideHint": "ज़रूरी चरणों वाला एक पन्ना, छापने या रखने के लिए। नए टैब में खुलता है।"
+  "guides.quickGuideHint": "ज़रूरी चरणों वाला एक पन्ना, छापने या रखने के लिए। नए टैब में खुलता है।",
+  "upload.scan.button": "फ़ोन के कैमरे से स्कैन करें",
+  "upload.scan.hint": "हर पन्ने को सीधा रखकर अच्छी रोशनी में फ़ोटो लें। हर पन्ने के बाद चुनें: उसी दस्तावेज़ का अगला पन्ना, या अलग दस्तावेज़।",
+  "upload.scan.onComputer": "कंप्यूटर पर हैं? यह पेज फ़ोन पर खोलने के लिए इस कोड को फ़ोन से स्कैन करें।",
+  "upload.scan.document": "दस्तावेज़ {n}",
+  "upload.scan.onePage": "1 पन्ना",
+  "upload.scan.pages": "{count} पन्ने",
+  "upload.scan.pageAlt": "पन्ना {n}",
+  "upload.scan.removePage": "पन्ना {n} हटाएँ",
+  "upload.scan.addPageShort": "एक और पन्ना",
+  "upload.scan.addPage": "इस दस्तावेज़ का एक और पन्ना स्कैन करें",
+  "upload.scan.newDocument": "अलग दस्तावेज़ स्कैन करें",
+  "upload.scan.working": "पन्ना तैयार हो रहा है…",
+  "upload.scan.docTitle": "स्कैन किया गया दस्तावेज़ {n}",
+  "prereview.record": "वस्तु {n}",
+  "prereview.recordPages": "वस्तु {n} · {count} पन्ने"
 }

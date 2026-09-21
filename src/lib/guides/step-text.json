@@ -42,6 +42,21 @@
       }
     },
     {
+      "id": "scan",
+      "title": {
+        "en": "Or scan with your phone",
+        "he": "או סורקים בטלפון"
+      },
+      "body": {
+        "en": "On a phone, press Scan with your phone’s camera and photograph the page. After each page choose Scan another page of this document, or Scan a separate document; each document becomes its own item. On a computer, scan the code to open this page on your phone.",
+        "he": "בטלפון לוחצים \"סריקה במצלמת הטלפון\" ומצלמים את העמוד. אחרי כל עמוד בוחרים \"סריקת עמוד נוסף למסמך הזה\" או \"סריקת מסמך נפרד\", וכל מסמך נשמר כפריט משלו. במחשב סורקים את הקוד כדי לפתוח את הדף בטלפון."
+      },
+      "quick": {
+        "en": "Or press Scan with your phone’s camera and photograph each page.",
+        "he": "או לוחצים \"סריקה במצלמת הטלפון\" ומצלמים כל עמוד."
+      }
+    },
+    {
       "id": "next",
       "title": {
         "en": "Press Next",

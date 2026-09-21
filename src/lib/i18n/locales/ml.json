@@ -673,5 +673,20 @@
   "guides.mode.deep": "വിശദമായി",
   "guides.mode.deepHint": "എല്ലാ സ്ക്രീനും എല്ലാ ഓപ്ഷനും",
   "guides.quickGuide": "ചുരുക്ക വഴികാട്ടി",
-  "guides.quickGuideHint": "പ്രധാന ഘട്ടങ്ങളുള്ള ഒരു പേജ്, അച്ചടിക്കാനോ സൂക്ഷിക്കാനോ. പുതിയ ടാബിൽ തുറക്കും."
+  "guides.quickGuideHint": "പ്രധാന ഘട്ടങ്ങളുള്ള ഒരു പേജ്, അച്ചടിക്കാനോ സൂക്ഷിക്കാനോ. പുതിയ ടാബിൽ തുറക്കും.",
+  "upload.scan.button": "ഫോൺ ക്യാമറ ഉപയോഗിച്ച് സ്കാൻ ചെയ്യുക",
+  "upload.scan.hint": "ഓരോ പേജും നേരെ വെച്ച് നല്ല വെളിച്ചത്തിൽ ഫോട്ടോ എടുക്കുക. ഓരോ പേജിനും ശേഷം തിരഞ്ഞെടുക്കുക: അതേ രേഖയുടെ അടുത്ത പേജ്, അല്ലെങ്കിൽ വേറൊരു രേഖ.",
+  "upload.scan.onComputer": "കമ്പ്യൂട്ടറിലാണോ? ഈ പേജ് ഫോണിൽ തുറക്കാൻ ഈ കോഡ് ഫോണിൽ സ്കാൻ ചെയ്യുക.",
+  "upload.scan.document": "രേഖ {n}",
+  "upload.scan.onePage": "1 പേജ്",
+  "upload.scan.pages": "{count} പേജുകൾ",
+  "upload.scan.pageAlt": "പേജ് {n}",
+  "upload.scan.removePage": "പേജ് {n} നീക്കം ചെയ്യുക",
+  "upload.scan.addPageShort": "ഒരു പേജ് കൂടി",
+  "upload.scan.addPage": "ഈ രേഖയുടെ ഒരു പേജ് കൂടി സ്കാൻ ചെയ്യുക",
+  "upload.scan.newDocument": "വേറൊരു രേഖ സ്കാൻ ചെയ്യുക",
+  "upload.scan.working": "പേജ് തയ്യാറാക്കുന്നു…",
+  "upload.scan.docTitle": "സ്കാൻ ചെയ്ത രേഖ {n}",
+  "prereview.record": "ഇനം {n}",
+  "prereview.recordPages": "ഇനം {n} · {count} പേജുകൾ"
 }

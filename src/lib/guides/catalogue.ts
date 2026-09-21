@@ -55,14 +55,14 @@ export interface GuideFile {
 }
 
 export const GUIDE_FILES: GuideFile[] = [
-  { path: 'pdf/contributor-he.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 2.5, depth: 'deep' },
-  { path: 'pdf/contributor-en.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 2.9, depth: 'deep' },
+  { path: 'pdf/contributor-he.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 2.7, depth: 'deep' },
+  { path: 'pdf/contributor-en.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 3.1, depth: 'deep' },
   { path: 'pdf/expert-he.pdf', audience: 'expert', kind: 'pdf', language: 'he', megabytes: 2.4, depth: 'deep' },
   { path: 'pdf/expert-en.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 2.6, depth: 'deep' },
   { path: 'pdf/admin-he.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 0.9, depth: 'deep' },
   { path: 'pdf/admin-en.pdf', audience: 'admin', kind: 'pdf', language: 'en', megabytes: 1.0, depth: 'deep' },
-  { path: 'pdf/contributor-he-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 1.2, depth: 'quick' },
-  { path: 'pdf/contributor-en-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 1.4, depth: 'quick' },
+  { path: 'pdf/contributor-he-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 1.3, depth: 'quick' },
+  { path: 'pdf/contributor-en-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 1.6, depth: 'quick' },
   { path: 'pdf/expert-he-quick.pdf', audience: 'expert', kind: 'pdf', language: 'he', megabytes: 1.2, depth: 'quick' },
   { path: 'pdf/expert-en-quick.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 1.3, depth: 'quick' },
   { path: 'pdf/admin-he-quick.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 0.4, depth: 'quick' },

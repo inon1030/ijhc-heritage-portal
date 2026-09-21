@@ -673,5 +673,20 @@
   "guides.mode.deep": "למידה מעמיקה",
   "guides.mode.deepHint": "כל מסך וכל אפשרות",
   "guides.quickGuide": "המדריך המקוצר",
-  "guides.quickGuideHint": "עמוד אחד עם השלבים החשובים, להדפסה או לשמירה. נפתח בכרטיסייה חדשה."
+  "guides.quickGuideHint": "עמוד אחד עם השלבים החשובים, להדפסה או לשמירה. נפתח בכרטיסייה חדשה.",
+  "upload.scan.button": "סריקה במצלמת הטלפון",
+  "upload.scan.hint": "מצלמים כל עמוד כשהוא מונח ישר ובאור טוב. אחרי כל עמוד בוחרים: עוד עמוד לאותו מסמך, או מסמך נפרד.",
+  "upload.scan.onComputer": "במחשב? סורקים את הקוד בטלפון כדי לפתוח שם את הדף הזה.",
+  "upload.scan.document": "מסמך {n}",
+  "upload.scan.onePage": "עמוד אחד",
+  "upload.scan.pages": "{count} עמודים",
+  "upload.scan.pageAlt": "עמוד {n}",
+  "upload.scan.removePage": "הסרת עמוד {n}",
+  "upload.scan.addPageShort": "עוד עמוד",
+  "upload.scan.addPage": "סריקת עמוד נוסף למסמך הזה",
+  "upload.scan.newDocument": "סריקת מסמך נפרד",
+  "upload.scan.working": "מכין את העמוד…",
+  "upload.scan.docTitle": "מסמך סרוק {n}",
+  "prereview.record": "פריט {n}",
+  "prereview.recordPages": "פריט {n} · {count} עמודים"
 }

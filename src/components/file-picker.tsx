@@ -22,6 +22,11 @@ export interface PickedFile {
   id: string;
   file: File;
   /**
+   * The scanned document this is a page of, when it came from the phone
+   * scanner. Absent for a file chosen, dropped or pasted. See lib/upload/groups.
+   */
+  doc?: string;
+  /**
    * Object URL for images the browser can actually draw, so a thumbnail costs
    * no upload. Revoked on removal.
    *

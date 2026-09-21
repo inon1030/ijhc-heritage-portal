@@ -33,6 +33,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { createClient } from '@supabase/supabase-js';
+import QRCode from 'qrcode';
 import { STEPS } from './steps.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -76,6 +77,10 @@ async function peoplesNames() {
 const shots = fs.existsSync(SHOTS_JSON) ? JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')) : {};
 const browser = await chromium.launch();
 const NAMES = onlyAudience === 'contributor' ? [] : await peoplesNames();
+// The scanner's QR code would otherwise encode localhost, which leads nowhere
+// from a printed page. The guides show the live site's.
+const LIVE = process.env.GUIDES_LIVE ?? 'https://heritage-portal-snowy.vercel.app';
+const LIVE_QR = await QRCode.toString(`${LIVE}/upload`, { type: 'svg', margin: 1, width: 132 });
 
 for (const [audience, steps] of Object.entries(STEPS)) {
   if (onlyAudience && audience !== onlyAudience) continue;
@@ -109,6 +114,7 @@ for (const [audience, steps] of Object.entries(STEPS)) {
       await step.go(ctx);
       await page.addStyleTag({ content: '.passage, nextjs-portal { display: none !important; } *{caret-color: transparent !important}' });
       await page.waitForTimeout(450);
+      await page.evaluate((svg) => document.querySelectorAll('[data-qr]').forEach((el) => (el.innerHTML = svg)), LIVE_QR);
       if (audience !== 'contributor') {
         // Live screens carry real contributors' addresses. The Center's own
         // guides replaced them with examples; so does this, before the picture.
