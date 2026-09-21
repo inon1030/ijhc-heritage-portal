@@ -65,7 +65,7 @@ export default async function RecordPage({
   const shown = reading.item;
 
   return (
-    <article className="mx-auto max-w-5xl px-6 pt-6 pb-14 sm:pt-10 sm:pb-16">
+    <article className="mx-auto max-w-6xl px-6 pt-6 pb-14 sm:pt-10 sm:pb-16">
       <Link
         href="/portal"
         className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-colors duration-200 hover:border-accent-strong hover:text-ink"
