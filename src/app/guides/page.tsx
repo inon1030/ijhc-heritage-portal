@@ -115,7 +115,7 @@ function GuideSection({ audience, lang, t }: { audience: Audience; lang: 'he' | 
   const pdfs = files.filter((f) => f.kind === 'pdf');
   // The reader's own language first; the other one is still there.
   const videos = files
-    .filter((f) => f.kind === 'video')
+    .filter((f) => f.kind === 'video' && f.path !== SCANNING_VIDEO.path)
     .sort((a, b) => Number(b.language === lang) - Number(a.language === lang));
 
   return (
@@ -164,16 +164,23 @@ function GuideSection({ audience, lang, t }: { audience: Audience; lang: 'he' | 
             ))}
 
             {audience === 'contributor' && (
-              <figure className="m-0 sm:col-span-2">
-                <iframe
-                  src={`https://drive.google.com/file/d/${SCANNING_VIDEO.driveId}/preview`}
-                  title={t('guides.scanning')}
-                  allow="autoplay; fullscreen"
-                  loading="lazy"
-                  className="aspect-video w-full rounded-2xl border-0 bg-surface-2"
+              <figure className="m-0 flex flex-col items-center gap-3 rounded-2xl bg-surface p-4 sm:col-span-2 sm:flex-row sm:items-start sm:gap-6">
+                {/* A phone recording, so it is portrait: shown at phone proportions
+                    rather than letterboxed inside a wide frame. */}
+                <video
+                  controls
+                  preload="none"
+                  src={`/api/guides/${SCANNING_VIDEO.path}`}
+                  poster="/guides/posters/scanning-he.jpg"
+                  className="aspect-[9/20] max-h-[32rem] w-auto rounded-xl bg-surface-2"
+                  data-full
                 />
-                <figcaption className="mt-2 text-sm text-muted">
-                  <span className="font-medium text-ink">{t('guides.scanning')}</span> · {t('guides.scanningHint')}
+                <figcaption className="text-sm leading-relaxed text-muted">
+                  <span className="block text-base font-medium text-ink">{t('guides.scanning')}</span>
+                  <span className="mt-1 block">{t('guides.scanningHint')}</span>
+                  <span className="mt-3 block font-mono text-xs">
+                    {SCANNING_VIDEO.duration} · <bdi dir="ltr">© {SCANNING_VIDEO.credit}</bdi>
+                  </span>
                 </figcaption>
               </figure>
             )}

@@ -39,28 +39,34 @@ export interface GuideFile {
 }
 
 export const GUIDE_FILES: GuideFile[] = [
-  { path: 'pdf/contributor-he.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 4.1 },
-  { path: 'pdf/contributor-en.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 4.7 },
-  { path: 'pdf/expert-he.pdf', audience: 'expert', kind: 'pdf', language: 'he', megabytes: 9.7 },
-  { path: 'pdf/expert-en.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 11.4 },
-  { path: 'pdf/admin-he.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 3.1 },
-  { path: 'pdf/admin-en.pdf', audience: 'admin', kind: 'pdf', language: 'en', megabytes: 3.2 },
-  { path: 'video/contributor-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 17.4, duration: '7:06' },
-  { path: 'video/contributor-en.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 12.0, duration: '4:39' },
-  { path: 'video/expert-he.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 23.6, duration: '9:50' },
-  { path: 'video/expert-en.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 15.9, duration: '7:07' },
+  { path: 'pdf/contributor-he.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 2.5 },
+  { path: 'pdf/contributor-en.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 2.9 },
+  { path: 'pdf/expert-he.pdf', audience: 'expert', kind: 'pdf', language: 'he', megabytes: 2.4 },
+  { path: 'pdf/expert-en.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 2.7 },
+  { path: 'pdf/admin-he.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 0.9 },
+  { path: 'pdf/admin-en.pdf', audience: 'admin', kind: 'pdf', language: 'en', megabytes: 1.0 },
+  { path: 'video/contributor-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 9.4, duration: '7:06' },
+  { path: 'video/contributor-en.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 7.1, duration: '4:39' },
+  { path: 'video/expert-he.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 12.7, duration: '9:50' },
+  { path: 'video/expert-en.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 9.9, duration: '7:07' },
+  // Shown in its own frame on the page (portrait), not in the video grid.
+  { path: 'video/scanning-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 5.2, duration: '1:06' },
 ];
 
 /**
- * The scanning video the Center keeps in its own Drive.
+ * The scanning video: a phone recording by Avigdor Sharon of scanning a page
+ * with Google Drive's scanner, 16.09.2026.
  *
- * 125 MB, which is over the storage plan's 50 MB file limit, and already shared
- * by its owner as "anyone with the link can view" - so it is shown from Drive
- * rather than copied. Contributor material, so nothing is being opened up.
+ * Hosted here rather than embedded from his Drive, so it keeps working whatever
+ * happens to the share (Inon, 21.09.2026). The 125 MB original was re-encoded
+ * to 720p (5.4 MB) by `DOCS/_build` with his account address blurred on the
+ * final screens and a small credit burned into the corner; the page credits him
+ * under the player as well.
  */
 export const SCANNING_VIDEO = {
-  driveId: '1b8brQOorkbfP-LWienEBpkPGdg9lFDft',
-  language: 'he' as GuideLanguage,
+  path: 'video/scanning-he.mp4',
+  credit: 'Avigdor Sharon',
+  duration: '1:06',
 };
 
 /** Walkthrough screenshots: `steps/<audience>/<language>/<name>.png`. */

@@ -259,10 +259,10 @@ const expert = [
   {
     id: 'decide',
     go: async ({ page, lang }) => {
-      await page.getByRole('button', { name: T(lang, 'wb.publish') }).first().scrollIntoViewIfNeeded();
+      await page.getByRole('button', { name: T(lang, 'wb.publish'), exact: true }).first().scrollIntoViewIfNeeded();
       await page.evaluate(() => window.scrollBy(0, 140));
     },
-    spots: [(p, l) => p.getByRole('button', { name: T(l, 'wb.publish') }).first(), (p, l) => p.getByRole('button', { name: T(l, 'wb.reject') }).first()],
+    spots: [(p, l) => p.getByRole('button', { name: T(l, 'wb.publish'), exact: true }).first(), (p, l) => p.getByRole('button', { name: T(l, 'wb.reject'), exact: true }).first()],
   },
   {
     id: 'keywords',

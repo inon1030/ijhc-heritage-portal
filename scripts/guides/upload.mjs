@@ -34,10 +34,13 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 
 // The Center's video files keep their own names in DOCS; this is the map.
 const VIDEOS = {
-  'IJHC מדריך לתורמים - עברית (7m06s).mp4': 'video/contributor-he.mp4',
-  'IJHC Contributor Guide - English (4m39s).mp4': 'video/contributor-en.mp4',
-  'IJHC מדריך למודרטורים - עברית (9m50s).mp4': 'video/expert-he.mp4',
-  'IJHC Moderator Guide - English (7m07s).mp4': 'video/expert-en.mp4',
+  // The NotebookLM videos with the site's screenshots put in (DOCS/_build/build_videos.py).
+  'IJHC מדריך לתורמים - עברית - עם צילומי מסך.mp4': 'video/contributor-he.mp4',
+  'IJHC Contributor Guide - English - with screens.mp4': 'video/contributor-en.mp4',
+  'IJHC מדריך למומחי ידע - עברית - עם צילומי מסך.mp4': 'video/expert-he.mp4',
+  'IJHC Knowledge Expert Guide - English - with screens.mp4': 'video/expert-en.mp4',
+  // Avigdor Sharon's recording, re-encoded with his address blurred and a credit.
+  'לסרוק ולשמור בעזרת הטלפון - גרסת האתר.mp4': 'video/scanning-he.mp4',
 };
 
 const kinds = process.argv.slice(2);
