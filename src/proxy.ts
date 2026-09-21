@@ -79,7 +79,10 @@ function contentSecurityPolicy(nonce: string, isDev: boolean): string {
 
   return [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}${scriptHosts ? ` ${scriptHosts}` : ''}`,
+    // 'wasm-unsafe-eval' lets the phone scanner compile OpenCV's WebAssembly
+    // (21.09.2026). It permits WebAssembly.compile and nothing else: eval and
+    // new Function stay blocked in production.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}${scriptHosts ? ` ${scriptHosts}` : ''}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' blob: data: ${supabase}${measured ? ' https://www.google-analytics.com https://www.googletagmanager.com' : ''}`,
     `media-src 'self' blob: ${supabase}`,
