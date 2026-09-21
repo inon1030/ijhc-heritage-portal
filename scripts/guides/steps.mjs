@@ -233,10 +233,10 @@ const openFirstRecord = async (c) => {
   await goto(c, href);
 };
 const scrollTo = (text) => async ({ page, lang }) => {
-  await page.getByText(T(lang, text), { exact: true }).first().scrollIntoViewIfNeeded();
+  await page.locator('main').getByText(T(lang, text), { exact: true }).first().scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, -90));
 };
-const around = (text, up = 1) => (p, l) => p.getByText(T(l, text), { exact: true }).first().locator('xpath=' + Array(up).fill('..').join('/'));
+const around = (text, up = 1) => (p, l) => p.locator('main').getByText(T(l, text), { exact: true }).first().locator('xpath=' + Array(up).fill('..').join('/'));
 
 const expert = [
   {

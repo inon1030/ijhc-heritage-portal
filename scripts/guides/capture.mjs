@@ -32,6 +32,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { createClient } from '@supabase/supabase-js';
 import { STEPS } from './steps.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -48,8 +49,33 @@ const onlyAudience = pick('--audience');
 const onlyLang = pick('--lang');
 const onlyStep = pick('--step');
 
+/**
+ * People's names, to be replaced on the signed-in screens.
+ *
+ * Read with the service key straight into memory and never written or printed:
+ * account holders, and contributors who left a name. The Center's own guide
+ * replaced every name and address in its screenshots with an example, and a
+ * contributor's name is not the Center's to publish in a manual.
+ */
+async function peoplesNames() {
+  const env = Object.fromEntries(
+    fs.readFileSync(path.join(ROOT, '.env.local'), 'utf8').split(/\r?\n/)
+      .filter((l) => l.includes('=') && !l.trimStart().startsWith('#'))
+      .map((l) => [l.slice(0, l.indexOf('=')).trim(), l.slice(l.indexOf('=') + 1).trim()]),
+  );
+  const db = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  const names = new Set();
+  for (const [table, column] of [['profiles', 'full_name'], ['contributors', 'full_name'], ['items', 'contributor_full_name']]) {
+    const { data } = await db.from(table).select(column).not(column, 'is', null).limit(1000);
+    for (const row of data ?? []) if (row[column]?.trim().length >= 3) names.add(row[column].trim());
+  }
+  // Longest first, so "Ruth Elias Cohen" is replaced before "Ruth Elias".
+  return [...names].sort((a, b) => b.length - a.length);
+}
+
 const shots = fs.existsSync(SHOTS_JSON) ? JSON.parse(fs.readFileSync(SHOTS_JSON, 'utf8')) : {};
 const browser = await chromium.launch();
+const NAMES = onlyAudience === 'contributor' ? [] : await peoplesNames();
 
 for (const [audience, steps] of Object.entries(STEPS)) {
   if (onlyAudience && audience !== onlyAudience) continue;
@@ -86,7 +112,9 @@ for (const [audience, steps] of Object.entries(STEPS)) {
       if (audience !== 'contributor') {
         // Live screens carry real contributors' addresses. The Center's own
         // guides replaced them with examples; so does this, before the picture.
-        await page.evaluate(() => {
+        await page.evaluate((names) => {
+          const escape = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const person = names.length ? new RegExp(names.map(escape).join('|'), 'gi') : null;
           const email = /[\w.+-]+@[\w-]+(\.[\w-]+)+/g;
           const has = (v) => /[\w.+-]+@[\w-]+\.[\w-]+/.test(v);
           const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -94,11 +122,18 @@ for (const [audience, steps] of Object.entries(STEPS)) {
           while (walker.nextNode()) {
             const node = walker.currentNode;
             if (has(node.nodeValue)) node.nodeValue = node.nodeValue.replace(email, () => `contributor${++n}@example.com`);
+            if (person && person.test(node.nodeValue)) {
+              person.lastIndex = 0;
+              node.nodeValue = node.nodeValue.replace(person, () => `Example Person ${++n}`);
+            }
+            if (person) person.lastIndex = 0;
           }
           for (const input of document.querySelectorAll('input')) {
             if (has(input.value)) input.value = input.value.replace(email, 'contributor@example.com');
+            if (person && person.test(input.value)) input.value = input.value.replace(person, 'Example Person');
+            if (person) person.lastIndex = 0;
           }
-        });
+        }, NAMES);
       }
 
       const spots = [];
