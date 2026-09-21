@@ -85,7 +85,7 @@ export function LinkInput({
 
   if (captured) {
     return (
-      <div className="card relative rounded-xl bg-paper-2/60 p-5">
+      <div className="card relative rounded-2xl bg-paper-2/60 p-5">
         <button
           type="button"
           onClick={onClear}
@@ -137,7 +137,7 @@ export function LinkInput({
         
         The wrapper is `flex-col` on a phone, and in a column `flex: 1 1 0%`
         sets the basis on the *main* axis — which is the height. It beat the
-        `h-13` beside it and the field rendered 25px tall: unreadable, and well
+        `h-11` beside it and the field rendered 25px tall: unreadable, and well
         under a thumb. On a wide screen the axis is horizontal, so the same two
         classes cooperate and the bug never appeared.
       */}
@@ -155,14 +155,14 @@ export function LinkInput({
           }}
           disabled={disabled || busy}
           placeholder={t('upload.linkPlaceholder')}
-          className="h-13 w-full rounded-lg border border-rule bg-paper px-4 sm:flex-1 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+          className="h-11 w-full rounded-lg border border-rule bg-paper px-4 sm:flex-1 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
         />
         <button
           type="button"
           onClick={() => void read()}
           disabled={disabled || busy || !url.trim()}
           className={cn(
-            'flex h-13 items-center justify-center gap-2 rounded-full border border-rule-strong px-6 font-medium transition-all duration-200',
+            'flex h-11 items-center justify-center gap-2 rounded-full border border-rule-strong px-6 font-medium transition-colors duration-200',
             'hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50',
           )}
         >

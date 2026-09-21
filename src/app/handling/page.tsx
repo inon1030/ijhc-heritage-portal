@@ -35,7 +35,7 @@ export default async function HandlingPage({
     <article className="mx-auto max-w-2xl px-6 py-12">
       <Link
         href="/portal"
-        className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-all duration-200 hover:-translate-x-0.5 hover:border-accent-strong hover:text-ink"
+        className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-colors duration-200 hover:border-accent-strong hover:text-ink"
       >
         <ArrowLeft size={15} /> {t('common.backToPortal')}
       </Link>

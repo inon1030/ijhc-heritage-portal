@@ -92,7 +92,7 @@ export default async function ReceiptPage({
       )}
 
       <div
-        className="animate-rise mt-8 rounded-xl border-s-[3px] px-5 py-4"
+        className="animate-rise mt-8 rounded-2xl border-s-[3px] px-5 py-4"
         style={{ borderLeftColor: `var(--color-${state.tone})` }}
       >
         <p className="font-display text-xl">{state.title}</p>
@@ -100,7 +100,7 @@ export default async function ReceiptPage({
         {state.published && (
           <Link
             href={`/portal/${id}`}
-            className="mt-4 inline-flex h-12 items-center rounded-full bg-ink px-6 font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink-2"
+            className="mt-4 inline-flex h-11 items-center rounded-full bg-primary px-6 font-medium text-white transition-colors duration-200 hover:bg-primary-strong"
           >
             {say('receipt.seeInArchive')}
           </Link>

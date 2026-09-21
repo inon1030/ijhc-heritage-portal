@@ -798,7 +798,7 @@ export function UploadFlow({
               onClick={() => setScreen(2)}
               disabled={!hasSomething}
               className={cn(
-                buttonClass('primary', 'h-13 px-8'),
+                buttonClass('primary', 'h-11 px-8'),
                 !hasSomething && 'pointer-events-none bg-paper-3 text-muted shadow-none',
               )}
             >
@@ -963,7 +963,7 @@ export function UploadFlow({
               type="button"
               onClick={() => setScreen(1)}
               disabled={busy}
-              className={buttonClass('quiet', 'h-13 px-6')}
+              className={buttonClass('quiet', 'h-11 px-6')}
             >
               {t('flow.back')}
             </button>
@@ -972,7 +972,7 @@ export function UploadFlow({
               onClick={runAnalysis}
               disabled={!canAnalyse}
               className={cn(
-                buttonClass('accent', 'h-13 flex-1 px-8 text-lg sm:flex-none'),
+                buttonClass('accent', 'h-11 flex-1 px-8 text-lg sm:flex-none'),
                 !canAnalyse && 'pointer-events-none bg-paper-3 text-muted shadow-none',
               )}
             >
@@ -1055,7 +1055,7 @@ export function UploadFlow({
               type="button"
               onClick={() => setScreen(2)}
               disabled={busy}
-              className={buttonClass('quiet', 'h-12 px-6')}
+              className={buttonClass('quiet', 'h-11 px-6')}
             >
               {t('flow.back')}
             </button>
@@ -1111,7 +1111,7 @@ function Thinking({
     <div
       role="status"
       aria-live="polite"
-      className="flex flex-col items-center justify-center rounded-xl border border-rule bg-paper-2/40 px-6 py-14 text-center"
+      className="flex flex-col items-center justify-center rounded-2xl border border-rule bg-paper-2/40 px-6 py-14 text-center"
     >
       <span className="animate-turning block">{mark}</span>
 
@@ -1267,7 +1267,7 @@ function GroupingChoice({
       aria-pressed={active}
       disabled={disabled}
       className={cn(
-        'card rounded-xl p-5 text-left transition-all duration-200',
+        'card p-5 text-left transition-colors duration-200',
         active
           ? 'border-accent-strong bg-accent-wash shadow-lift'
           : 'card-interactive hover:border-accent-strong',

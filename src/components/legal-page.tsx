@@ -67,7 +67,7 @@ export async function LegalPage({
           </section>
         ))}
 
-        <section className="rounded-xl border border-rule bg-paper-2 p-5">
+        <section className="rounded-2xl border border-rule bg-paper-2 p-5">
           <h2 className="font-display text-xl">{t('legal.contactHeading')}</h2>
           {officer && (
             <p className="mt-3 leading-relaxed">

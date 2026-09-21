@@ -12,7 +12,7 @@ export default async function NotFound() {
       </p>
       <Link
         href="/portal"
-        className="mt-8 inline-block bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink-2"
+        className="mt-8 inline-block bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-strong"
       >
         {t('common.backToPortal')}
       </Link>

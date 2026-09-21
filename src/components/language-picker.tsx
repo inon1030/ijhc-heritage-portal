@@ -105,7 +105,7 @@ export function LanguagePicker({
       {open && (
         <div
           role="menu"
-          className="absolute end-0 top-11 z-50 w-56 overflow-hidden rounded-xl border border-rule bg-paper shadow-lift"
+          className="absolute end-0 top-11 z-50 w-56 overflow-hidden rounded-2xl border border-rule bg-paper shadow-lift"
         >
           <p className="border-b border-rule px-4 py-2.5 text-xs leading-snug text-muted">
             {t('language.prompt')}

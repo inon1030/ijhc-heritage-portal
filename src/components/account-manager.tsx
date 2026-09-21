@@ -73,7 +73,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
         </h2>
 
         {waiting.length === 0 ? (
-          <p className="mt-4 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-6 py-8 text-center text-muted">
+          <p className="mt-4 rounded-2xl bg-surface px-6 py-8 text-center text-muted">
             {t('accounts.nobodyWaiting')}
           </p>
         ) : (
@@ -90,7 +90,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                   type="button"
                   onClick={() => setRole(profile, 'volunteer')}
                   disabled={busyId === profile.id}
-                  className="flex h-11 items-center gap-2 bg-ink px-4 font-medium text-paper transition-colors hover:bg-ink-2 disabled:opacity-50"
+                  className="flex h-11 items-center gap-2 bg-primary px-4 font-medium text-white transition-colors hover:bg-primary-strong disabled:opacity-50"
                 >
                   {busyId === profile.id ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -104,7 +104,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                   type="button"
                   onClick={() => setRole(profile, 'admin')}
                   disabled={busyId === profile.id}
-                  className="flex h-13 items-center gap-2 rounded-full border border-accent px-5 font-medium text-accent transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent-wash disabled:opacity-50"
+                  className="flex h-11 items-center gap-2 rounded-full border border-accent px-5 font-medium text-accent transition-colors duration-200 hover:bg-accent-wash disabled:opacity-50"
                 >
                   <ShieldCheck size={16} />
                   {t('accounts.asAdministrator')}
@@ -115,7 +115,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                     <button
                       type="button"
                       onClick={() => decline(profile)}
-                      className="h-13 rounded-full bg-critical px-5 font-medium text-paper transition-transform duration-200 hover:-translate-y-0.5"
+                      className="h-11 rounded-full bg-critical px-5 font-medium text-paper transition-transform duration-200"
                     >
                       {t('accounts.deleteForGood')}
                     </button>
@@ -178,7 +178,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                     onChange={(e) => setRole(profile, e.target.value as UserRole)}
                     disabled={busyId === profile.id}
                     aria-label={`Role for ${profile.email}`}
-                    className="h-13 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
+                    className="h-11 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
                   >
                     <option value="volunteer">{t('accounts.volunteer')}</option>
                     <option value="admin">{t('accounts.administrator')}</option>

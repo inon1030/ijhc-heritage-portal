@@ -88,13 +88,13 @@ export function EmptyState({
   action?: { href: string; label: string };
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-8 py-16 text-center">
-      <h2 className="font-display text-xl sm:text-2xl">{title}</h2>
+    <div className="rounded-[var(--radius-card)] bg-surface px-8 py-16 text-center">
+      <h2 className="font-display text-2xl sm:text-[2rem]">{title}</h2>
       <p className="mx-auto mt-3 max-w-md leading-relaxed text-muted">{body}</p>
       {action && (
         <Link
           href={action.href}
-          className="mt-7 inline-flex h-12 items-center rounded-full bg-ink px-6 font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink-2 hover:shadow-lift"
+          className="mt-7 inline-flex h-11 items-center rounded-full bg-primary px-5 font-medium text-white transition-colors duration-200 hover:bg-primary-strong"
         >
           {action.label}
         </Link>
@@ -130,24 +130,31 @@ export function SimulatedNotice({ label, className }: { label: string; className
  * The one button shape in the system.
  *
  * Three tones and nothing else, so that "the filled one is the thing you came
- * to do" holds on every screen. Height is fixed at 48px because a target you
- * have to aim at is a target some people miss.
+ * to do" holds on every screen. A pill, as on elevenlabs.io: 44px with 16px
+ * text by default, 36px with 14px text for the quieter `sm`. Nothing jumps on
+ * hover; the fill changes and that is all.
  */
 export function buttonClass(
   tone: 'primary' | 'accent' | 'quiet' | 'danger' = 'primary',
   className?: string,
+  size: 'md' | 'sm' = 'md',
 ) {
   const tones = {
-    primary: 'bg-ink text-paper shadow-soft hover:bg-ink-2 hover:shadow-lift',
-    accent: 'bg-accent-strong text-paper shadow-soft hover:bg-accent hover:shadow-lift',
-    quiet: 'border border-rule-strong bg-paper hover:border-accent-strong hover:bg-accent-wash',
+    primary: 'bg-primary text-white hover:bg-primary-strong',
+    accent: 'bg-accent-strong text-paper hover:bg-accent',
+    quiet: 'border border-rule-strong bg-paper hover:bg-surface',
     danger: 'border border-critical text-critical hover:bg-critical/8',
+  };
+  const sizes = {
+    md: 'h-11 px-5 text-base',
+    sm: 'h-9 px-4 text-sm',
   };
 
   return cn(
-    'inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 font-medium',
-    'transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0',
+    'inline-flex items-center justify-center gap-2 rounded-full font-medium',
+    'transition-colors duration-200',
     'disabled:pointer-events-none disabled:opacity-50',
+    sizes[size],
     tones[tone],
     className,
   );

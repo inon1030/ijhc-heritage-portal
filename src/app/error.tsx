@@ -33,7 +33,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
       </p>
       <button
         onClick={reset}
-        className="mt-8 bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink-2"
+        className="mt-8 bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-strong"
       >
         {t('error.tryAgain')}
       </button>

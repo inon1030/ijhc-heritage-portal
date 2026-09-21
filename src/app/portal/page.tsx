@@ -112,8 +112,8 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
         panels is a single bar, so the grid begins near the top of the screen
         and the page opens on pictures.
       */}
-      <header className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <h1 className="font-display text-2xl leading-none sm:text-[1.75rem]">
+      <header className="mb-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h1 className="font-display text-[1.75rem] leading-none sm:text-[2.25rem]">
           {t('portal.headline1')} <span className="text-accent-strong">{t('portal.headline2')}</span>
         </h1>
         <p className="text-sm text-muted">{t('portal.eyebrow')}</p>

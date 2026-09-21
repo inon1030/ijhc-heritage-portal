@@ -117,14 +117,14 @@ export function VocabularyManager({
               onChange={(e) => setTerm(e.target.value)}
               maxLength={60}
               placeholder="Alibag"
-              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+              className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
             />
           </label>
 
           <button
             type="submit"
             disabled={busyId === 'new' || !term.trim() || !branch}
-            className={buttonClass('primary', 'h-13')}
+            className={buttonClass('primary', 'h-11')}
           >
             {busyId === 'new' ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
             Add
@@ -142,7 +142,7 @@ export function VocabularyManager({
             <select
               value={scope}
               onChange={(e) => setScope(e.target.value as Community | '')}
-              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+              className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
             >
               <option value="">{t('vocab.everyCommunity')}</option>
               {COMMUNITY_ORDER.map((c) => (
@@ -164,7 +164,7 @@ export function VocabularyManager({
         )}
 
         {homeless.length > 0 && (
-          <div className="mb-8 rounded-xl border-s-[3px] border-caution bg-accent-wash px-4 py-4">
+          <div className="mb-8 rounded-2xl border-s-[3px] border-caution bg-accent-wash px-4 py-4">
             <h2 className="font-display text-lg">
               {homeless.length === 1
                 ? t('vocab.oneTermNoHome')
@@ -192,7 +192,7 @@ export function VocabularyManager({
         )}
 
         {branches.length === 0 && homeless.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-6 py-10 text-center text-muted">
+          <p className="rounded-2xl bg-surface px-6 py-10 text-center text-muted">
             {t('vocab.empty')}
           </p>
         ) : (
@@ -298,7 +298,7 @@ export function VocabularyManager({
                               type="button"
                               onClick={() => remove(row.id)}
                               disabled={busyId === row.id}
-                              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-colors duration-200 disabled:pointer-events-none disabled:opacity-40"
                             >
                               {busyId === row.id && <Loader2 size={14} className="animate-spin" />}
                               Remove it
@@ -357,7 +357,7 @@ export function VocabularyManager({
         </p>
 
         {candidates.length === 0 ? (
-          <p className="mt-5 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-5 py-8 text-center text-sm text-muted">
+          <p className="mt-5 rounded-2xl bg-surface px-5 py-8 text-center text-sm text-muted">
             {t('vocab.nothingWaiting')}
           </p>
         ) : (
@@ -436,7 +436,7 @@ function BranchSelect({
       value={value}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
+      className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
     >
       <option value="">{placeholder}</option>
       {groups.map((group) => (

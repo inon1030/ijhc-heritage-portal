@@ -91,7 +91,7 @@ export function FilePreview({
             />
           )}
           <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paper/85 shadow-soft backdrop-blur-sm">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paper/85 backdrop-blur-sm">
               <Video size={18} className="text-ink" aria-hidden />
             </span>
           </span>

@@ -68,7 +68,7 @@ export default async function RecordPage({
     <article className="mx-auto max-w-5xl px-6 pt-6 pb-14 sm:pt-10 sm:pb-16">
       <Link
         href="/portal"
-        className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-all duration-200 hover:-translate-x-0.5 hover:border-accent-strong hover:text-ink"
+        className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-colors duration-200 hover:border-accent-strong hover:text-ink"
       >
         <ArrowLeft size={16} /> {t('record.backToPortal')}
       </Link>
@@ -76,7 +76,7 @@ export default async function RecordPage({
       <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
           <div className="card animate-rise overflow-hidden rounded-2xl bg-paper-2 p-2">
-            <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-xl">
+            <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-2xl">
               <FilePreview file={file} alt={item.title} fit="contain" />
             </div>
           </div>

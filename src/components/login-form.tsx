@@ -42,7 +42,10 @@ export function LoginForm() {
       return;
     }
 
-    const next = params.get('next') ?? '/review';
+    // Only a path on this site. `?next=https://elsewhere` would otherwise turn
+    // the sign-in page into a link that lands a fresh session somewhere else.
+    const asked = params.get('next') ?? '';
+    const next = asked.startsWith('/') && !asked.startsWith('//') ? asked : '/review';
     router.push(next);
     router.refresh();
   }
@@ -75,7 +78,7 @@ export function LoginForm() {
 
   if (requested) {
     return (
-      <div className="mt-8 card rounded-xl border-positive/30 bg-sage-wash px-5 py-6">
+      <div className="mt-8 card border-positive/30 bg-sage-wash px-5 py-6">
         <p className="flex items-center gap-2 font-display text-xl text-positive">
           <Check size={20} /> {t('login.requestIn')}
         </p>
@@ -119,7 +122,7 @@ export function LoginForm() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               maxLength={120}
-              className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+              className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
             />
           </label>
         )}
@@ -132,7 +135,7 @@ export function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
         </label>
 
@@ -145,7 +148,7 @@ export function LoginForm() {
             autoComplete={mode === 'request' ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
           {mode === 'request' && (
             <span className="mt-1.5 block text-xs text-muted">{t('login.passwordHint')}</span>
@@ -161,7 +164,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={busy}
-          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ink font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-ink-2 hover:shadow-lift disabled:pointer-events-none disabled:opacity-60"
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary font-medium text-white transition-colors duration-200 hover:bg-primary-strong disabled:pointer-events-none disabled:opacity-60"
         >
           {busy && <Loader2 size={16} className="animate-spin" />}
           {mode === 'sign-in' ? (busy ? t('login.signingIn') : 'Sign in') : busy ? t('login.sending') : t('login.sendRequest')}
@@ -193,7 +196,7 @@ function ModeTab({
       aria-selected={active}
       onClick={onClick}
       className={[
-        'flex h-12 items-center px-4 transition-colors',
+        'flex h-11 items-center px-4 transition-colors',
         active
           ? 'border-b-2 border-accent font-medium text-ink'
           : 'border-b-2 border-transparent text-muted hover:text-ink',

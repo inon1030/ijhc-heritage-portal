@@ -61,6 +61,8 @@ const VAULT_ADDENDUM = {
 - [[IJHC - פרומפט בנייה לשלב 2]] — מה שמדביקים לקלוד קוד כדי להמשיך
 - [[IJHC - חוקי הפרויקט לקלוד קוד]] — ששת הכללים שאסור לשבור
 - [[IJHC - ניתוח הדמו המקורי]] — 8 ממצאי אבטחה בדמו הישן, 3 קריטיים
+- [[IJHC 11 - סוכן התיקונים]] — הסוכן שקורא כל יום את דיווחי התקלות של העמותה ומתקן מה שאפשר
+- [[תיק מסירה - IJHC]] — מה נמסר לעמותה, מה חסר, ומי חוסם
 - [[כרטיס - IJHC]] — הדחיסה לצריכת AI · [[יועץ - IJHC]] — פריטים פתוחים
 
 > [!warning] מסמך אחד שלא להשתמש בו
@@ -111,7 +113,7 @@ function build(file) {
 
   const banner =
     `> [!info] ${note}\n` +
-    '> חלק מתיעוד הפרויקט. המקור החי נמצא ב-`Downloads/project-bolt-sb1-p3rtaanf/PILOT WITH EREZ/`.\n\n';
+    '> חלק מתיעוד הפרויקט. המקור החי נמצא ב-`Desktop/SelfEmployee/IJHC/PILOT WITH EREZ/`.\n\n';
 
   return { title, type, content: banner + body + (VAULT_ADDENDUM[file] ?? '') };
 }

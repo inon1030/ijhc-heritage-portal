@@ -123,7 +123,7 @@ export function PreReview({
     <button
       onClick={onSubmit}
       disabled={submitting || blocked}
-      className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-accent-strong font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-accent hover:shadow-lift disabled:pointer-events-none disabled:opacity-60"
+      className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-accent-strong font-medium text-paper transition-colors duration-200 hover:bg-accent disabled:pointer-events-none disabled:opacity-60"
     >
       {submitting ? (
         <>
@@ -144,7 +144,7 @@ export function PreReview({
         <button
           type="button"
           onClick={() => onHiddenChange(false)}
-          className="flex h-12 items-center gap-2 rounded-full border border-rule bg-paper px-5 font-medium shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-accent-strong"
+          className="flex h-11 items-center gap-2 rounded-full border border-rule bg-paper px-5 font-medium transition-colors duration-200 hover:border-accent-strong"
         >
           <Eye size={17} />
           {t('prereview.show')}
@@ -263,7 +263,7 @@ function EntryPanel({
             value={draft.title}
             onChange={(e) => onChange({ ...draft, title: e.target.value })}
             maxLength={200}
-            className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
         </label>
       )}

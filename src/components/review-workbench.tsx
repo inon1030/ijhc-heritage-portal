@@ -706,7 +706,7 @@ function AudiencePicker({
 }) {
   const t = useMessages();
   return (
-    <fieldset className="rounded-xl border border-rule bg-paper-2/50 p-4">
+    <fieldset className="rounded-2xl border border-rule bg-paper-2/50 p-4">
       <legend className="eyebrow px-1">{t('wb.whoFor')}</legend>
       <div className="mt-1 space-y-1.5">
         {ACCESS_OPTIONS.map((option) => (
@@ -714,7 +714,7 @@ function AudiencePicker({
             key={option.value}
             className={cn(
               'flex cursor-pointer gap-3 rounded-lg px-3 py-2.5 transition-colors',
-              value === option.value ? 'bg-paper shadow-soft' : 'hover:bg-paper/60',
+              value === option.value ? 'bg-paper' : 'hover:bg-paper/60',
             )}
           >
             <input
@@ -923,7 +923,7 @@ function VocabularyPicker({
       )}
 
       {terms.length === 0 ? (
-        <p className="mt-3 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-3 py-3 text-sm text-muted">
+        <p className="mt-3 rounded-2xl bg-surface px-3 py-3 text-sm text-muted">
           The vocabulary holds nothing for this community yet. Add terms under Manage and they
           become selectable here.
         </p>
@@ -934,7 +934,7 @@ function VocabularyPicker({
             onChange={(e) => setFilter(e.target.value)}
             placeholder={t('wb.filterVocabulary')}
             maxLength={60}
-            className="mt-3 h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+            className="mt-3 h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
           />
           {/* Under the branch each term subdivides, so a reviewer picking a
               keyword sees the same structure they just filed the record
@@ -1007,7 +1007,7 @@ function FamilyPicker({
                 aria-pressed={on}
                 className={cn(
                   'flex items-center gap-2 border px-3 py-1.5 text-sm transition-colors',
-                  on ? 'border-ink bg-ink text-paper' : 'border-rule bg-paper-2 hover:border-accent',
+                  on ? 'border-primary bg-primary text-white' : 'border-rule bg-paper-2 hover:border-accent',
                 )}
               >
                 <span
@@ -1041,7 +1041,7 @@ function Decision({
   children: React.ReactNode;
 }) {
   const tones = {
-    accept: 'bg-positive text-paper shadow-soft hover:shadow-lift',
+    accept: 'bg-positive text-paper',
     reject: 'border border-critical text-critical hover:bg-critical/8',
     neutral: 'border border-rule-strong bg-paper text-ink hover:border-accent-strong hover:bg-accent-wash',
   };
@@ -1051,7 +1051,7 @@ function Decision({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex h-12 items-center gap-2 rounded-full px-5 font-medium transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50',
+        'flex h-11 items-center gap-2 rounded-full px-5 font-medium transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
         tones[tone],
       )}
     >

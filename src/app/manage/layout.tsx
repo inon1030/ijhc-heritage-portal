@@ -57,7 +57,7 @@ function Tab({ href, icon, label }: { href: string; icon: React.ReactNode; label
   return (
     <Link
       href={href}
-      className="flex h-12 items-center gap-2 rounded-full border border-rule bg-paper px-5 font-medium shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-accent-strong hover:bg-accent-wash"
+      className="flex h-11 items-center gap-2 rounded-full border border-rule bg-paper px-5 font-medium transition-colors duration-200 hover:border-accent-strong hover:bg-accent-wash"
     >
       {icon}
       {label}

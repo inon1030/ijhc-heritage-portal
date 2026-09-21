@@ -102,7 +102,7 @@ y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document
               <button
                 type="button"
                 onClick={() => decide('granted')}
-                className="h-11 rounded-full bg-ink px-4 text-sm font-medium text-paper transition-colors hover:bg-ink-2"
+                className="h-11 rounded-full bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-strong"
               >
                 {t('stats.accept')}
               </button>

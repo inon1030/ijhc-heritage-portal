@@ -47,7 +47,7 @@ export default async function UploadPage() {
    * than stranded and a tall one simply flows.
    */
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-var(--masthead-h)-4.5rem)] max-w-[110rem] flex-col justify-center px-6 pt-4 pb-10 sm:px-10 sm:pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--masthead-h)-4.5rem)] max-w-6xl flex-col justify-center px-6 pt-4 pb-10 sm:pt-6">
       {/*
         ── the page title is the screen's title ──────────────────────────────
         

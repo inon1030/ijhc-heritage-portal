@@ -133,8 +133,8 @@ export function FilePicker({
           add([...e.dataTransfer.files]);
         }}
         className={cn(
-          'border border-dashed transition-colors',
-          dragging ? 'border-accent bg-accent-wash' : 'border-rule bg-paper-2/50',
+          'rounded-[var(--radius-card)] border-2 border-dashed transition-colors',
+          dragging ? 'border-accent bg-accent-wash' : 'border-rule-strong bg-surface',
           disabled && 'opacity-60',
         )}
       >

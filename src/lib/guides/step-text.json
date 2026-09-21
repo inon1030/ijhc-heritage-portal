@@ -1,0 +1,160 @@
+{
+  "contributor": [
+    {
+      "id": "menu",
+      "title": {
+        "en": "Choose Contribute",
+        "he": "בוחרים \"תרומה\""
+      },
+      "body": {
+        "en": "Open the site and choose Contribute in the menu at the top. You do not need an account to send something to the archive.",
+        "he": "פותחים את האתר ובוחרים \"תרומה\" בתפריט העליון. לא צריך חשבון כדי לשלוח משהו לארכיון."
+      }
+    },
+    {
+      "id": "add-files",
+      "title": {
+        "en": "Add your files",
+        "he": "מוסיפים את הקבצים"
+      },
+      "body": {
+        "en": "Click the box to choose files, drag them onto it, or paste an image you copied (Ctrl+V). You can add several files at once: images, PDFs, audio and video, up to 50 MB each.",
+        "he": "לוחצים על התיבה כדי לבחור קבצים, גוררים אותם אליה, או מדביקים תמונה שהעתקתם (Ctrl+V). אפשר להוסיף כמה קבצים בבת אחת: תמונות, PDF, שמע ווידאו, עד 50 MB לקובץ."
+      }
+    },
+    {
+      "id": "add-link",
+      "title": {
+        "en": "Or give it an address",
+        "he": "או נותנים כתובת"
+      },
+      "body": {
+        "en": "For an article, a blog post or a YouTube video, paste the address and press Read the page. The archive keeps its own copy, because pages disappear.",
+        "he": "לכתבה, לפוסט או לסרטון ביוטיוב מדביקים את הכתובת ולוחצים \"קרא את העמוד\". הארכיון שומר עותק משלו, כי דפים נעלמים."
+      }
+    },
+    {
+      "id": "next",
+      "title": {
+        "en": "Press Next",
+        "he": "לוחצים \"המשך\""
+      },
+      "body": {
+        "en": "When the file is in, press Next. If you added more than one file, you will be asked whether they are pages of one item or separate items.",
+        "he": "כשהקובץ עלה לוחצים \"המשך\". אם הוספתם יותר מקובץ אחד, תישאלו אם אלה עמודים של פריט אחד או פריטים נפרדים."
+      }
+    },
+    {
+      "id": "email",
+      "title": {
+        "en": "Your email address",
+        "he": "כתובת הדוא\"ל שלכם"
+      },
+      "body": {
+        "en": "This is the only required field. It is never published. The knowledge expert uses it only if they have a question about what you sent.",
+        "he": "זה השדה היחיד שחובה למלא. הכתובת לא מתפרסמת לעולם, ומומחה הידע משתמש בה רק אם יש לו שאלה על מה ששלחתם."
+      }
+    },
+    {
+      "id": "what-you-know",
+      "title": {
+        "en": "What do you know about it?",
+        "he": "מה ידוע לכם על הפריט?"
+      },
+      "body": {
+        "en": "Write whatever you know, in any language: who is in it, where, roughly when, how it came to you. The AI treats this as fact and builds its reading around it. Title, origin and your name are optional; if you do not know, tick I don’t know.",
+        "he": "כותבים כל מה שידוע לכם, בכל שפה: מי מופיע, איפה, בערך מתי, ואיך זה הגיע אליכם. ה-AI מתייחס לזה כעובדה ובונה סביבו את הקריאה שלו. כותרת, מקור ושם הם רשות. אם לא יודעים, מסמנים \"אני לא יודע\"."
+      }
+    },
+    {
+      "id": "consent",
+      "title": {
+        "en": "Confirm you may share it",
+        "he": "מאשרים שמותר לשתף"
+      },
+      "body": {
+        "en": "Tick the box to confirm you may share this material. The link How it will be handled opens the full terms. Please do not send anything private, or a picture of a living person without their consent.",
+        "he": "מסמנים את התיבה כדי לאשר שמותר לכם לשתף את החומר. הקישור \"כיצד זה יטופל\" פותח את התנאים המלאים. לא שולחים חומר פרטי, או תמונה של אדם חי בלי הסכמתו."
+      }
+    },
+    {
+      "id": "read-with-ai",
+      "title": {
+        "en": "Press Read it with AI",
+        "he": "לוחצים \"קרא באמצעות בינה מלאכותית\""
+      },
+      "body": {
+        "en": "A detailed file can take up to half a minute. The page has not frozen; leave it open. The language button at the top disappears until you send the item, so the form does not switch language halfway through.",
+        "he": "קובץ מפורט יכול לקחת עד חצי דקה. הדף לא נתקע, פשוט משאירים אותו פתוח. כפתור השפה למעלה נעלם עד שהפריט נשלח, כדי שהטופס לא יחליף שפה באמצע."
+      }
+    },
+    {
+      "id": "description",
+      "title": {
+        "en": "Check the description",
+        "he": "בודקים את התיאור"
+      },
+      "body": {
+        "en": "What you see now is a suggestion. The description is pre-filled with the AI’s reading; change anything you know better. The X at the top closes this panel, and nothing is lost: the knowledge expert still sees all of it.",
+        "he": "מה שמופיע עכשיו הוא הצעה. התיאור מולא מראש לפי מה שה-AI קרא, ואפשר לשנות כל מה שאתם יודעים טוב יותר. ה-X למעלה סוגר את החלונית, ושום דבר לא הולך לאיבוד: מומחה הידע עדיין רואה הכל."
+      }
+    },
+    {
+      "id": "tags",
+      "title": {
+        "en": "Your tags",
+        "he": "התגיות שלכם"
+      },
+      "body": {
+        "en": "Tags come from the archive’s own list. Search to add another one, or use × on a tag to remove it. If the word you want is not on the list, mention it in the description.",
+        "he": "התגיות מגיעות מהרשימה של הארכיון. מחפשים כדי להוסיף תגית, או לוחצים × על תגית כדי להסיר אותה. אם המילה שרציתם לא ברשימה, כותבים אותה בתיאור."
+      }
+    },
+    {
+      "id": "fields",
+      "title": {
+        "en": "What the archive found",
+        "he": "מה שהארכיון מצא"
+      },
+      "body": {
+        "en": "Each field can be changed: pick another value or type over it. Inferred from style means the AI guessed from how it looks; those are the ones worth checking. Read from the material means it is written on the item itself. If a field is wrong, remove it: a gap is better than a wrong answer.",
+        "he": "אפשר לשנות כל שדה: לבחור ערך אחר או להקליד מעליו. \"הוסק מתוך הסגנון\" אומר שה-AI ניחש לפי המראה, ואותם כדאי לבדוק. \"נקרא מתוך החומר\" אומר שזה כתוב על הפריט עצמו. אם שדה שגוי, מסירים אותו: עדיף מקום ריק מתשובה שגויה."
+      }
+    },
+    {
+      "id": "add-field",
+      "title": {
+        "en": "Add what is missing",
+        "he": "מוסיפים את מה שחסר"
+      },
+      "body": {
+        "en": "Do you know something that is not listed, like a maker or a place? Add it here. Nothing here is required.",
+        "he": "יודעים משהו שלא מופיע, כמו יוצר או מקום? מוסיפים אותו כאן. שום דבר כאן לא חובה."
+      }
+    },
+    {
+      "id": "submit",
+      "title": {
+        "en": "Press Submit for review",
+        "he": "לוחצים \"שליחה לאישור\""
+      },
+      "body": {
+        "en": "When you are happy with it, press Submit for review. A knowledge expert compares the description with the original before anything is published.",
+        "he": "כשהכל נראה נכון לוחצים \"שליחה לאישור\". מומחה ידע משווה את התיאור למקור לפני שמשהו מתפרסם."
+      }
+    },
+    {
+      "id": "receipt",
+      "title": {
+        "en": "Keep the link",
+        "he": "שומרים את הקישור"
+      },
+      "body": {
+        "en": "This link is your receipt. It shows whether the item has been published yet, and needs no account or password. Save it: the archive has no other way to send it to you. Anyone with the link can open that page.",
+        "he": "הקישור הזה הוא הקבלה שלכם. הוא מראה אם הפריט כבר פורסם, ולא צריך בשבילו חשבון או סיסמה. שומרים אותו, כי לארכיון אין דרך אחרת לשלוח לכם אותו. כל מי שיש לו את הקישור יכול לפתוח את הדף."
+      }
+    }
+  ],
+  "expert": [],
+  "admin": []
+}

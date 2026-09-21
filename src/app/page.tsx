@@ -165,7 +165,7 @@ export default async function Home() {
         >
           <Link
             href="/portal"
-            className="group inline-flex h-14 items-center justify-center gap-2.5 rounded-full bg-[var(--color-brand-blue)] px-8 text-lg font-medium text-paper shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-brand-blue-deep)] hover:shadow-lift"
+            className="group inline-flex h-14 items-center justify-center gap-2.5 rounded-full bg-[var(--color-brand-blue)] px-8 text-lg font-medium text-paper transition-colors duration-200 hover:bg-[var(--color-brand-blue-deep)]"
           >
             {t('home.explore')}
             <ArrowRight
@@ -177,7 +177,7 @@ export default async function Home() {
 
           <Link
             href="/upload"
-            className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full border-2 border-[var(--color-brand-saffron)] bg-paper px-8 text-lg font-medium text-ink transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--color-brand-saffron)]/12 hover:shadow-soft"
+            className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full border-2 border-[var(--color-brand-saffron)] bg-paper px-8 text-lg font-medium text-ink transition-colors duration-200 hover:bg-[var(--color-brand-saffron)]/12"
           >
             <Upload size={19} aria-hidden />
             {t('home.contribute')}

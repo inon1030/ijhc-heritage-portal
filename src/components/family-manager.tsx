@@ -161,7 +161,7 @@ export function FamilyManager({
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             placeholder="Sassoon"
-            className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
         </label>
 
@@ -170,7 +170,7 @@ export function FamilyManager({
           <select
             value={community}
             onChange={(e) => setCommunity(e.target.value as Community)}
-            className="h-13 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+            className="h-11 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
           >
             {COMMUNITY_ORDER.map((c) => (
               <option key={c} value={c}>
@@ -183,7 +183,7 @@ export function FamilyManager({
         <button
           type="submit"
           disabled={busyId === 'new' || !name.trim()}
-          className={buttonClass('primary', 'h-13')}
+          className={buttonClass('primary', 'h-11')}
         >
           {busyId === 'new' ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
           Add
@@ -196,7 +196,7 @@ export function FamilyManager({
             onChange={(e) => setNotes(e.target.value)}
             maxLength={400}
             placeholder={t('families.examplePlaceholder')}
-            className="h-13 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+            className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
           />
         </label>
       </form>
@@ -208,7 +208,7 @@ export function FamilyManager({
       )}
 
       {families.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-6 py-10 text-center text-muted">
+        <p className="rounded-2xl bg-surface px-6 py-10 text-center text-muted">
           No families registered yet. Add one and it becomes selectable on every record in that
           community.
         </p>
@@ -299,7 +299,7 @@ export function FamilyManager({
                               type="button"
                               onClick={() => remove(family)}
                               disabled={busyId === family.id}
-                              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-colors duration-200 disabled:pointer-events-none disabled:opacity-40"
                             >
                               {busyId === family.id && <Loader2 size={14} className="animate-spin" />}
                               Remove it
@@ -379,7 +379,7 @@ export function FamilyManager({
                             <button
                               type="submit"
                               disabled={!contactEmail.trim() || busyId === `contact:${family.id}`}
-                              className="inline-flex h-11 items-center gap-1.5 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-all duration-200 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
+                              className="inline-flex h-11 items-center gap-1.5 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-colors duration-200 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
                             >
                               {busyId === `contact:${family.id}` ? (
                                 <Loader2 size={14} className="animate-spin" />
@@ -419,7 +419,7 @@ export function FamilyManager({
         </p>
 
         {contributors.length === 0 ? (
-          <p className="mt-5 rounded-xl border border-dashed border-rule-strong bg-paper-2/60 px-5 py-8 text-center text-sm text-muted">
+          <p className="mt-5 rounded-2xl bg-surface px-5 py-8 text-center text-sm text-muted">
             {t('families.nobodyLeftAddress')}
           </p>
         ) : (
@@ -430,7 +430,7 @@ export function FamilyManager({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('families.findAddress')}
-                className="h-12 w-full max-w-md rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
+                className="h-11 w-full max-w-md rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
               />
             </label>
 
@@ -501,7 +501,7 @@ export function FamilyManager({
                           type="button"
                           disabled={!draftEmail.trim() || draftEmail.trim() === contact.email}
                           onClick={() => correctEmail(contact.id)}
-                          className="inline-flex h-11 items-center gap-1.5 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-all duration-200 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
+                          className="inline-flex h-11 items-center gap-1.5 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-colors duration-200 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
                         >
                           {busyId === `edit:${contact.id}` && (
                             <Loader2 size={14} className="animate-spin" />
@@ -539,7 +539,7 @@ export function FamilyManager({
                             type="button"
                             onClick={() => erase(contact.id)}
                             disabled={busyId === `erase:${contact.id}`}
-                            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-critical px-4 text-sm font-medium text-paper transition-colors duration-200 disabled:pointer-events-none disabled:opacity-40"
                           >
                             {busyId === `erase:${contact.id}` && (
                               <Loader2 size={14} className="animate-spin" />

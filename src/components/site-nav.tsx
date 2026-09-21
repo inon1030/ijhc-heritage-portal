@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BookMarked,
+  BookOpen,
   ClipboardCheck,
   Globe,
   LogIn,
   LogOut,
   ShieldCheck,
+  Trash2,
   Upload,
   UserPlus,
   Users,
@@ -17,207 +19,183 @@ import type { Profile } from '@/lib/types';
 import { useMessages } from '@/lib/i18n/provider';
 
 /**
- * Everything the site can do, behind the fold at the top of every page.
+ * Everything the site can do, laid out in the bar at the top of every page.
  *
- * The front door offers exactly two things — browse, contribute — and this is
- * where the rest lives: signing in, asking for an account, the review queue,
- * the vocabulary, the family list, approving accounts, signing out. One hover
- * on the strip and it is all there.
+ * Until 21.09.2026 this lived behind a folded strip that opened on hover. The
+ * Center asked twice for a menu that is bigger and clearer, and a menu you
+ * have to discover is neither. On elevenlabs.io the navigation is simply
+ * there: the mark, a handful of words, the account at the far end. So is this.
  *
- * Two rows, because they answer different questions. The first is *what a
- * visitor can do* and everybody sees it. The second is *what a volunteer
- * maintains*, and it appears only for an approved account — a quieter strip
- * under a rule, so the archive's own tools never compete with the two doors
- * that matter to everyone else.
+ * Three groups, each rendered in two layouts - `bar` across the top from `lg:`
+ * up, `panel` stacked in the phone menu - so the two can never drift apart:
  *
- * Sizing is deliberate throughout: 17px labels in 46px targets, which is the
- * size a finger actually hits. The current page is marked twice over — a filled
- * pill and a heavier label — because one signal on its own is easy to miss on a
- * masthead that is the same colour as the page.
+ * - **Primary**: what anybody can do. Portal, Contribute, and the guides, with
+ *   the book the Center asked for.
+ * - **Account**: sign in and ask for an account, or sign out.
+ * - **Archive**: what an approved knowledge expert maintains. Only rendered for
+ *   an approved account; RLS and the routes enforce the same line regardless.
  */
 
 export interface NavProps {
   /**
    * Null when nobody is signed in. Present but role 'pending' when the account
-   * exists and has not been approved — which is why this is the whole profile
+   * exists and has not been approved - which is why this is the whole profile
    * and not just an address.
    */
   profile: Profile | null;
   queueCount: number;
 }
 
-const PUBLIC_LINKS = [
+type Layout = 'bar' | 'panel';
+
+const PRIMARY = [
   { href: '/portal', key: 'nav.portal', icon: Globe },
   { href: '/upload', key: 'nav.contribute', icon: Upload },
+  { href: '/guides', key: 'nav.guides', icon: BookOpen },
 ] as const;
 
-export function SiteNav({ profile, queueCount }: NavProps) {
+export function PrimaryNav({ layout }: { layout: Layout }) {
   const t = useMessages();
   const pathname = usePathname();
-  const approved = profile?.role === 'volunteer' || profile?.role === 'admin';
-  const isAdmin = profile?.role === 'admin';
+  return (
+    <nav
+      aria-label={t('nav.main')}
+      className={layout === 'bar' ? 'flex items-center gap-1' : 'flex flex-col gap-1'}
+    >
+      {PRIMARY.map(({ href, key, icon: Icon }) => {
+        const current = pathname.startsWith(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={current ? 'page' : undefined}
+            className={[
+              'flex items-center gap-2 whitespace-nowrap rounded-full font-medium transition-colors duration-200',
+              layout === 'bar' ? 'h-10 px-4 text-[0.9375rem]' : 'h-12 px-4 text-base',
+              current ? 'bg-surface-2 text-ink' : 'text-muted hover:bg-surface hover:text-ink',
+            ].join(' ')}
+          >
+            <Icon size={18} strokeWidth={1.8} aria-hidden />
+            {t(key)}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
-  /*
-   * Icon first, label folded away.
-   *
-   * The control is pinned to the far edge and shows only its icon; hovering
-   * unrolls the label beside it. `max-width` rather than `width` because the
-   * label's width is whatever the word happens to measure, and animating to a
-   * guessed number is how these end up clipping the last letter.
-   *
-   * The accessible name is on the button and never hidden, so this is a visual
-   * fold and not a secret.
-   */
-  const account = profile ? (
-    <form action="/api/auth/signout" method="post" className="md:ms-auto">
-      <button
-        type="submit"
-        title={t('nav.signedInAs', { email: profile.email })}
-        className="group/out flex h-[46px] w-full items-center gap-0 rounded-full border border-rule-strong bg-paper px-3.5 text-muted transition-all duration-300 hover:border-critical/40 hover:bg-critical/5 hover:text-critical md:w-auto"
-      >
-        <LogOut size={18} strokeWidth={1.9} aria-hidden className="shrink-0" />
-        <span
-          aria-hidden
-          className="max-w-[8rem] overflow-hidden whitespace-nowrap pl-2.5 transition-all duration-300 md:max-w-0 md:pl-0 md:opacity-0 md:group-hover/out:max-w-[8rem] md:group-hover/out:pl-2.5 md:group-hover/out:opacity-100"
+export function AccountNav({ profile, layout }: { profile: Profile | null; layout: Layout }) {
+  const t = useMessages();
+
+  if (profile) {
+    return (
+      <form action="/api/auth/signout" method="post">
+        <button
+          type="submit"
+          title={t('nav.signedInAs', { email: profile.email })}
+          className={[
+            'flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-rule-strong font-medium text-muted transition-colors duration-200 hover:border-critical/40 hover:text-critical',
+            layout === 'bar' ? 'h-9 px-4 text-sm' : 'h-12 w-full px-4',
+          ].join(' ')}
         >
+          <LogOut size={16} strokeWidth={1.8} aria-hidden />
           {t('nav.signOut')}
-        </span>
-        <span className="sr-only">{t('nav.signOut')}</span>
-      </button>
-    </form>
-  ) : (
-    // Signing in and asking for an account are two different intentions, and
-    // one link labelled "Volunteer sign in" hid the second behind a tab nobody
-    // knew was there.
-    <span className="flex flex-col gap-2 md:ms-auto md:flex-row md:items-center">
+        </button>
+      </form>
+    );
+  }
+
+  // Signing in and asking for an account are two different intentions, and
+  // one link labelled "Volunteer sign in" hid the second behind a tab nobody
+  // knew was there.
+  return (
+    <div className={layout === 'bar' ? 'flex items-center gap-1.5' : 'flex flex-col gap-2'}>
       <Link
         href="/login?mode=request"
-        className="flex h-[46px] items-center justify-center gap-2 rounded-full px-4 text-muted transition-colors hover:bg-paper-2 hover:text-ink"
+        className={[
+          'flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium text-muted transition-colors duration-200 hover:bg-surface hover:text-ink',
+          layout === 'bar' ? 'h-9 px-3.5 text-sm' : 'h-12 px-4',
+        ].join(' ')}
       >
-        <UserPlus size={18} strokeWidth={1.9} aria-hidden />
+        <UserPlus size={16} strokeWidth={1.8} aria-hidden />
         {t('nav.createAccount')}
       </Link>
       <Link
         href="/login"
-        className="flex h-[46px] items-center justify-center gap-2 rounded-full border border-rule-strong px-5 font-medium transition-all duration-200 hover:border-accent-strong hover:bg-accent-wash hover:shadow-soft"
+        className={[
+          'flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary font-medium text-white transition-colors duration-200 hover:bg-primary-strong',
+          layout === 'bar' ? 'h-9 px-4 text-sm' : 'h-12 px-4',
+        ].join(' ')}
       >
-        <LogIn size={18} strokeWidth={1.9} aria-hidden />
+        <LogIn size={16} strokeWidth={1.8} aria-hidden />
         {t('nav.signIn')}
       </Link>
-    </span>
-  );
-
-  return (
-    <div className="flex flex-1 flex-col gap-1">
-      <nav
-        className="flex flex-col gap-1 md:flex-row md:items-center md:gap-1.5"
-        aria-label={t('nav.main')}
-      >
-        {PUBLIC_LINKS.map(({ href, key, icon: Icon }) => (
-          <NavLink key={href} href={href} current={pathname.startsWith(href)}>
-            <Icon size={18} strokeWidth={1.9} aria-hidden />
-            {t(key)}
-          </NavLink>
-        ))}
-
-        <span className="my-1 h-px w-full bg-rule md:hidden" aria-hidden />
-        {account}
-      </nav>
-
-      {/* An account waiting on an administrator has a session and no rights.
-          Saying so here is the difference between "the site is broken" and
-          "somebody has to press a button". */}
-      {profile?.role === 'pending' && (
-        <p className="mt-1 rounded-full bg-accent-wash px-4 py-2 text-sm text-caution md:mt-2">
-          {t('nav.pendingAccount')}
-        </p>
-      )}
-
-      {approved && (
-        <nav
-          className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 border-t border-rule pt-2 md:mt-2"
-          aria-label={t('nav.archiveAdmin')}
-        >
-          <span className="eyebrow me-2 hidden md:inline">{t('nav.archive')}</span>
-          <QuietLink href="/review" current={pathname.startsWith('/review')}>
-            <ClipboardCheck size={16} strokeWidth={1.9} aria-hidden />
-            {t('nav.review')}
-            {queueCount > 0 && (
-              <span
-                className="ms-1 rounded-full bg-accent-strong px-2 py-0.5 font-mono text-xs leading-none text-paper"
-                aria-label={t('nav.waiting', { count: queueCount })}
-              >
-                {queueCount}
-              </span>
-            )}
-          </QuietLink>
-          <QuietLink href="/manage/vocabulary" current={pathname.startsWith('/manage/vocabulary')}>
-            <BookMarked size={16} strokeWidth={1.9} aria-hidden />
-            {t('nav.keywords')}
-          </QuietLink>
-          <QuietLink href="/manage/families" current={pathname.startsWith('/manage/families')}>
-            <Users size={16} strokeWidth={1.9} aria-hidden />
-            {t('nav.families')}
-          </QuietLink>
-          {isAdmin && (
-            <QuietLink href="/manage/accounts" current={pathname.startsWith('/manage/accounts')}>
-              <ShieldCheck size={16} strokeWidth={1.9} aria-hidden />
-              {t('nav.accounts')}
-            </QuietLink>
-          )}
-        </nav>
-      )}
     </div>
   );
 }
 
-function NavLink({
-  href,
-  current,
-  children,
-}: {
-  href: string;
-  current: boolean;
-  children: React.ReactNode;
-}) {
+export function ArchiveNav({ profile, queueCount, layout }: NavProps & { layout: Layout }) {
+  const t = useMessages();
+  const pathname = usePathname();
+  const approved = profile?.role === 'volunteer' || profile?.role === 'admin';
+  if (!approved) return null;
+  const isAdmin = profile?.role === 'admin';
+
+  const links = [
+    { href: '/review', label: t('nav.review'), icon: ClipboardCheck, count: queueCount },
+    { href: '/manage/vocabulary', label: t('nav.keywords'), icon: BookMarked },
+    { href: '/manage/families', label: t('nav.families'), icon: Users },
+    ...(isAdmin
+      ? [
+          { href: '/manage/accounts', label: t('nav.accounts'), icon: ShieldCheck },
+          { href: '/manage/bin', label: t('nav.bin'), icon: Trash2 },
+        ]
+      : []),
+  ];
+
   return (
-    <Link
-      href={href}
-      aria-current={current ? 'page' : undefined}
-      className={[
-        'flex h-[46px] items-center gap-2 rounded-full px-4 transition-all duration-200',
-        current
-          ? 'bg-sage-wash font-semibold text-sage shadow-[inset_0_0_0_1px_var(--color-sage)]'
-          : 'text-muted hover:bg-paper-2 hover:text-ink',
-      ].join(' ')}
+    <nav
+      aria-label={t('nav.archiveAdmin')}
+      className={layout === 'bar' ? 'flex flex-wrap items-center gap-1' : 'flex flex-col gap-1'}
     >
-      {children}
-    </Link>
+      <span className={layout === 'bar' ? 'eyebrow me-2' : 'eyebrow px-4 pb-1 pt-2'}>{t('nav.archive')}</span>
+      {links.map(({ href, label, icon: Icon, count }) => {
+        const current = pathname.startsWith(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={current ? 'page' : undefined}
+            className={[
+              'flex items-center gap-2 whitespace-nowrap rounded-full transition-colors duration-200',
+              layout === 'bar' ? 'h-9 px-3.5 text-sm' : 'h-12 px-4',
+              current ? 'bg-surface-2 font-medium text-ink' : 'text-muted hover:bg-surface hover:text-ink',
+            ].join(' ')}
+          >
+            <Icon size={16} strokeWidth={1.8} aria-hidden />
+            {label}
+            {count ? (
+              <span
+                className="ms-0.5 rounded-full bg-accent-strong px-2 py-0.5 font-mono text-xs leading-none text-paper"
+                aria-label={t('nav.waiting', { count })}
+              >
+                {count}
+              </span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
-/** The second row. Same target height on a phone, quieter everywhere. */
-function QuietLink({
-  href,
-  current,
-  children,
-}: {
-  href: string;
-  current: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={current ? 'page' : undefined}
-      className={[
-        'flex h-11 items-center gap-2 rounded-full px-3.5 text-sm transition-all duration-200',
-        current
-          ? 'bg-sage-wash font-semibold text-sage'
-          : 'text-muted hover:bg-paper-2 hover:text-ink',
-      ].join(' ')}
-    >
-      {children}
-    </Link>
-  );
+/**
+ * An account waiting on an administrator has a session and no rights. Saying
+ * so is the difference between "the site is broken" and "somebody has to press
+ * a button".
+ */
+export function PendingNotice({ profile }: { profile: Profile | null }) {
+  const t = useMessages();
+  if (profile?.role !== 'pending') return null;
+  return <p className="rounded-full bg-accent-wash px-4 py-2 text-sm text-caution">{t('nav.pendingAccount')}</p>;
 }

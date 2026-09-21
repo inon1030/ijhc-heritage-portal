@@ -2,20 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import {
-  Assistant,
-  Frank_Ruhl_Libre,
+  Heebo,
   IBM_Plex_Mono,
-  IBM_Plex_Sans,
+  Inter,
   Noto_Naskh_Arabic,
   Noto_Sans_Devanagari,
   Noto_Sans_Malayalam,
-  Noto_Serif_Devanagari,
-  Noto_Serif_Malayalam,
-  Spectral,
 } from 'next/font/google';
 import { Masthead } from '@/components/masthead';
 import { Stats } from '@/components/stats';
-import { currentTheme } from '@/lib/theme';
 import { STATS_COOKIE, readChoice } from '@/lib/stats';
 import { currentBucket } from '@/lib/experiment-server';
 import { cookies } from 'next/headers';
@@ -24,38 +19,40 @@ import { MessagesProvider } from '@/lib/i18n/provider';
 import './globals.css';
 
 /**
- * Spectral for display, Plex Sans for interface, Plex Mono for anything a
- * machine produced.
+ * One sans per script for everything a person reads, and Plex Mono for
+ * anything a machine produced.
  *
- * ── the four below, and why they are not optional ───────────────────────────
+ * ── why the serif went ──────────────────────────────────────────────────────
  *
- * The comment that used to sit here said Spectral carries "the language
- * coverage an archive of Hebrew, Marathi, Malayalam and English material
- * needs". It does not, and never did — it is loaded `subsets: ['latin']` and
- * Spectral has no Hebrew, Devanagari or Malayalam glyphs at all. Every Hebrew
- * transcription the model returns has been rendering in whatever the browser
- * happened to fall back to, which on a machine without a Hebrew face is tofu.
+ * Until 21.09.2026 this was Spectral and Frank Ruhl for display against Plex
+ * Sans and Assistant for interface. Inon asked for elevenlabs.io's proportions
+ * and type, with the archive's own colours. Their system is one sans at every
+ * size with weight doing the work: a 48px headline at 300, 16px body at 400,
+ * labels at 500. Inter is the open face closest to theirs (their display face,
+ * Waldenburg, is licensed), and Heebo is the Hebrew sans drawn to sit with it.
  *
- * The archive stores what is written on the object, in the script it was
- * written in — the AI prompt says so in as many words. So the faces for those
- * scripts belong here beside the Latin ones.
+ * ── what did not change ─────────────────────────────────────────────────────
  *
- * **They cost nothing on a page that does not use them.** next/font emits a
- * `unicode-range` per subset, so a browser downloads the Hebrew face only when
- * Hebrew characters are actually on the page. A visitor reading English
- * records fetches none of the four.
+ * Every script the archive holds still gets real faces at real weights. The
+ * lesson of 2360a7c stands: a script loaded at one weight has every heading
+ * synthesised, and faux bold is what makes type look like a word processor.
+ * So each face below carries 300 to 600.
+ *
+ * They cost nothing on a page that does not use them. next/font emits a
+ * `unicode-range` per subset, so a visitor reading English downloads no Hebrew,
+ * Devanagari or Malayalam at all.
  */
-const spectral = Spectral({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-spectral',
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-inter',
   display: 'swap',
 });
 
-const plexSans = IBM_Plex_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-plex-sans',
+const heebo = Heebo({
+  subsets: ['hebrew'],
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-heebo',
   display: 'swap',
 });
 
@@ -66,79 +63,17 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
-/**
- * ── the other four scripts, and why they needed rebuilding ──────────────────
- *
- * They used to be one face at one weight each: Noto Sans, 400, for every
- * script the archive is not written in. Measured on the deployed Hebrew page,
- * that produced two faults that do not exist in English.
- *
- * **No hierarchy.** `--font-display` resolved Spectral → *Spectral has no
- * Hebrew* → Noto Sans Hebrew. `--font-sans` resolved Plex Sans → *no Hebrew* →
- * Noto Sans Hebrew. Headline and body came out as the same face. The whole
- * design rests on a serif display against a sans interface, and in four of the
- * five languages that distinction simply did not exist.
- *
- * **No bold.** `document.fonts.check('500 45px "Noto Sans Hebrew"')` returned
- * false: only 400 was loaded, so every heading weight was **synthesised** — the
- * browser smearing a regular to fake a medium. Faux bold is the single thing
- * that most makes type look like a word processor rather than a design.
- *
- * So each script now gets what Latin gets: a serif for display, a sans for
- * interface, and the same three real weights. Chosen per script rather than
- * taken from one family, because a heritage archive is the wrong place for the
- * face whose entire design brief was "neutral fallback".
- *
- * They still cost nothing on a page that does not use them. next/font emits a
- * `unicode-range` per subset, so a visitor reading English downloads none of
- * these — which is what makes it affordable to load eight faces instead of four.
- */
-
-/**
- * Hebrew display. Frank Ruhl, cut in 1908, is *the* Hebrew book face — the one
- * designed to sit beside a Latin literary serif on a scholarly page, which is
- * exactly what Spectral is doing on the other side of this archive.
- */
-const frankRuhl = Frank_Ruhl_Libre({
-  subsets: ['hebrew'],
-  weight: ['400', '500', '600'],
-  variable: '--font-hebrew-display',
-  display: 'swap',
-});
-
-/** Hebrew interface. A warm humanist sans, and legible small. */
-const assistant = Assistant({
-  subsets: ['hebrew'],
-  weight: ['400', '500', '600'],
-  variable: '--font-hebrew-sans',
-  display: 'swap',
-});
-
 /** Marathi and Hindi. */
-const serifDevanagari = Noto_Serif_Devanagari({
-  subsets: ['devanagari'],
-  weight: ['400', '500', '600'],
-  variable: '--font-devanagari-display',
-  display: 'swap',
-});
-
 const sansDevanagari = Noto_Sans_Devanagari({
   subsets: ['devanagari'],
-  weight: ['400', '500', '600'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-devanagari-sans',
-  display: 'swap',
-});
-
-const serifMalayalam = Noto_Serif_Malayalam({
-  subsets: ['malayalam'],
-  weight: ['400', '500', '600'],
-  variable: '--font-malayalam-display',
   display: 'swap',
 });
 
 const sansMalayalam = Noto_Sans_Malayalam({
   subsets: ['malayalam'],
-  weight: ['400', '500', '600'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-malayalam-sans',
   display: 'swap',
 });
@@ -228,12 +163,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** The browser chrome takes the archive's own paper, in either theme. */
+/** The browser chrome takes the archive's own paper. */
 export const viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fdfbf7' },
-    { media: '(prefers-color-scheme: dark)', color: '#171a12' },
-  ],
+  themeColor: '#fdfbf7',
+  colorScheme: 'light',
   width: 'device-width',
   initialScale: 1,
 };
@@ -254,22 +187,15 @@ export const viewport = {
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { t, language, dir, catalogue } = await getMessages();
-  // Stamped before the HTML leaves the server, so a reader who asked for dark
-  // never sees a cream flash on the way to it.
-  const theme = await currentTheme();
   const statsChoice = readChoice((await cookies()).get(STATS_COOKIE)?.value);
   const bucket = await currentBucket();
 
   return (
-    <html lang={language.code} dir={dir} data-theme={theme === 'system' ? undefined : theme} className={[
-        spectral.variable,
-        plexSans.variable,
+    <html lang={language.code} dir={dir} className={[
+        inter.variable,
+        heebo.variable,
         plexMono.variable,
-        frankRuhl.variable,
-        assistant.variable,
-        serifDevanagari.variable,
         sansDevanagari.variable,
-        serifMalayalam.variable,
         sansMalayalam.variable,
         naskhArabic.variable,
       ].join(' ')}>
@@ -295,39 +221,31 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           poster.
         */}
         <div aria-hidden className="mt-24 h-14 w-full bg-[var(--color-brand-blue)] sm:h-16" />
-        <footer className="bg-paper-2/70">
-          <div className="mx-auto max-w-6xl px-6 py-12">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+        <footer className="bg-surface">
+          <div className="mx-auto max-w-6xl px-6 py-14">
+            <div className="grid gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
               <div>
-                <p className="font-display text-xl">{t('site.name')}</p>
-                <p className="mt-1 text-muted">{t('footer.partner')}</p>
+                <p className="text-lg font-medium">{t('site.name')}</p>
+                <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">{t('footer.partner')}</p>
               </div>
 
-              <nav aria-label={t('footer.label')} className="flex flex-col sm:items-end">
-                <Link href="/portal" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  {t('footer.browse')}
-                </Link>
-                <Link href="/upload" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  {t('footer.contribute')}
-                </Link>
-                <Link href="/handling" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  {t('footer.handling')}
-                </Link>
-                {/* The three a public archive has to publish, at permanent
-                    addresses, reachable from every page. */}
-                <Link href="/privacy" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  {t('nav.privacy')}
-                </Link>
-                <Link href="/terms" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  {t('nav.terms')}
-                </Link>
-                <Link href="/accessibility" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
-                  {t('nav.accessibility')}
-                </Link>
+              <nav aria-label={t('footer.label')} className="flex flex-col text-sm">
+                <Link href="/portal" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('footer.browse')}</Link>
+                <Link href="/upload" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('footer.contribute')}</Link>
+                <Link href="/guides" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('nav.guides')}</Link>
+                <Link href="/handling" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('footer.handling')}</Link>
+              </nav>
+
+              {/* The three a public archive has to publish, at permanent
+                  addresses, reachable from every page. */}
+              <nav aria-label={t('footer.legal')} className="flex flex-col text-sm">
+                <Link href="/privacy" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('nav.privacy')}</Link>
+                <Link href="/terms" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('nav.terms')}</Link>
+                <Link href="/accessibility" className="inline-flex min-h-10 items-center text-muted transition-colors hover:text-ink">{t('nav.accessibility')}</Link>
               </nav>
             </div>
 
-            <p className="mt-10 border-t border-rule pt-6 text-sm leading-relaxed text-muted">
+            <p className="mt-12 border-t border-rule pt-6 text-sm leading-relaxed text-muted">
               {t('footer.promise')}
             </p>
           </div>

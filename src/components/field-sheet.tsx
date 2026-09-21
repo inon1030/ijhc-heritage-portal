@@ -174,7 +174,7 @@ export function FieldSheet({
       )}
 
       {available.length > 0 && (
-        <div className="rounded-xl border border-dashed border-rule-strong bg-paper-2/50 p-4">
+        <div className="rounded-2xl bg-surface p-4">
           <label htmlFor={addId} className="eyebrow mb-1.5 flex items-center gap-1.5">
             <Plus size={14} aria-hidden />
             {t('fields.add')}
@@ -196,7 +196,7 @@ export function FieldSheet({
               add(e.target.value);
               e.currentTarget.value = '';
             }}
-            className="h-12 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:outline-none sm:max-w-sm"
+            className="h-11 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:outline-none sm:max-w-sm"
           >
             <option value="">{t('fields.choose')}</option>
             {GROUP_ORDER.map((group) => {
@@ -246,7 +246,7 @@ function FieldRow({
         value={row.value}
         onChange={(e) => onValue(e.target.value)}
         disabled={disabled}
-        className="h-12 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
+        className="h-11 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
       >
         <option value="">{t('common.notDetermined')}</option>
         {(def.options ?? []).map((option) => (
@@ -263,7 +263,7 @@ function FieldRow({
         disabled={disabled}
         maxLength={def.maxLength}
         className={cn(
-          'h-12 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none',
+          'h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none',
           !row.value && 'border-dashed',
         )}
       />

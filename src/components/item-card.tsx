@@ -34,7 +34,7 @@ export async function ItemCard({ item }: { item: Item & { file: ItemFile | null 
   return (
     <Link
       href={`/portal/${item.id}`}
-      className="group relative block aspect-square overflow-hidden rounded-xl bg-paper-2 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline-offset-4"
+      className="group relative block aspect-square overflow-hidden rounded-2xl bg-paper-2 transition-colors duration-200 focus-visible:outline-offset-4"
     >
       <div className="absolute inset-0 transition-transform duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]">
         <FilePreview file={item.file} alt={item.title} still />
@@ -63,7 +63,7 @@ export async function ItemCard({ item }: { item: Item & { file: ItemFile | null 
 
       <span
         aria-hidden
-        className="absolute top-3 end-3 flex h-9 w-9 translate-y-1 items-center justify-center rounded-full bg-paper/90 opacity-0 shadow-soft backdrop-blur-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+        className="absolute top-3 end-3 flex h-9 w-9 translate-y-1 items-center justify-center rounded-full bg-paper/90 opacity-0 backdrop-blur-sm transition-colors duration-200 group-hover:translate-y-0 group-hover:opacity-100"
       >
         <ArrowUpRight size={17} className="text-accent-strong" />
       </span>

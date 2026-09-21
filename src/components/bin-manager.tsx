@@ -79,7 +79,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
           const confirmingThis = purging === item.id;
 
           return (
-            <li key={item.id} className="card rounded-xl p-4">
+            <li key={item.id} className="card p-4">
               <div className="flex gap-4">
                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-paper-2">
                   {item.file && <FilePreview file={item.file} alt="" fit="cover" still />}
@@ -101,7 +101,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
                     type="button"
                     disabled={busy || pending}
                     onClick={() => send(item.id, 'POST')}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
+                    className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong bg-paper px-4 text-sm font-medium transition-colors duration-200 hover:border-accent-strong hover:bg-accent-wash disabled:pointer-events-none disabled:opacity-50"
                   >
                     {busy ? (
                       <Loader2 size={15} className="animate-spin" aria-hidden />
@@ -118,7 +118,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
                       setPurging(confirmingThis ? null : item.id);
                       setTyped('');
                     }}
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-critical px-4 text-sm font-medium text-critical transition-all duration-200 hover:-translate-y-0.5 hover:bg-critical/8 disabled:pointer-events-none disabled:opacity-50"
+                    className="inline-flex h-10 items-center gap-2 rounded-full border border-critical px-4 text-sm font-medium text-critical transition-colors duration-200 hover:bg-critical/8 disabled:pointer-events-none disabled:opacity-50"
                   >
                     <Trash2 size={15} aria-hidden />
                     {t('bin.destroy')}
@@ -143,7 +143,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
                       type="button"
                       disabled={typed.trim() !== item.title.trim() || busy}
                       onClick={() => send(item.id, 'DELETE')}
-                      className="inline-flex h-11 items-center gap-2 rounded-full bg-critical px-5 text-sm font-medium text-paper transition-all duration-200 hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-40"
+                      className="inline-flex h-11 items-center gap-2 rounded-full bg-critical px-5 text-sm font-medium text-paper transition-colors duration-200 disabled:pointer-events-none disabled:opacity-40"
                     >
                       {busy && <Loader2 size={15} className="animate-spin" aria-hidden />}
                       Destroy for good

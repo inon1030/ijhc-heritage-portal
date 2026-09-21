@@ -109,9 +109,9 @@ export function PortalFilters({
               aria-pressed={on}
               onClick={() => apply({ community: on ? null : c })}
               className={cn(
-                'flex h-10 shrink-0 items-center gap-2 rounded-full border ps-3 pe-3.5 text-[0.95rem] transition-all duration-200',
+                'flex h-10 shrink-0 items-center gap-2 rounded-full border ps-3 pe-3.5 text-[0.95rem] transition-colors duration-200',
                 on
-                  ? 'border-transparent bg-ink text-paper shadow-soft'
+                  ? 'border-transparent bg-primary text-white'
                   : 'border-rule hover:border-accent-strong hover:bg-accent-wash',
                 n === 0 && !on && 'cursor-default opacity-40 hover:border-rule hover:bg-transparent',
               )}
@@ -138,9 +138,9 @@ export function PortalFilters({
               aria-pressed={on}
               onClick={() => apply({ category: on ? null : (c as ItemCategory) })}
               className={cn(
-                'h-10 shrink-0 rounded-full border px-3.5 text-[0.95rem] transition-all duration-200',
+                'h-10 shrink-0 rounded-full border px-3.5 text-[0.95rem] transition-colors duration-200',
                 on
-                  ? 'border-transparent bg-ink text-paper shadow-soft'
+                  ? 'border-transparent bg-primary text-white'
                   : 'border-rule hover:border-accent-strong hover:bg-accent-wash',
               )}
             >
@@ -288,7 +288,7 @@ function ViewToggle({
       aria-label={label}
       className={cn(
         'flex h-9 w-9 items-center justify-center rounded-full transition-colors',
-        on ? 'bg-ink text-paper' : 'text-muted hover:bg-paper-2 hover:text-ink',
+        on ? 'bg-primary text-white' : 'text-muted hover:bg-paper-2 hover:text-ink',
       )}
     >
       {children}

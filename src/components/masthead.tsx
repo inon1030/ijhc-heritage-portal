@@ -2,10 +2,7 @@ import Link from 'next/link';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { Logo } from '@/components/logo';
 import { LanguagePicker } from '@/components/language-picker';
-import { ThemePicker } from '@/components/theme-picker';
-import { currentTheme } from '@/lib/theme';
 import { MastheadShell } from '@/components/masthead-shell';
-import { SiteNav } from '@/components/site-nav';
 import { StreamRule } from '@/components/stream-rule';
 import { countReviewQueue, getCommunityCounts } from '@/lib/items/queries';
 import { getCurrentProfile } from '@/lib/supabase/server';
@@ -13,8 +10,7 @@ import { listLanguages, requestedLanguage } from '@/lib/translate/languages';
 import { getMessages } from '@/lib/i18n';
 
 /**
- * The masthead, folded away behind a strip. `MastheadShell` handles the
- * opening; everything here is what appears once it has.
+ * The masthead. `MastheadShell` lays it out; this gathers what it shows.
  *
  * It sits on paper rather than a dark band. The Center's mark is a blue star
  * around a saffron chakra: on a coloured ground it reads as a sticker on
@@ -31,7 +27,6 @@ export async function Masthead() {
     getMessages(),
   ]);
   const { t } = m;
-  const theme = await currentTheme();
 
   // A pending account has a profile and no rights. Counting its queue would
   // return zero anyway — RLS sees to that — but asking at all would imply it
@@ -44,17 +39,17 @@ export async function Masthead() {
       home={
         <Link
           href="/"
-          className="flex items-center gap-2.5 rounded-lg transition-opacity duration-200 hover:opacity-70"
+          aria-label={t('site.home')}
+          className="flex items-center gap-2.5 rounded-lg transition-opacity duration-200 hover:opacity-75"
         >
-          <Logo variant="mark" size={36} />
-          <span className="wordmark hidden text-[1.22rem] sm:inline">{t('site.name')}</span>
-          <span className="wordmark text-xl sm:hidden">{t('site.short')}</span>
+          <Logo variant="mark" size={34} />
+          <span className="wordmark hidden text-[1.05rem] xl:inline">{t('site.name')}</span>
+          <span className="wordmark text-lg xl:hidden">{t('site.short')}</span>
         </Link>
       }
       rule={<StreamRule counts={counts} />}
       language={
-        <div className="flex items-center gap-2">
-          <ThemePicker initial={theme} />
+        <div className="flex items-center gap-1.5">
           <LanguagePicker
             languages={languages}
             current={reading?.code ?? languages[0]?.code ?? 'en'}
@@ -64,21 +59,8 @@ export async function Masthead() {
           />
         </div>
       }
-    >
-      {/*
-        No mark in the open bar.
-
-        There was a 68px lockup here and the strip above it already carries the
-        Center's mark and its name, as a link home — so opening the menu drew
-        the same logo twice, sixteen pixels apart, and the navigation started
-        two hundred pixels in from the left to make room for the second one.
-
-        What the bar is *for* is the navigation. The way home is the strip, and
-        it is there whether the bar is open or shut.
-      */}
-      <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-5 md:flex-row md:items-center md:gap-8">
-        <SiteNav profile={profile} queueCount={queueCount} />
-      </div>
-    </MastheadShell>
+      profile={profile}
+      queueCount={queueCount}
+    />
   );
 }
