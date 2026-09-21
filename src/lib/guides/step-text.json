@@ -155,6 +155,140 @@
       }
     }
   ],
-  "expert": [],
-  "admin": []
+  "expert": [
+    {
+      "id": "menu-review",
+      "title": {
+        "en": "The archive row",
+        "he": "שורת הארכיון"
+      },
+      "body": {
+        "en": "Once you are signed in, a second row appears under the menu with the archive’s own screens: Review, with how many items are waiting, Keywords and Families.",
+        "he": "אחרי ההתחברות מופיעה מתחת לתפריט שורה שנייה עם המסכים של הארכיון: סקירה, עם מספר הפריטים שממתינים, מילות מפתח ומשפחות."
+      }
+    },
+    {
+      "id": "queue",
+      "title": {
+        "en": "Open an item from the queue",
+        "he": "פותחים פריט מהתור"
+      },
+      "body": {
+        "en": "Each card is an item waiting for review. Not catalogued means nobody has chosen a kind of item yet. Click the card to open it.",
+        "he": "כל כרטיס הוא פריט שממתין לבדיקה. \"לא מקוטלג\" אומר שעוד לא נבחר סוג פריט. לוחצים על הכרטיס כדי לפתוח אותו."
+      }
+    },
+    {
+      "id": "original",
+      "title": {
+        "en": "Start from the original",
+        "he": "מתחילים מהמקור"
+      },
+      "body": {
+        "en": "The file is on one side and the record on the other. Size, type and dimensions under the file are measured from it, not guessed. Check every suggestion against this file.",
+        "he": "הקובץ בצד אחד והרשומה בצד השני. הגודל, הסוג והמידות שמתחת לקובץ נמדדו ממנו ולא נוחשו. כל הצעה בודקים מול הקובץ הזה."
+      }
+    },
+    {
+      "id": "record",
+      "title": {
+        "en": "Write the record",
+        "he": "כותבים את הרשומה"
+      },
+      "body": {
+        "en": "This is what the public will read. It starts almost empty: the machine’s suggestion sits beside each field, and Use this copies it in. It only becomes part of the record when you take it.",
+        "he": "זה מה שהציבור יקרא. הרשומה מתחילה כמעט ריקה: ההצעה של המכונה מופיעה ליד כל שדה, ו\"השתמש בזה\" מעתיק אותה פנימה. היא הופכת לחלק מהרשומה רק כשאתם לוקחים אותה."
+      }
+    },
+    {
+      "id": "fields",
+      "title": {
+        "en": "Community and keywords",
+        "he": "קהילה ומילות מפתח"
+      },
+      "body": {
+        "en": "Choose one of the four communities, or General India when it cannot be placed with confidence; the keyword and family lists narrow to it. Click a suggested keyword to add it, or filter the vocabulary for another term.",
+        "he": "בוחרים אחת מארבע הקהילות, או \"כלל הודו\" כשאי אפשר לשייך בביטחון, ורשימות מילות המפתח והמשפחות מצטמצמות בהתאם. לוחצים על מילת מפתח מוצעת כדי להוסיף אותה, או מסננים את אוצר המילים כדי למצוא מונח אחר."
+      }
+    },
+    {
+      "id": "translations",
+      "title": {
+        "en": "Check the translations",
+        "he": "בודקים את התרגומים"
+      },
+      "body": {
+        "en": "The record in each language it will be published in. Read the tabs and correct what is wrong: a person’s correction is kept, and the translator never overwrites it. If the daily allowance is spent, publish anyway; the missing languages are filled in overnight.",
+        "he": "הרשומה בכל שפה שבה היא תתפרסם. קוראים את הלשוניות ומתקנים את מה שלא נכון: תיקון של אדם נשמר, והמתרגם לא דורס אותו. אם המכסה היומית נגמרה מפרסמים בכל זאת, והשפות החסרות יושלמו בלילה."
+      }
+    },
+    {
+      "id": "decide",
+      "title": {
+        "en": "Decide",
+        "he": "מחליטים"
+      },
+      "body": {
+        "en": "Publish puts the record on the portal. Reject takes it off the portal but keeps it for the archive team, and it can be returned to the queue later. Prefer Reject or Hold in Shadow Gallery to the bin: anyone can undo those.",
+        "he": "\"פרסם\" מעלה את הרשומה לפורטל. \"דחה\" מורידה אותה מהפורטל אבל שומרת אותה לצוות הארכיון, ואפשר להחזיר אותה לתור אחר כך. עדיף לדחות או לשמור בגלריית הצללים מאשר להעביר לסל המחזור: את אלה כל אחד יכול לבטל."
+      }
+    },
+    {
+      "id": "keywords",
+      "title": {
+        "en": "The vocabulary",
+        "he": "אוצר המילים"
+      },
+      "body": {
+        "en": "The list of terms records may use, as a tree. Type a new term and choose the branch it belongs under; without a branch the machine cannot use it. Words the machine needed and did not find wait here to be accepted, merged or dismissed.",
+        "he": "רשימת המונחים שרשומות יכולות להשתמש בהם, בצורת עץ. מקלידים מונח חדש ובוחרים את הענף שלו; בלי ענף המכונה לא יכולה להשתמש בו. מילים שהמכונה חיפשה ולא מצאה מחכות כאן לאישור, למיזוג או לדחייה."
+      }
+    },
+    {
+      "id": "families",
+      "title": {
+        "en": "Families and contributors",
+        "he": "משפחות ותורמים"
+      },
+      "body": {
+        "en": "A family name is published on every record it is attached to, so register a family only if the name is already part of the historical record, and never identify a private donor. Contributors’ addresses are never published.",
+        "he": "שם משפחה מתפרסם בכל רשומה שהוא מחובר אליה, לכן רושמים משפחה רק אם השם כבר חלק מהתיעוד ההיסטורי, ולעולם לא מזהים תורם פרטי. כתובות הדוא\"ל של התורמים לא מתפרסמות לעולם."
+      }
+    }
+  ],
+  "admin": [
+    {
+      "id": "accounts-menu",
+      "title": {
+        "en": "Accounts",
+        "he": "חשבונות"
+      },
+      "body": {
+        "en": "Administrators see two more screens in the archive row: Accounts and the Bin.",
+        "he": "מנהלי מערכת רואים בשורת הארכיון שני מסכים נוספים: חשבונות וסל המחזור."
+      }
+    },
+    {
+      "id": "approve",
+      "title": {
+        "en": "Approve, decline, change a role",
+        "he": "אישור, דחייה ושינוי תפקיד"
+      },
+      "body": {
+        "en": "Approve a request as a knowledge expert, which is the usual choice, or as an administrator, or decline it. An existing account’s role can be changed or suspended. The last administrator cannot be demoted, so promote someone else first.",
+        "he": "מאשרים בקשה כמומחה ידע, שזו הבחירה הרגילה, או כמנהל מערכת, או דוחים אותה. אפשר לשנות תפקיד של חשבון קיים או להשעות אותו. את מנהל המערכת האחרון אי אפשר להוריד, לכן קודם מקדמים מישהו אחר."
+      }
+    },
+    {
+      "id": "bin",
+      "title": {
+        "en": "The bin",
+        "he": "סל המחזור"
+      },
+      "body": {
+        "en": "Records removed in the review screen come here, off the portal and out of the queue but kept in full. Restore puts one back exactly as it was. Destroy deletes it and its file for good, after you type its title: the only action in the archive nobody can undo.",
+        "he": "רשומות שהוסרו במסך הבדיקה מגיעות לכאן: מחוץ לפורטל ומחוץ לתור, אבל שמורות במלואן. \"שחזר\" מחזיר רשומה בדיוק כמו שהייתה. \"מחק לצמיתות\" מוחק אותה ואת הקובץ לצמיתות, אחרי שמקלידים את הכותרת שלה: זו הפעולה היחידה בארכיון שאי אפשר לבטל."
+      }
+    }
+  ]
 }

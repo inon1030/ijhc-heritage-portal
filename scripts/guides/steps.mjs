@@ -215,4 +215,86 @@ const contributor = [
   },
 ];
 
-export const STEPS = { contributor, expert: [], admin: [] };
+// ── knowledge expert and administrator: a real session, and nothing written ──
+//
+// These screens show the live queue, so the capture must not be able to change
+// it. Every request that is not a GET is refused before it leaves the browser:
+// a stray click on Publish or Delete would fail rather than act.
+async function readOnly(page) {
+  if (page.__readOnly) return;
+  page.__readOnly = true;
+  await page.route('**/*', (route) => (route.request().method() === 'GET' ? route.continue() : route.abort()));
+}
+
+const openFirstRecord = async (c) => {
+  await readOnly(c.page);
+  await goto(c, '/review');
+  const href = await c.page.locator('main a[href^="/review/"]').first().getAttribute('href');
+  await goto(c, href);
+};
+const scrollTo = (text) => async ({ page, lang }) => {
+  await page.getByText(T(lang, text), { exact: true }).first().scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, -90));
+};
+const around = (text, up = 1) => (p, l) => p.getByText(T(l, text), { exact: true }).first().locator('xpath=' + Array(up).fill('..').join('/'));
+
+const expert = [
+  {
+    id: 'menu-review',
+    go: async (c) => {
+      await readOnly(c.page);
+      await goto(c, '/');
+    },
+    spots: [(p) => p.locator('header nav a[href="/review"]').first()],
+  },
+  {
+    id: 'queue',
+    go: async (c) => goto(c, '/review'),
+    spots: [(p) => p.locator('main a[href^="/review/"]').first()],
+  },
+  { id: 'original', go: openFirstRecord, spots: [around('wb.original', 2)] },
+  { id: 'record', go: scrollTo('wb.description'), spots: [around('wb.description', 2)] },
+  { id: 'fields', go: scrollTo('wb.keywords'), spots: [around('wb.keywords', 2)] },
+  { id: 'translations', go: scrollTo('review.languagesHeading'), spots: [around('review.languagesHeading', 2)] },
+  {
+    id: 'decide',
+    go: async ({ page, lang }) => {
+      await page.getByRole('button', { name: T(lang, 'wb.publish') }).first().scrollIntoViewIfNeeded();
+      await page.evaluate(() => window.scrollBy(0, 140));
+    },
+    spots: [(p, l) => p.getByRole('button', { name: T(l, 'wb.publish') }).first(), (p, l) => p.getByRole('button', { name: T(l, 'wb.reject') }).first()],
+  },
+  {
+    id: 'keywords',
+    go: async (c) => goto(c, '/manage/vocabulary'),
+    spots: [(p) => p.locator('main nav a[href="/manage/vocabulary"], main a[href="/manage/vocabulary"]').first(), (p) => p.locator('main form, main input').first()],
+  },
+  {
+    id: 'families',
+    go: async (c) => goto(c, '/manage/families'),
+    spots: [around('families.heading', 1)],
+  },
+];
+
+const admin = [
+  {
+    id: 'accounts-menu',
+    go: async (c) => {
+      await readOnly(c.page);
+      await goto(c, '/review');
+    },
+    spots: [(p) => p.locator('header nav a[href="/manage/accounts"]').first()],
+  },
+  {
+    id: 'approve',
+    go: async (c) => goto(c, '/manage/accounts'),
+    spots: [(p) => p.locator('main ul, main table').first()],
+  },
+  {
+    id: 'bin',
+    go: async (c) => goto(c, '/manage/bin'),
+    spots: [(p) => p.locator('main li').first()],
+  },
+];
+
+export const STEPS = { contributor, expert, admin };

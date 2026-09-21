@@ -83,6 +83,23 @@ for (const [audience, steps] of Object.entries(STEPS)) {
       await step.go(ctx);
       await page.addStyleTag({ content: '.passage, nextjs-portal { display: none !important; } *{caret-color: transparent !important}' });
       await page.waitForTimeout(450);
+      if (audience !== 'contributor') {
+        // Live screens carry real contributors' addresses. The Center's own
+        // guides replaced them with examples; so does this, before the picture.
+        await page.evaluate(() => {
+          const email = /[\w.+-]+@[\w-]+(\.[\w-]+)+/g;
+          const has = (v) => /[\w.+-]+@[\w-]+\.[\w-]+/.test(v);
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          let n = 0;
+          while (walker.nextNode()) {
+            const node = walker.currentNode;
+            if (has(node.nodeValue)) node.nodeValue = node.nodeValue.replace(email, () => `contributor${++n}@example.com`);
+          }
+          for (const input of document.querySelectorAll('input')) {
+            if (has(input.value)) input.value = input.value.replace(email, 'contributor@example.com');
+          }
+        });
+      }
 
       const spots = [];
       for (const find of step.spots ?? []) {
