@@ -1,5 +1,6 @@
 import { createPartFromUri, FileState, GoogleGenAI, Type, type Part } from '@google/genai';
-import { GEMINI_FALLBACK_MODELS, GEMINI_MODEL, geminiApiKey } from '@/lib/env';
+import { GEMINI_FALLBACK_MODELS, GEMINI_MODEL, GEMINI_WEB_SEARCH, geminiApiKey } from '@/lib/env';
+import { cleanSources, type BackgroundSource } from './background';
 import { MODEL_FIELDS, fieldDef } from '@/lib/fields/registry';
 import { communityOrCatchAll } from './community';
 import {
@@ -78,6 +79,12 @@ function responseSchema(allowed: string[]) {
       description: 'Verbatim text in its original script.',
     },
     transcript: { type: Type.STRING, nullable: true, description: 'Speech transcription.' },
+    background: {
+      type: Type.STRING,
+      nullable: true,
+      description:
+        'Up to six sentences of context a knowledgeable person would add: what kind of object or document this is, its likely period and community, and what is known about the place or people it shows. May draw on web search. Unverified by definition; never repeated as a field.',
+    },
     belongsToArchive: {
       type: Type.BOOLEAN,
       description:
@@ -227,6 +234,73 @@ async function discard(client: GoogleGenAI, name: string | null): Promise<void> 
   }
 }
 
+/**
+ * The pages web search actually used, from the response's grounding record.
+ *
+ * Taken from the metadata rather than asked of the model: a model asked to
+ * list its sources writes plausible addresses, and the grounding record is the
+ * list of what was fetched.
+ */
+function groundingSources(
+  response: Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>,
+): BackgroundSource[] {
+  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
+  return cleanSources(chunks.map((chunk) => ({ title: chunk.web?.title, url: chunk.web?.uri })));
+}
+
+/**
+ * Search is a bonus on top of the reading, never a condition of it.
+ *
+ * Measured on 21.09.2026 on the free tier: the same photograph, the same
+ * model, answered normally without search and **429 on every model in the
+ * chain** with it. Had search been wired into the fallback chain, every upload
+ * in the archive would have failed from that moment on.
+ *
+ * So search is asked once, of the preferred model only. Any refusal — the
+ * allowance, a model that will not combine search with a schema (400), a busy
+ * or withdrawn model — drops to the ordinary chain without search, and the
+ * background is written from what the model already knows. A quota or a
+ * capability refusal also switches search off in this server for an hour, so
+ * the next forty uploads do not each spend a round trip hearing the same no.
+ */
+const SEARCH_PAUSE_MS = 60 * 60_000;
+
+/**
+ * How long the search attempt may take before the reading goes on without it.
+ * A contributor is watching a spinner; background is not worth minutes.
+ */
+const SEARCH_TIMEOUT_MS = 45_000;
+let searchPausedUntil = 0;
+
+function searchWorthPausing(error: unknown): boolean {
+  const status = (error as { status?: number })?.status;
+  const message = String((error as { message?: string })?.message ?? '');
+  if (status === 429 || /RESOURCE_EXHAUSTED/.test(message)) return true;
+  return (
+    (status === 400 || /INVALID_ARGUMENT/.test(message)) &&
+    /tool|search|grounding|response_?schema|response_?mime|controlled generation/i.test(message)
+  );
+}
+
+function searchMayGiveWay(error: unknown): boolean {
+  const status = (error as { status?: number })?.status;
+  const message = String((error as { message?: string })?.message ?? '');
+  const name = (error as { name?: string })?.name ?? '';
+  return (
+    searchWorthPausing(error) ||
+    name === 'AbortError' ||
+    name === 'TimeoutError' ||
+    status === 503 ||
+    status === 404 ||
+    /UNAVAILABLE|NOT_FOUND|no longer available/i.test(message)
+  );
+}
+
+/** For the tests: forget a pause, as a fresh server would. */
+export function resetSearchPause(): void {
+  searchPausedUntil = 0;
+}
+
 function nonEmpty(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
@@ -365,7 +439,7 @@ export function createGeminiProvider(): AIProvider {
        */
       const source = await sourcePart(client, input.bytes, input.mimeType);
 
-      const { response, model: usedModel } = await withFallback(client, (model) => ({
+      const request = (model: string, search: boolean) => ({
         model,
         contents: [
           {
@@ -383,8 +457,38 @@ export function createGeminiProvider(): AIProvider {
           responseMimeType: 'application/json',
           responseSchema: responseSchema(allowed),
           temperature: 0.2,
+          // Search feeds `background` only; the instructions forbid it from
+          // counting as having read anything. See background.ts.
+          ...(search ? { tools: [{ googleSearch: {} }] } : {}),
         },
-      })).finally(() => discard(client, source.uploaded));
+      });
+
+      const read = async () => {
+        if (GEMINI_WEB_SEARCH && Date.now() >= searchPausedUntil) {
+          try {
+            const asked = request(GEMINI_MODEL, true);
+            const response = await client.models.generateContent({
+              ...asked,
+              config: {
+                ...asked.config,
+                abortSignal: AbortSignal.timeout(SEARCH_TIMEOUT_MS),
+                // The SDK retries a refusal five times with a back-off by
+                // default. Measured: that turned one search 429 into most of a
+                // 158-second upload. One answer is enough to know.
+                httpOptions: { retryOptions: { attempts: 1 } },
+              },
+            });
+            return { response, model: GEMINI_MODEL };
+          } catch (error) {
+            if (!searchMayGiveWay(error)) throw error;
+            if (searchWorthPausing(error)) searchPausedUntil = Date.now() + SEARCH_PAUSE_MS;
+            console.warn('[gemini] reading without search:', String((error as Error)?.message ?? error).slice(0, 200));
+          }
+        }
+        return withFallback(client, (model) => request(model, false));
+      };
+
+      const { response, model: usedModel } = await read().finally(() => discard(client, source.uploaded));
 
       const text = response.text;
       if (!text) throw new Error('Gemini returned an empty response.');
@@ -406,6 +510,8 @@ export function createGeminiProvider(): AIProvider {
       }
 
       const parsed = JSON.parse(text) as Record<string, unknown>;
+      const backgroundSources = groundingSources(response);
+      const background = nonEmpty(parsed.background);
 
       // The single gate. Everything below 70% — and every guess, whatever it
       // claimed — stops here and is never stored, rendered, or counted.
@@ -450,6 +556,8 @@ export function createGeminiProvider(): AIProvider {
         confidence: floorConfidence(fields),
         ocrText: nonEmpty(parsed.ocrText),
         transcript: nonEmpty(parsed.transcript),
+        background,
+        backgroundSources,
 
         // Views of `fields`. The registry says these six have columns; the gate
         // has already decided whether they are offered at all.
@@ -470,7 +578,9 @@ export function createGeminiProvider(): AIProvider {
         // was the part most likely to describe a field it had not returned.
         reasoning: reasoningFrom(fields),
         evidence: ledgerFrom(fields),
-        raw: parsed,
+        // The sources ride in the stored answer, beside the background they
+        // belong to — that is where the workbench reads both from.
+        raw: { ...parsed, backgroundSources },
       };
     },
   };

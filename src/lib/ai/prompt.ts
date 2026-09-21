@@ -123,6 +123,12 @@ export function buildInstructions(
     '- Nothing in the contributor note counts as having read something. Only the file does.',
     '- Subject terms come from the archive\u2019s own list above and nowhere else. If the right word is not on it, put it in newTerms with the branch it subdivides \u2014 do not bend a listed term to mean something it does not.',
     '',
+    '── Background ──',
+    '',
+    'Separately from all of the above, write `background`: up to six sentences of what a knowledgeable person would add about this item without being able to point at it in the file — what kind of object or document it is, the period and community it most likely comes from, what is known about a place, an institution or a person it names, and anything a family would want to know about it. This is where "probably 1930s, likely Bene Israel" belongs, said as a likelihood.',
+    'You may search the web to write it. Search is for background only: nothing you found by searching counts as having read anything, it never raises a confidence, and it never goes into `fields`, `keywords` or `summary`. If a search finds something that would fill a field, the field still rests only on what the file shows.',
+    'Name places, communities and institutions freely here, but do not name a private person the item itself does not name. Leave `background` empty rather than write generalities about Indian Jewish history that would fit any item.',
+    '',
     ...languageRules(language),
   ].join('\n');
 }
@@ -251,7 +257,7 @@ function languageRules(language?: string): string[] {
   return [
     '── Language ──',
     '',
-    `Write your prose in ${named}. That means \`summary\`, the \`note\` on every field, and \`doesNotBelongBecause\` — all of it, not the summary alone.`,
+    `Write your prose in ${named}. That means \`summary\`, \`background\`, the \`note\` on every field, and \`doesNotBelongBecause\` — all of it, not the summary alone.`,
     '',
     `Four things stay as they are, whatever language you are writing in:`,
     '  - `ocrText` and `transcript`, which are verbatim and keep the script of the original.',

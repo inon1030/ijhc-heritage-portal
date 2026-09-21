@@ -1,9 +1,12 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import { z } from 'zod';
 import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { verifyGrant } from '@/lib/files/grant';
 import { receiptFor } from '@/lib/items/receipt';
+import { sendMail } from '@/lib/mail';
+import { receiptMail } from '@/lib/mail/templates';
+import { siteUrl } from '@/lib/site';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { FIELD_KEYS, isValidValue } from '@/lib/fields/registry';
 import { SUGGESTION_THRESHOLD } from '@/lib/fields/suggestions';
@@ -19,6 +22,9 @@ const Analysis = z.object({
   confidence: z.number().min(0).max(1),
   ocrText: z.string().nullable(),
   transcript: z.string().nullable(),
+  // Unverified context. Kept only in `raw`; nothing below writes it to a column.
+  background: z.string().max(4000).nullable().optional(),
+  backgroundSources: z.array(z.object({ title: z.string().max(200), url: z.string().url().max(2000) })).max(6).optional(),
   suggestedCategory: z.enum(CATEGORIES as [string, ...string[]]).nullable().optional(),
   suggestedCommunity: z.enum(COMMUNITIES as [string, ...string[]]).nullable(),
   offTopic: z.boolean().optional(),
@@ -169,9 +175,17 @@ export async function POST(request: NextRequest) {
       })),
     });
 
-    // The contributor's way back to this submission. Handed over on screen
-    // rather than emailed, so it costs nothing and needs no address.
-    return ok({ id: item.id, receipt: receiptFor(item.id) }, { status: 201 });
+    // The contributor's way back to this submission. Handed over on screen,
+    // and sent to the address they gave as well, so closing the tab does not
+    // lose it. The mail goes after the response: a slow mail server must not
+    // hold up the screen that says the item arrived.
+    const receipt = receiptFor(item.id);
+    const to = body.contributorEmail?.trim();
+    if (to) {
+      const mail = receiptMail(to, item.title, `${siteUrl()}/receipt/${item.id}?t=${receipt}`);
+      after(() => sendMail(mail).then(() => undefined));
+    }
+    return ok({ id: item.id, receipt }, { status: 201 });
   } catch (error) {
     return unexpected(error);
   }

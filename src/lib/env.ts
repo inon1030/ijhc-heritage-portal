@@ -39,6 +39,13 @@ export function geminiApiKey(): string {
 export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? CHAIN.primary;
 
 /**
+ * Whether the reading may search the web for background (decision of
+ * 21.09.2026). On unless set to "off", so it can be turned off in Vercel
+ * without a code change if the cost per search turns out not to be worth it.
+ */
+export const GEMINI_WEB_SEARCH = process.env.GEMINI_WEB_SEARCH?.trim().toLowerCase() !== 'off';
+
+/**
  * What cataloguing falls back to when the day's allowance on the first model
  * is gone.
  *

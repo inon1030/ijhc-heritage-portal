@@ -327,7 +327,7 @@ export interface ReviewInput {
 }
 
 export type ReviewOutcome =
-  | { ok: true; item: Item }
+  | { ok: true; item: Item; from: ItemStatus }
   | { ok: false; code: 'not_found' | 'forbidden' | 'invalid_transition'; message: string };
 
 /**
@@ -420,7 +420,7 @@ export async function reviewItem(input: ReviewInput): Promise<ReviewOutcome> {
     },
   });
 
-  return { ok: true, item: updated as Item };
+  return { ok: true, item: updated as Item, from };
 }
 
 /**

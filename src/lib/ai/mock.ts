@@ -33,6 +33,8 @@ export function createMockProvider(): AIProvider {
         confidence: 0,
         ocrText: null,
         transcript: null,
+        background: null,
+        backgroundSources: [],
         suggestedCommunity: null,
         // It looked at nothing, so it accuses nothing.
         offTopic: false,

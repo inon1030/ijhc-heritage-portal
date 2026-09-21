@@ -5,6 +5,7 @@ import { Eye, Languages, Loader2, Plus, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import { FieldSheet } from '@/components/field-sheet';
 import type { PickableLanguage } from '@/components/language-picker';
+import { BackgroundNote } from '@/components/background-note';
 import { SimulatedNotice } from '@/components/primitives';
 import type { AnalysisResult } from '@/lib/ai/types';
 import type { FieldValue } from '@/lib/fields/registry';
@@ -393,6 +394,13 @@ function EntryPanel({
           */}
 
           <Reading entry={entry} analysis={analysis} languages={languages} />
+          <BackgroundNote
+            background={
+              analysis.background
+                ? { text: analysis.background, sources: analysis.backgroundSources ?? [] }
+                : null
+            }
+          />
         </>
       )}
     </article>
