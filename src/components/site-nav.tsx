@@ -156,7 +156,7 @@ export function ArchiveNav({ profile, queueCount, layout }: NavProps & { layout:
   return (
     <nav
       aria-label={t('nav.archiveAdmin')}
-      className={layout === 'bar' ? 'flex flex-wrap items-center gap-1' : 'flex flex-col gap-1'}
+      className={layout === 'bar' ? 'flex flex-wrap items-center justify-center gap-1' : 'flex flex-col gap-1'}
     >
       <span className={layout === 'bar' ? 'eyebrow me-2' : 'eyebrow px-4 pb-1 pt-2'}>{t('nav.archive')}</span>
       {links.map(({ href, label, icon: Icon, count }) => {

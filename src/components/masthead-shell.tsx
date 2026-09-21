@@ -144,14 +144,20 @@ export function MastheadShell({
       }}
       onPointerLeave={(e) => e.pointerType === 'mouse' && setHolding(false)}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 sm:px-6">
+      {/*
+        Three columns from `lg:` up: the mark at the start, the navigation in
+        the true centre of the screen, the language and account at the end.
+        The two outer columns share the leftover width equally, which is what
+        keeps the middle centred however wide the ends are (Inon, 21.09.2026).
+      */}
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr]">
         <div className="shrink-0">{home}</div>
 
         <div className="hidden lg:block">
           <PrimaryNav layout="bar" />
         </div>
 
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex items-center gap-2 lg:justify-self-end">
           {language}
           <div className="hidden items-center gap-2 lg:flex">
             <AccountNav profile={profile} layout="bar" />
@@ -203,7 +209,7 @@ export function MastheadShell({
             ].join(' ')}
           >
             <div className="min-h-0 overflow-hidden">
-              <div className="mx-auto flex min-h-12 max-w-6xl items-center gap-4 px-6 py-1.5">
+              <div className="mx-auto flex min-h-12 max-w-6xl items-center justify-center gap-4 px-6 py-1.5">
                 <ArchiveNav profile={profile} queueCount={queueCount} layout="bar" />
                 <PendingNotice profile={profile} />
               </div>
