@@ -35,3 +35,13 @@ export function fileUrl(fileId: string) {
 export function viewableUrl(file: ItemFile) {
   return file.preview_path ? `/api/files/${file.id}?rendition` : `/api/files/${file.id}`;
 }
+
+/**
+ * The address to put in a grid tile.
+ *
+ * Same permission decision, a resized answer. Measured before this existed:
+ * the portal's 91px cards were pulling 640px masters, about 100 KB each.
+ */
+export function thumbUrl(file: ItemFile) {
+  return `${viewableUrl(file)}${file.preview_path ? '&' : '?'}thumb`;
+}

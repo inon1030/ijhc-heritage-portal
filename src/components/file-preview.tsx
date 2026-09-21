@@ -5,7 +5,7 @@ import { fileKind } from '@/lib/files/validate';
 import { useMessages } from '@/lib/i18n/provider';
 import { cn } from '@/lib/utils';
 import type { ItemFile } from '@/lib/types';
-import { fileUrl, viewableUrl } from '@/lib/files/urls';
+import { fileUrl, thumbUrl, viewableUrl } from '@/lib/files/urls';
 
 export function FilePreview({
   file,
@@ -40,9 +40,11 @@ export function FilePreview({
   if (kind === 'image') {
     return (
       // Signed URLs expire, so next/image optimisation would cache a dead URL.
+      // A tile asks for a tile; the master is what the lightbox and the record
+      // page open.
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={viewableUrl(file)}
+        src={still ? thumbUrl(file) : viewableUrl(file)}
         alt={alt}
         loading="lazy"
         className={cn('h-full w-full bg-paper-2', fit === 'cover' ? 'object-cover' : 'object-contain', className)}
@@ -63,20 +65,31 @@ export function FilePreview({
 
   if (kind === 'video') {
     if (still) {
-      // `preload="metadata"` gives the browser the first frame to paint, so a
-      // recording shows itself rather than a grey box — and with no controls
-      // and no pointer events it reads as a picture, which on this page it is.
+      /*
+       * A plate, and not one frame of the recording.
+       *
+       * This used to be a muted `<video preload="metadata">`, on the reasoning
+       * that a first frame reads better than a grey box. Measured on the live
+       * portal, 16.09.2026: Chrome did not stop at the metadata. It pulled the
+       * whole 46 MB file to draw a card 91 pixels wide — the grid weighed 47 MB,
+       * and every visitor paid it before reading a word.
+       *
+       * A poster exists only if a derivative was made for this file; there is
+       * no frame grabber on the server. So the tile is a plate: the community
+       * stripe and the title still identify the record, and the recording plays
+       * on the record's own page, where somebody asked for it.
+       */
       return (
         <span className={cn('relative block h-full w-full overflow-hidden bg-ink', className)}>
-          <video
-            preload="metadata"
-            muted
-            playsInline
-            tabIndex={-1}
-            aria-hidden
-            src={src}
-            className="pointer-events-none h-full w-full object-cover"
-          />
+          {file.preview_path && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={thumbUrl(file)}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover opacity-90"
+            />
+          )}
           <span className="absolute inset-0 flex items-center justify-center">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paper/85 shadow-soft backdrop-blur-sm">
               <Video size={18} className="text-ink" aria-hidden />

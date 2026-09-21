@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMessages } from '@/lib/i18n';
 import { fail, unexpected } from '@/lib/api';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { makeThumb } from '@/lib/files/rendition';
 import { getCurrentAdmin, getCurrentVolunteer } from '@/lib/supabase/server';
 
 const SIGNED_URL_TTL_SECONDS = 600;
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
 
     const { data: file, error } = await admin
       .from('item_files')
-      .select('storage_path, preview_path, items(status, access, deleted_at)')
+      .select('storage_path, preview_path, mime_type, items(status, access, deleted_at)')
       .eq('id', fileId)
       .maybeSingle();
 
@@ -83,6 +84,39 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
      */
     const wantsRendition = request.nextUrl.searchParams.has('rendition');
     const path = wantsRendition && file.preview_path ? file.preview_path : file.storage_path;
+
+    /*
+     * `?thumb` is the tile on a wall, not the plate on the table.
+     *
+     * Measured on the live portal, 16.09.2026: the grid drew each card at 91px
+     * and downloaded the master for it — 640px and about a hundred kilobytes a
+     * tile, eight tiles a screen. The master is what the record page and the
+     * lightbox want; a card wants a fraction of it.
+     *
+     * Made here rather than at upload because it has to work for the thirty-five
+     * files already in the archive, and because it is cheap: one resize, then
+     * the answer sits in the CDN for a year. Only a published file may be cached
+     * publicly — the same rule the redirect below follows.
+     */
+    if (request.nextUrl.searchParams.has('thumb') && (file.mime_type ?? '').startsWith('image/')) {
+      const { data: blob, error: downloadError } = await admin.storage.from('heritage').download(path);
+      if (downloadError || !blob) return fail(502, 'storage_unavailable', t('err.fileNotOpened'));
+
+      const thumb = await makeThumb(new Uint8Array(await blob.arrayBuffer()));
+      if (thumb) {
+        return new NextResponse(new Uint8Array(thumb) as unknown as BodyInit, {
+          headers: {
+            'Content-Type': 'image/jpeg',
+            'Content-Length': String(thumb.byteLength),
+            'Cache-Control': isPublished
+              ? 'public, max-age=31536000, immutable'
+              : 'private, no-store',
+          },
+        });
+      }
+      // A thumbnail that cannot be made is not worth failing a page over; the
+      // master below is always viewable.
+    }
 
     const { data: signed, error: signError } = await admin
       .storage.from('heritage')

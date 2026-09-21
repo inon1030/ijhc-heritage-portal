@@ -621,5 +621,18 @@
   "field.map.history.transformations.label": "תמורות חברתיות",
   "field.map.history.transformations.hint": "שינוי שהפריט מתעד: הגירה, שינוי עיסוק, שינוי במנהגים דתיים.",
   "field.map.history.statistics.label": "נתונים סטטיסטיים",
-  "field.map.history.statistics.hint": "נתונים המסופקים בפריט — מפקד אוכלוסין, רשימת חברים, רשימת מנויים."
+  "field.map.history.statistics.hint": "נתונים המסופקים בפריט — מפקד אוכלוסין, רשימת חברים, רשימת מנויים.",
+  "theme.change": "שינוי מראה",
+  "theme.system": "לפי המערכת",
+  "theme.light": "בהיר",
+  "theme.dark": "כהה",
+  "legal.englishOnly": "המסמך הזה כתוב באנגלית ובעברית בלבד.",
+  "legal.contactHeading": "למי לפנות",
+  "nav.privacy": "פרטיות",
+  "nav.terms": "תנאי שימוש",
+  "nav.accessibility": "נגישות",
+  "stats.heading": "סטטיסטיקות מבקרים",
+  "stats.body": "מותר למרכז לספור ביקורים בארכיון, כדי לדעת אילו רשומות מחפשים? מה שאתם שולחים אינו נמדד, וסירוב לא משנה דבר במה שאפשר לעשות כאן.",
+  "stats.accept": "מאשר",
+  "stats.decline": "לא, תודה"
 }

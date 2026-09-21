@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/env';
+import { BUCKETS, EXPERIMENT_COOKIE } from '@/lib/experiment';
 
 /**
  * Keeps the Supabase session cookie fresh, closes the review and administration
@@ -54,13 +55,35 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/env';
 function contentSecurityPolicy(nonce: string, isDev: boolean): string {
   const supabase = new URL(SUPABASE_URL).origin;
 
+  /*
+   * Measurement hosts, allowed only while measurement is configured.
+   *
+   * An empty environment variable means the tag can never load, and the policy
+   * says so too — two independent statements of the same fact, so switching
+   * measurement off cannot leave a door open behind it.
+   */
+  const measured = Boolean(process.env.NEXT_PUBLIC_GA_ID?.trim());
+  const heatmapped = Boolean(process.env.NEXT_PUBLIC_CLARITY_ID?.trim());
+  const scriptHosts = [
+    measured ? 'https://www.googletagmanager.com' : '',
+    heatmapped ? 'https://www.clarity.ms' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const sendHosts = [
+    measured ? 'https://www.google-analytics.com https://region1.google-analytics.com' : '',
+    heatmapped ? 'https://www.clarity.ms https://x.clarity.ms' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''}${scriptHosts ? ` ${scriptHosts}` : ''}`,
     `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' blob: data: ${supabase}`,
+    `img-src 'self' blob: data: ${supabase}${measured ? ' https://www.google-analytics.com https://www.googletagmanager.com' : ''}`,
     `media-src 'self' blob: ${supabase}`,
-    `connect-src 'self' ${supabase}${isDev ? ' ws: http://localhost:*' : ''}`,
+    `connect-src 'self' ${supabase}${sendHosts ? ` ${sendHosts}` : ''}${isDev ? ' ws: http://localhost:*' : ''}`,
     `font-src 'self'`,
     `frame-src 'self' blob:`,
     `object-src 'none'`,
@@ -80,6 +103,11 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
   requestHeaders.set('Content-Security-Policy', csp);
+  // The path a page is being rendered at. `generateMetadata` has no request
+  // object of its own, and without this there is nothing to build a canonical
+  // URL from — which is what keeps preview deployments from being indexed as
+  // rival copies of the archive.
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
   const withHeaders = () => NextResponse.next({ request: { headers: requestHeaders } });
 
@@ -123,6 +151,24 @@ export async function proxy(request: NextRequest) {
   }
 
   response.headers.set('Content-Security-Policy', csp);
+
+  /*
+   * One bucket per visitor, assigned once and never re-rolled.
+   *
+   * It is a number between 0 and 99 and nothing else: not an identifier, not
+   * tied to a session, and useless for recognising anybody. It exists so that
+   * an A/B test renders the same variant on every page a visitor opens, which
+   * is the only way a test measures a choice rather than a coin toss per page.
+   */
+  if (!request.cookies.get(EXPERIMENT_COOKIE)) {
+    response.cookies.set(EXPERIMENT_COOKIE, String(Math.floor(Math.random() * BUCKETS)), {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 180,
+      sameSite: 'lax',
+      httpOnly: false,
+    });
+  }
+
   return response;
 }
 

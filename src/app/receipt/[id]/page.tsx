@@ -85,7 +85,7 @@ export default async function ReceiptPage({
         <div className="animate-rise mt-8 flex flex-wrap gap-3">
           {files.map((file) => (
             <div key={file.id} className="h-28 w-28 overflow-hidden rounded-lg bg-paper-2">
-              <FilePreview file={file} alt="" fit="cover" />
+              <FilePreview file={file} alt="" fit="cover" still />
             </div>
           ))}
         </div>

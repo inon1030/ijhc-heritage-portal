@@ -34,6 +34,29 @@ const BROWSER_RENDERS = new Set(['image/jpeg', 'image/png', 'image/webp', 'image
  */
 const MAX_EDGE = 2000;
 
+/**
+ * Long edge of a grid tile.
+ *
+ * The portal draws cards at 91–293 CSS pixels and the record page at 240. 640
+ * covers all of them on a 2× screen and nothing more; anyone who wants the
+ * detail is one click from the master.
+ */
+const THUMB_EDGE = 640;
+
+/** A tile-sized JPEG, or null if the bytes cannot be read. */
+export async function makeThumb(bytes: Uint8Array): Promise<Buffer | null> {
+  try {
+    return await sharp(Buffer.from(bytes), { failOn: 'none' })
+      .rotate()
+      .resize({ width: THUMB_EDGE, height: THUMB_EDGE, fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 72, mozjpeg: true, progressive: true })
+      .toBuffer();
+  } catch (error) {
+    console.error('[rendition] could not make a thumbnail', error);
+    return null;
+  }
+}
+
 export function needsRendition(mimeType: string): boolean {
   return mimeType.startsWith('image/') && !BROWSER_RENDERS.has(mimeType);
 }

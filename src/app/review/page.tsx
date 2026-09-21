@@ -119,7 +119,7 @@ async function QueueGrid({ items }: { items: QueueItem[] }) {
           >
             <div className="aspect-[4/3] overflow-hidden bg-paper-2">
               <div className="h-full w-full transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]">
-                <FilePreview file={item.file} alt={item.title} />
+                <FilePreview file={item.file} alt={item.title} still />
               </div>
             </div>
             <div className="space-y-2.5 p-5">

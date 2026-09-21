@@ -88,7 +88,7 @@ export default async function RecordPage({
               {item.files.map((page, index) => (
                 <li key={page.id} className="card card-interactive overflow-hidden bg-paper-2">
                   <div className="flex h-20 items-center justify-center overflow-hidden">
-                    <FilePreview file={page} alt={`${item.title}, ${index + 1}`} fit="cover" />
+                    <FilePreview file={page} alt={`${item.title}, ${index + 1}`} fit="cover" still />
                   </div>
                 </li>
               ))}

@@ -151,6 +151,117 @@
     }
   }
 
+  /*
+   * ── the archive at night ────────────────────────────────────────────────
+   *
+   * Not an inversion. A photographic archive read on a dark ground has one
+   * requirement the rest of the interface does not: a scan of cream paper must
+   * still look like paper, and a dark surround makes a light scan glare. So the
+   * ground is a deep olive rather than black — the same hue family as the ink
+   * it replaces — and the paper tones become surfaces a photograph can sit on
+   * without a halo.
+   *
+   * The four community colours are lifted, not swapped: rust at #9a3412 on a
+   * near-black ground fails contrast, and those four marks are the one place in
+   * the archive where colour carries meaning rather than mood.
+   *
+   * Three states, because the reader has three: an explicit choice stamps
+   * `data-theme` on the root and wins in both directions; with nothing stamped,
+   * the system setting decides.
+   */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --color-paper: #171a12;
+      --color-paper-2: #1f2318;
+      --color-paper-3: #2a2f20;
+
+      --color-ink: #ece7d8;
+      --color-ink-2: #c8d6a3;
+      --color-ink-3: #a8bb7f;
+
+      --color-accent: #e8a24a;
+      --color-accent-strong: #f0a24a;
+      --color-accent-wash: #33240f;
+
+      --color-sage: #9cbf5e;
+      --color-sage-wash: #222a16;
+      --color-turquoise: #4cc0b4;
+      --color-turquoise-wash: #122a28;
+
+      --color-rule: #343a29;
+      --color-rule-strong: #4a523c;
+      --color-muted: #b3ae9c;
+
+      --color-bene: #4cc0b4;
+      --color-cochin: #45b6d4;
+      --color-baghdadi: #e07a52;
+      --color-menashe: #9cbf5e;
+      --color-general: #b0a99f;
+
+      --color-positive: #5fbf7a;
+      --color-caution: #e8a24a;
+      --color-critical: #ef7d72;
+
+      --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+      --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.45), 0 12px 32px rgb(0 0 0 / 0.4);
+      --shadow-ring: 0 0 0 1px rgb(74 82 60 / 1);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --color-paper: #171a12;
+    --color-paper-2: #1f2318;
+    --color-paper-3: #2a2f20;
+
+    --color-ink: #ece7d8;
+    --color-ink-2: #c8d6a3;
+    --color-ink-3: #a8bb7f;
+
+    --color-accent: #e8a24a;
+    --color-accent-strong: #f0a24a;
+    --color-accent-wash: #33240f;
+
+    --color-sage: #9cbf5e;
+    --color-sage-wash: #222a16;
+    --color-turquoise: #4cc0b4;
+    --color-turquoise-wash: #122a28;
+
+    --color-rule: #343a29;
+    --color-rule-strong: #4a523c;
+    --color-muted: #b3ae9c;
+
+    --color-bene: #4cc0b4;
+    --color-cochin: #45b6d4;
+    --color-baghdadi: #e07a52;
+    --color-menashe: #9cbf5e;
+    --color-general: #b0a99f;
+
+    --color-positive: #5fbf7a;
+    --color-caution: #e8a24a;
+    --color-critical: #ef7d72;
+
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+    --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.45), 0 12px 32px rgb(0 0 0 / 0.4);
+    --shadow-ring: 0 0 0 1px rgb(74 82 60 / 1);
+  }
+
+  /*
+   * A scan is a photograph of paper, and paper does not glow. On the dark
+   * ground the brightest whites are pulled down a little so a page of Hebrew
+   * does not burn a hole in the screen; the picture itself is untouched
+   * anywhere it is being examined — the lightbox and the review workbench opt
+   * out with `data-full`.
+   */
+  :root[data-theme='dark'] img:not([data-full]) {
+    filter: brightness(0.94);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) img:not([data-full]) {
+      filter: brightness(0.94);
+    }
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
     /*

@@ -14,6 +14,11 @@ import {
   Spectral,
 } from 'next/font/google';
 import { Masthead } from '@/components/masthead';
+import { Stats } from '@/components/stats';
+import { currentTheme } from '@/lib/theme';
+import { STATS_COOKIE, readChoice } from '@/lib/stats';
+import { currentBucket } from '@/lib/experiment-server';
+import { cookies } from 'next/headers';
 import { getMessages } from '@/lib/i18n';
 import { MessagesProvider } from '@/lib/i18n/provider';
 import './globals.css';
@@ -187,8 +192,21 @@ export async function generateMetadata(): Promise<Metadata> {
     }
   }
 
+  /*
+   * One address per page, and it is the configured one.
+   *
+   * Every language is the same URL with a different cookie, so there are no
+   * per-language addresses to declare — and without a canonical, the preview
+   * deployments Vercel mints on each push are separate, indexable copies of the
+   * whole archive competing with it in search. Measured 16.09.2026: no page
+   * carried one.
+   */
+  const heads = await headers();
+  const path = heads.get('x-pathname') ?? heads.get('x-invoke-path') ?? '/';
+
   return {
     metadataBase: new URL(base),
+    alternates: { canonical: path },
     title: {
       default: t('site.name'),
       template: `%s · ${t('site.name')}`,
@@ -202,12 +220,20 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
     },
     twitter: { card: 'summary_large_image' },
+    // Only the archive itself belongs in an index. Verification for Search
+    // Console is a meta tag the Center pastes into one environment variable.
+    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : undefined,
   };
 }
 
-/** The browser chrome on a phone takes the archive's own paper. */
+/** The browser chrome takes the archive's own paper, in either theme. */
 export const viewport = {
-  themeColor: '#fdfbf7',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fdfbf7' },
+    { media: '(prefers-color-scheme: dark)', color: '#171a12' },
+  ],
   width: 'device-width',
   initialScale: 1,
 };
@@ -228,9 +254,14 @@ export const viewport = {
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { t, language, dir, catalogue } = await getMessages();
+  // Stamped before the HTML leaves the server, so a reader who asked for dark
+  // never sees a cream flash on the way to it.
+  const theme = await currentTheme();
+  const statsChoice = readChoice((await cookies()).get(STATS_COOKIE)?.value);
+  const bucket = await currentBucket();
 
   return (
-    <html lang={language.code} dir={dir} className={[
+    <html lang={language.code} dir={dir} data-theme={theme === 'system' ? undefined : theme} className={[
         spectral.variable,
         plexSans.variable,
         plexMono.variable,
@@ -282,6 +313,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/handling" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
                   {t('footer.handling')}
                 </Link>
+                {/* The three a public archive has to publish, at permanent
+                    addresses, reachable from every page. */}
+                <Link href="/privacy" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
+                  {t('nav.privacy')}
+                </Link>
+                <Link href="/terms" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
+                  {t('nav.terms')}
+                </Link>
+                <Link href="/accessibility" className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-accent">
+                  {t('nav.accessibility')}
+                </Link>
               </nav>
             </div>
 
@@ -290,6 +332,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </p>
           </div>
         </footer>
+        <Stats
+          measurementId={process.env.NEXT_PUBLIC_GA_ID?.trim() || null}
+          heatmapId={process.env.NEXT_PUBLIC_CLARITY_ID?.trim() || null}
+          initial={statsChoice}
+          bucket={bucket}
+        />
         </MessagesProvider>
       </body>
     </html>

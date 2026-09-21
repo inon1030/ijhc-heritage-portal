@@ -111,7 +111,7 @@ export async function ItemRow({ item }: { item: Item & { file: ItemFile | null }
       className="card card-interactive group flex gap-5 overflow-hidden p-3 focus-visible:outline-offset-4"
     >
       <div className="relative h-24 w-32 shrink-0 overflow-hidden rounded-lg bg-paper-2">
-        <FilePreview file={item.file} alt={item.title} />
+        <FilePreview file={item.file} alt={item.title} still />
         {item.community && (
           <span
             aria-hidden

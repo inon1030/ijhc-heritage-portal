@@ -207,7 +207,7 @@ export function ReviewWorkbench({
                     index === showing ? 'border-accent ring-2 ring-accent/30' : 'border-rule hover:border-accent',
                   )}
                 >
-                  <FilePreview file={file} alt={`Page ${index + 1}`} fit="cover" />
+                  <FilePreview file={file} alt={`Page ${index + 1}`} fit="cover" still />
                   <span className="sr-only">
                     Show {file.file_name}, file {index + 1} of {item.files.length}
                   </span>

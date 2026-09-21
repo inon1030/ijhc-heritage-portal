@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { Logo } from '@/components/logo';
 import { LanguagePicker } from '@/components/language-picker';
+import { ThemePicker } from '@/components/theme-picker';
+import { currentTheme } from '@/lib/theme';
 import { MastheadShell } from '@/components/masthead-shell';
 import { SiteNav } from '@/components/site-nav';
 import { StreamRule } from '@/components/stream-rule';
@@ -29,6 +31,7 @@ export async function Masthead() {
     getMessages(),
   ]);
   const { t } = m;
+  const theme = await currentTheme();
 
   // A pending account has a profile and no rights. Counting its queue would
   // return zero anyway — RLS sees to that — but asking at all would imply it
@@ -50,13 +53,16 @@ export async function Masthead() {
       }
       rule={<StreamRule counts={counts} />}
       language={
-        <LanguagePicker
-          languages={languages}
-          current={reading?.code ?? languages[0]?.code ?? 'en'}
-          /* A knowledge expert changes the language *in order to* review in it.
-             Everyone else is a contributor with unsaved files on the page. */
-          exempt={approved}
-        />
+        <div className="flex items-center gap-2">
+          <ThemePicker initial={theme} />
+          <LanguagePicker
+            languages={languages}
+            current={reading?.code ?? languages[0]?.code ?? 'en'}
+            /* A knowledge expert changes the language *in order to* review in it.
+               Everyone else is a contributor with unsaved files on the page. */
+            exempt={approved}
+          />
+        </div>
       }
     >
       {/*

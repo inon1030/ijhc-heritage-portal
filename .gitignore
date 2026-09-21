@@ -56,3 +56,6 @@ next-env.d.ts
 # scans of family material, and a backup committed to a repo is a leak waiting
 # for the repo to be shared.
 backups/
+
+# Session scratch: capture and audit scripts, never shipped.
+.guide-tmp/

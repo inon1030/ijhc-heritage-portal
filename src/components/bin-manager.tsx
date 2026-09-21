@@ -82,7 +82,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
             <li key={item.id} className="card rounded-xl p-4">
               <div className="flex gap-4">
                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-paper-2">
-                  {item.file && <FilePreview file={item.file} alt="" fit="cover" />}
+                  {item.file && <FilePreview file={item.file} alt="" fit="cover" still />}
                 </div>
 
                 <div className="min-w-0 flex-1">

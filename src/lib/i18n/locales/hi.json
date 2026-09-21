@@ -621,5 +621,18 @@
   "field.map.history.transformations.label": "सामाजिक परिवर्तन",
   "field.map.history.transformations.hint": "एक परिवर्तन जिसे यह वस्तु दर्ज करती है: प्रवास, व्यवसाय में बदलाव, अनुपालन में बदलाव।",
   "field.map.history.statistics.label": "आंकड़े",
-  "field.map.history.statistics.hint": "इस वस्तु में दर्ज आंकड़े — जनगणना की संख्या, सदस्यता सूची, या चंदा सूची।"
+  "field.map.history.statistics.hint": "इस वस्तु में दर्ज आंकड़े — जनगणना की संख्या, सदस्यता सूची, या चंदा सूची।",
+  "theme.change": "रूप बदलें",
+  "theme.system": "सिस्टम",
+  "theme.light": "उजला",
+  "theme.dark": "गहरा",
+  "legal.englishOnly": "यह दस्तावेज़ केवल अंग्रेज़ी और हिब्रू में लिखा गया है। कानूनी वचन का मशीनी अनुवाद वचन नहीं होता, इसलिए यहाँ अंग्रेज़ी दिखाई गई है।",
+  "legal.contactHeading": "किसे लिखें",
+  "nav.privacy": "गोपनीयता",
+  "nav.terms": "उपयोग की शर्तें",
+  "nav.accessibility": "सुलभता",
+  "stats.heading": "आगंतुक आँकड़े",
+  "stats.body": "क्या केंद्र इस संग्रह की विज़िट गिन सकता है, ताकि पता चले कि लोग कौन-से अभिलेख खोजते हैं? आपकी भेजी सामग्री मापी नहीं जाती, और मना करने से यहाँ कुछ भी नहीं बदलता।",
+  "stats.accept": "अनुमति दें",
+  "stats.decline": "नहीं, धन्यवाद"
 }

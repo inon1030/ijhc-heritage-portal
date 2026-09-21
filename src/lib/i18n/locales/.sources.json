@@ -622,7 +622,20 @@
     "err.translationFailed": "4a01b828407d0573",
     "err.translatorAllowance": "aa03fe10f5c4e198",
     "err.allowanceSpent": "9e62a5148c169e6d",
-    "err.noResponse": "ff98aa07b6bb02ae"
+    "err.noResponse": "ff98aa07b6bb02ae",
+    "theme.change": "424ec07390b2379a",
+    "theme.system": "6725e7bbcd28f3a8",
+    "theme.light": "dbcd5e7bb7a0f538",
+    "theme.dark": "60acc53f13a5d1bf",
+    "legal.englishOnly": "84a458d442f24177",
+    "legal.contactHeading": "a06a894da119bd11",
+    "nav.privacy": "54a57c3147c49f33",
+    "nav.terms": "8c45a486e4b1cad8",
+    "nav.accessibility": "d3368cbffe23c98d",
+    "stats.heading": "b6d60727ef95ff4a",
+    "stats.body": "697e74518d72d1c8",
+    "stats.accept": "e213c161d5cefa52",
+    "stats.decline": "49780701dc2d7cc6"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -1247,7 +1260,20 @@
     "err.translatorAllowance": "aa03fe10f5c4e198",
     "err.allowanceSpent": "9e62a5148c169e6d",
     "err.noResponse": "ff98aa07b6bb02ae",
-    "err.uploadNotPrepared": "35cfcf6e42b71835"
+    "err.uploadNotPrepared": "35cfcf6e42b71835",
+    "theme.change": "424ec07390b2379a",
+    "theme.system": "6725e7bbcd28f3a8",
+    "theme.light": "dbcd5e7bb7a0f538",
+    "theme.dark": "60acc53f13a5d1bf",
+    "legal.englishOnly": "84a458d442f24177",
+    "legal.contactHeading": "a06a894da119bd11",
+    "nav.privacy": "54a57c3147c49f33",
+    "nav.terms": "8c45a486e4b1cad8",
+    "nav.accessibility": "d3368cbffe23c98d",
+    "stats.heading": "b6d60727ef95ff4a",
+    "stats.body": "697e74518d72d1c8",
+    "stats.accept": "e213c161d5cefa52",
+    "stats.decline": "49780701dc2d7cc6"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -1872,7 +1898,20 @@
     "err.translationFailed": "4a01b828407d0573",
     "err.translatorAllowance": "aa03fe10f5c4e198",
     "err.allowanceSpent": "9e62a5148c169e6d",
-    "err.noResponse": "ff98aa07b6bb02ae"
+    "err.noResponse": "ff98aa07b6bb02ae",
+    "theme.change": "424ec07390b2379a",
+    "theme.system": "6725e7bbcd28f3a8",
+    "theme.light": "dbcd5e7bb7a0f538",
+    "theme.dark": "60acc53f13a5d1bf",
+    "legal.englishOnly": "84a458d442f24177",
+    "legal.contactHeading": "a06a894da119bd11",
+    "nav.privacy": "54a57c3147c49f33",
+    "nav.terms": "8c45a486e4b1cad8",
+    "nav.accessibility": "d3368cbffe23c98d",
+    "stats.heading": "b6d60727ef95ff4a",
+    "stats.body": "697e74518d72d1c8",
+    "stats.accept": "e213c161d5cefa52",
+    "stats.decline": "49780701dc2d7cc6"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -2497,6 +2536,19 @@
     "err.translatorAllowance": "aa03fe10f5c4e198",
     "err.allowanceSpent": "9e62a5148c169e6d",
     "err.noResponse": "ff98aa07b6bb02ae",
-    "err.tooManyTranslations": "14656dedc9222958"
+    "err.tooManyTranslations": "14656dedc9222958",
+    "theme.change": "424ec07390b2379a",
+    "theme.system": "6725e7bbcd28f3a8",
+    "theme.light": "dbcd5e7bb7a0f538",
+    "theme.dark": "60acc53f13a5d1bf",
+    "legal.englishOnly": "84a458d442f24177",
+    "legal.contactHeading": "a06a894da119bd11",
+    "nav.privacy": "54a57c3147c49f33",
+    "nav.terms": "8c45a486e4b1cad8",
+    "nav.accessibility": "d3368cbffe23c98d",
+    "stats.heading": "b6d60727ef95ff4a",
+    "stats.body": "697e74518d72d1c8",
+    "stats.accept": "e213c161d5cefa52",
+    "stats.decline": "49780701dc2d7cc6"
   }
 }
