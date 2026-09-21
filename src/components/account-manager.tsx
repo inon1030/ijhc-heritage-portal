@@ -55,7 +55,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
   const adminCount = accounts.filter((a) => a.role === 'admin').length;
 
   return (
-    <div className="max-w-4xl space-y-10">
+    <div className="space-y-10">
       {error && (
         <p role="alert" className="rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
           {error}

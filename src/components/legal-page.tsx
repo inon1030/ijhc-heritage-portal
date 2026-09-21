@@ -28,7 +28,7 @@ export async function LegalPage({
   const officerPhone = process.env.NEXT_PUBLIC_ACCESSIBILITY_PHONE?.trim() || null;
 
   return (
-    <article className="mx-auto max-w-2xl px-6 py-12" lang={written} dir={written === 'he' ? 'rtl' : 'ltr'}>
+    <article className="mx-auto max-w-4xl px-6 py-12" lang={written} dir={written === 'he' ? 'rtl' : 'ltr'}>
       <Link
         href="/portal"
         className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-colors duration-200 hover:border-accent-strong hover:text-ink"

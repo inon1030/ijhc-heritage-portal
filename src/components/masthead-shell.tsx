@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import type { Profile } from '@/lib/types';
 import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/site-nav';
@@ -28,6 +28,12 @@ import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/
  * to behave (Inon, 21.09.2026). It floats over the page rather than sitting in
  * the flow, so folding it never moves a line of the page beneath. A mouse over
  * the header or keyboard focus inside it keeps it open.
+ *
+ * "Pulling up" turned out to mean more than one gesture: a wheel or trackpad
+ * at the top of the page, where there is nothing to scroll and no scroll event
+ * fires; a finger on a touch screen; the mouse travelling up to the menu. All
+ * three open it, and while it is folded a small tab under the bar says it is
+ * there and opens it with a click - a gesture nobody can see is not a way in.
  *
  * Logical properties throughout - `start`/`end`, `ms`/`me` - because in Hebrew
  * the whole bar mirrors.
@@ -89,11 +95,26 @@ export function MastheadShell({
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY < 0 && window.scrollY <= 0) reveal();
     };
+    // A finger dragging the page down at the top, where the page cannot scroll.
+    let touchY: number | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      touchY = window.scrollY <= 0 ? e.touches[0].clientY : null;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (touchY !== null && Math.abs(e.touches[0].clientY - touchY) > 30) {
+        touchY = null;
+        reveal();
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: true });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
     };
   }, [hasRow, reveal]);
 
@@ -113,7 +134,16 @@ export function MastheadShell({
   }, [open]);
 
   return (
-    <header ref={header} className="sticky top-0 z-40 bg-paper/92 backdrop-blur-md">
+    <header
+      ref={header}
+      className="sticky top-0 z-40 bg-paper/92 backdrop-blur-md"
+      onPointerEnter={(e) => {
+        if (e.pointerType !== 'mouse' || !hasRow) return;
+        setHolding(true);
+        setFoldedOn(null);
+      }}
+      onPointerLeave={(e) => e.pointerType === 'mouse' && setHolding(false)}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 sm:px-6">
         <div className="shrink-0">{home}</div>
 
@@ -143,9 +173,21 @@ export function MastheadShell({
 
       {hasRow && (
         <div className="relative hidden lg:block">
+          {/* The tab that says the row is there while it is folded. */}
+          <button
+            type="button"
+            onClick={reveal}
+            aria-label={t('nav.archiveAdmin')}
+            tabIndex={rowOpen ? -1 : 0}
+            className={[
+              'absolute start-1/2 top-0 flex h-7 -translate-x-1/2 items-center gap-1 rounded-b-xl border border-t-0 border-rule bg-paper/95 px-3 text-xs font-medium text-muted shadow-lift backdrop-blur-md transition-opacity duration-300 hover:text-ink rtl:translate-x-1/2',
+              rowOpen ? 'pointer-events-none opacity-0' : 'opacity-100',
+            ].join(' ')}
+          >
+            {t('nav.archive')}
+            <ChevronDown size={14} aria-hidden />
+          </button>
           <div
-            onPointerEnter={(e) => e.pointerType === 'mouse' && setHolding(true)}
-            onPointerLeave={(e) => e.pointerType === 'mouse' && setHolding(false)}
             onFocus={() => {
               setHolding(true);
               setFoldedOn(null);

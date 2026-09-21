@@ -146,7 +146,7 @@ export function FamilyManager({
   })).filter((g) => g.rows.length > 0);
 
   return (
-    <div className="max-w-4xl">
+    <div>
       <p className="mb-6 rounded-lg border-s-[3px] border-caution bg-accent-wash px-4 py-3 text-sm leading-relaxed text-caution">
         {t('families.namesAre')} <strong>published</strong> on every record they are attached to, which
         means the surnames of living relatives appear in public. Register a family when the name is

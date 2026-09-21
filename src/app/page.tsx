@@ -107,7 +107,7 @@ export default async function Home() {
         page and it is the link home; repeating it here said the Center's name
         twice above a headline that is already the Center's own campaign.
       */}
-      <div className="mx-auto max-w-5xl px-6 pt-14 pb-16 sm:pt-20 sm:pb-20">
+      <div className="mx-auto flex max-w-6xl flex-col items-center px-6 pt-14 pb-16 text-center sm:pt-20 sm:pb-20">
         {/*
           The headline, set as the poster sets it: the numeral carrying the
           line and the words stacked tight against its right shoulder. One
@@ -117,7 +117,7 @@ export default async function Home() {
         */}
         <h1>
           <span
-            className="animate-rise flex flex-wrap items-end gap-x-4 gap-y-1"
+            className="animate-rise flex flex-wrap items-end justify-center gap-x-4 gap-y-1"
             style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
           >
             <span
@@ -127,7 +127,7 @@ export default async function Home() {
               2,000
             </span>
             <span
-              className="font-display font-semibold leading-[1.02] tracking-tight text-[var(--color-brand-saffron)]"
+              className="text-start font-display font-semibold leading-[1.02] tracking-tight text-[var(--color-brand-saffron)]"
               style={{ fontSize: 'clamp(1.35rem, 3.6vw, 2.15rem)' }}
             >
               {t('home.years')}
@@ -152,7 +152,7 @@ export default async function Home() {
         </h1>
 
         <p
-          className="animate-rise mt-7 max-w-xl leading-relaxed text-ink-2 sm:text-lg"
+          className="animate-rise mx-auto mt-7 max-w-2xl leading-relaxed text-ink-2 sm:text-lg"
           style={{ '--reveal-delay': '260ms' } as React.CSSProperties}
         >
           {t('home.standfirst')}
@@ -160,7 +160,7 @@ export default async function Home() {
 
         {/* The two doors. Filled is the one the Center wants taken. */}
         <div
-          className="animate-rise mt-9 flex flex-col gap-3.5 sm:flex-row sm:items-center"
+          className="animate-rise mt-9 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-center"
           style={{ '--reveal-delay': '340ms' } as React.CSSProperties}
         >
           <Link
@@ -186,7 +186,7 @@ export default async function Home() {
 
         {total > 0 && counts && (
           <p
-            className="animate-rise mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted"
+            className="animate-rise mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted"
             style={{ '--reveal-delay': '420ms' } as React.CSSProperties}
           >
             <span className="machine">

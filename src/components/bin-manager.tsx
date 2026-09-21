@@ -59,7 +59,7 @@ export function BinManager({ items }: { items: BinnedItem[] }) {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="space-y-6">
       {error && (
         <p
           role="alert"

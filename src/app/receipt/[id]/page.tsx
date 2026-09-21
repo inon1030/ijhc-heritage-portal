@@ -178,5 +178,5 @@ function stateOf(status: string, access: string, deletedAt: string | null, t: Sa
 }
 
 function Wrapper({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-3xl px-6 pt-10 pb-20 sm:pt-16">{children}</div>;
+  return <div className="mx-auto max-w-4xl px-6 pt-10 pb-20 sm:pt-16">{children}</div>;
 }

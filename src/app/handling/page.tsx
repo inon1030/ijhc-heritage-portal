@@ -32,7 +32,7 @@ export default async function HandlingPage({
   // link rather than a toggle so somebody can cite it.
   const english = language.is_source || (await searchParams).original === '1';
   return (
-    <article className="mx-auto max-w-2xl px-6 py-12">
+    <article className="mx-auto max-w-4xl px-6 py-12">
       <Link
         href="/portal"
         className="mb-8 inline-flex h-11 items-center gap-2 rounded-full border border-rule px-4 text-muted transition-colors duration-200 hover:border-accent-strong hover:text-ink"
