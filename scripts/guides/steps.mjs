@@ -118,11 +118,8 @@ const contributor = [
     go: async () => {},
     spots: [(p) => p.locator('input[type=url]').locator('xpath=..'), (p, l) => p.getByRole('button', { name: T(l, 'upload.action.readPage') })],
   },
-  {
-    id: 'scan',
-    go: async () => {},
-    spots: [(p, l) => p.getByRole('button', { name: T(l, 'upload.scan.button') }).locator('xpath=../..')],
-  },
+  // The `scan` step is not captured here: the scanner exists only on a phone.
+  // See smart-scan-e2e.mjs and DOCS/_build/scan_step.py.
   {
     id: 'next',
     go: async ({ page, fixture }) => {

@@ -46,7 +46,7 @@ export interface GuideFile {
   megabytes: number;
   /** Videos only, as the Center's own files name it. */
   duration?: string;
-  /** PDFs belong to one mode. Videos have none and are listed in both. */
+  /** Which mode lists it: full videos and PDFs in depth, short ones in quick. None means both. */
   depth?: Depth;
   /** Videos: the title under the player, in the video's own language. */
   title?: string;
@@ -55,20 +55,22 @@ export interface GuideFile {
 }
 
 export const GUIDE_FILES: GuideFile[] = [
-  { path: 'pdf/contributor-he.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 2.7, depth: 'deep' },
-  { path: 'pdf/contributor-en.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 3.1, depth: 'deep' },
+  { path: 'pdf/contributor-he.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 2.8, depth: 'deep' },
+  { path: 'pdf/contributor-en.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 3.2, depth: 'deep' },
   { path: 'pdf/expert-he.pdf', audience: 'expert', kind: 'pdf', language: 'he', megabytes: 2.4, depth: 'deep' },
   { path: 'pdf/expert-en.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 2.6, depth: 'deep' },
   { path: 'pdf/admin-he.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 0.9, depth: 'deep' },
   { path: 'pdf/admin-en.pdf', audience: 'admin', kind: 'pdf', language: 'en', megabytes: 1.0, depth: 'deep' },
-  { path: 'pdf/contributor-he-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 1.3, depth: 'quick' },
-  { path: 'pdf/contributor-en-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 1.6, depth: 'quick' },
+  { path: 'pdf/contributor-he-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'he', megabytes: 1.5, depth: 'quick' },
+  { path: 'pdf/contributor-en-quick.pdf', audience: 'contributor', kind: 'pdf', language: 'en', megabytes: 1.7, depth: 'quick' },
   { path: 'pdf/expert-he-quick.pdf', audience: 'expert', kind: 'pdf', language: 'he', megabytes: 1.2, depth: 'quick' },
   { path: 'pdf/expert-en-quick.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 1.3, depth: 'quick' },
   { path: 'pdf/admin-he-quick.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 0.4, depth: 'quick' },
   { path: 'pdf/admin-en-quick.pdf', audience: 'admin', kind: 'pdf', language: 'en', megabytes: 0.5, depth: 'quick' },
-  { path: 'video/contributor-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 9.4, duration: '7:06', title: 'מדריך לתורמים' },
-  { path: 'video/contributor-en.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 7.1, duration: '4:39', title: 'Contributor guide' },
+  { path: 'video/contributor-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 9.4, duration: '7:06', title: 'מדריך לתורמים', depth: 'deep' },
+  { path: 'video/contributor-he-short.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 4.5, duration: '2:55', title: 'מדריך לתורמים, בקצרה', depth: 'quick' },
+  { path: 'video/contributor-en.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 7.1, duration: '4:39', title: 'Contributor guide', depth: 'deep' },
+  { path: 'video/contributor-en-short.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 3.5, duration: '1:47', title: 'Contributor guide, in short', depth: 'quick' },
   /*
    * A phone recording by Avigdor Sharon of scanning a page with Google Drive's
    * scanner, 16.09.2026. Hosted here rather than embedded from his Drive, so it
@@ -85,8 +87,10 @@ export const GUIDE_FILES: GuideFile[] = [
     title: 'לסרוק ולשמור בעזרת הטלפון',
     credit: '© Avigdor Sharon',
   },
-  { path: 'video/expert-he.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 12.7, duration: '9:50', title: 'מדריך למומחי ידע' },
-  { path: 'video/expert-en.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 9.9, duration: '7:07', title: 'Knowledge expert guide' },
+  { path: 'video/expert-he.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 12.7, duration: '9:50', title: 'מדריך למומחי ידע', depth: 'deep' },
+  { path: 'video/expert-he-short.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 4.8, duration: '3:04', title: 'מדריך למומחי ידע, בקצרה', depth: 'quick' },
+  { path: 'video/expert-en.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 9.9, duration: '7:07', title: 'Knowledge expert guide', depth: 'deep' },
+  { path: 'video/expert-en-short.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 3.1, duration: '1:45', title: 'Knowledge expert guide, in short', depth: 'quick' },
 ];
 
 /** Walkthrough screenshots: `steps/<audience>/<language>/<name>.png`. */

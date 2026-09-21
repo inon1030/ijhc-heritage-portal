@@ -24,16 +24,18 @@
     "db:backup:verify": "tsx scripts/backup.ts --verify",
     "test:db": "vitest run --config vitest.db.config.ts",
     "i18n": "node scripts/translate-ui.mjs",
-    "quota": "node scripts/quota.mjs"
+    "quota": "node scripts/quota.mjs",
+    "predev": "node scripts/copy-opencv.mjs",
+    "prebuild": "node scripts/copy-opencv.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.0",
+    "@techstark/opencv-js": "^4.10.0-release.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.549.0",
     "next": "16.3.1",
-    "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "sharp": "^0.35.3",
@@ -48,7 +50,6 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.7",
     "@types/node": "^20",
-    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.0",

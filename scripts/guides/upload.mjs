@@ -39,6 +39,11 @@ const VIDEOS = {
   'IJHC Contributor Guide - English - with screens.mp4': 'video/contributor-en.mp4',
   'IJHC מדריך למומחי ידע - עברית - עם צילומי מסך.mp4': 'video/expert-he.mp4',
   'IJHC Knowledge Expert Guide - English - with screens.mp4': 'video/expert-en.mp4',
+  // The short versions for quick learning (DOCS/_build/build_short_videos.py).
+  'IJHC מדריך לתורמים - עברית - מקוצר.mp4': 'video/contributor-he-short.mp4',
+  'IJHC Contributor Guide - English - short.mp4': 'video/contributor-en-short.mp4',
+  'IJHC מדריך למומחי ידע - עברית - מקוצר.mp4': 'video/expert-he-short.mp4',
+  'IJHC Knowledge Expert Guide - English - short.mp4': 'video/expert-en-short.mp4',
   // Avigdor Sharon's recording, re-encoded with his address blurred and a credit.
   'לסרוק ולשמור בעזרת הטלפון - גרסת האתר.mp4': 'video/scanning-he.mp4',
 };

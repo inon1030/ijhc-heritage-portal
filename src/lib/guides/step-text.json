@@ -44,16 +44,16 @@
     {
       "id": "scan",
       "title": {
-        "en": "Or scan with your phone",
+        "en": "Or scan it with your phone",
         "he": "או סורקים בטלפון"
       },
       "body": {
-        "en": "On a phone, press Scan with your phone’s camera and photograph the page. After each page choose Scan another page of this document, or Scan a separate document; each document becomes its own item. On a computer, scan the code to open this page on your phone.",
-        "he": "בטלפון לוחצים \"סריקה במצלמת הטלפון\" ומצלמים את העמוד. אחרי כל עמוד בוחרים \"סריקת עמוד נוסף למסמך הזה\" או \"סריקת מסמך נפרד\", וכל מסמך נשמר כפריט משלו. במחשב סורקים את הקוד כדי לפתוח את הדף בטלפון."
+        "en": "On a phone, press Smart scan with the camera and point it at the page: the edges are found for you. Press the round button, check the page (drag a corner, choose Document, Black and white or Photo, or turn it) and press Keep this page. After Done you can scan another page of the same document or a separate document. The button appears only on a phone.",
+        "he": "בטלפון לוחצים \"סריקה חכמה במצלמה\" ומכוונים לדף: הקצוות מזוהים לבד. לוחצים על הכפתור העגול, בודקים את העמוד (אפשר להזיז פינה, לבחור מסמך, שחור-לבן או תמונה, או לסובב) ולוחצים \"שמירת העמוד\". אחרי \"סיום\" אפשר לסרוק עמוד נוסף לאותו מסמך או מסמך נפרד. הכפתור מופיע רק בטלפון."
       },
       "quick": {
-        "en": "Or press Scan with your phone’s camera and photograph each page.",
-        "he": "או לוחצים \"סריקה במצלמת הטלפון\" ומצלמים כל עמוד."
+        "en": "On a phone: Smart scan with the camera finds the page, straightens it and cleans it.",
+        "he": "בטלפון: \"סריקה חכמה במצלמה\" מזהה את הדף, מיישרת ומנקה אותו."
       }
     },
     {

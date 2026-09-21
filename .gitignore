@@ -59,3 +59,6 @@ backups/
 
 # Session scratch: capture and audit scripts, never shipped.
 .guide-tmp/
+
+# Copied from node_modules by scripts/copy-opencv.mjs on every dev and build
+/public/vendor/

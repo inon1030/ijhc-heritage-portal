@@ -1,5 +1,7 @@
 'use client';
 
+import { PlayableVideo } from '@/components/playable-video';
+
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
@@ -123,7 +125,10 @@ export function Lightbox({
             <iframe src={url} title={current.file.name} className="h-[78vh] w-full max-w-3xl bg-paper" />
           )}
           {kind === 'audio' && <audio src={url} controls className="w-full max-w-xl" />}
-          {kind === 'video' && <video src={url} controls className="max-h-[78vh] max-w-full" />}
+          {kind === 'video' && (
+            // The same big play button as everywhere else on the site.
+            <PlayableVideo src={url} label={current.file.name} className="aspect-video w-[min(100%,138vh)] max-h-[78vh] rounded-xl" />
+          )}
           {kind === 'other' && (
             <p className="text-paper/70">{t('file.noPreview')}</p>
           )}

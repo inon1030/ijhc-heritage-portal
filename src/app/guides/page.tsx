@@ -169,7 +169,7 @@ function GuideSection({ audience, lang, depth, t }: { audience: Audience; lang: 
   const pdfs = files.filter((f) => f.kind === 'pdf' && f.depth === depth);
   // The reader's own language first; the other one is still there.
   const videos = files
-    .filter((f) => f.kind === 'video')
+    .filter((f) => f.kind === 'video' && (!f.depth || f.depth === depth))
     .sort((a, b) => Number(b.language === lang) - Number(a.language === lang));
 
   return (
@@ -214,7 +214,7 @@ function GuideSection({ audience, lang, depth, t }: { audience: Audience; lang: 
  * play button in its middle, and the title under it.
  */
 function VideoCard({ file }: { file: GuideFile }) {
-  const poster = `/guides/posters/${file.path.replace('video/', '').replace('.mp4', '.png')}`;
+  const poster = `/guides/posters/${file.path.replace('video/', '').replace('-short', '').replace('.mp4', '.png')}`;
   return (
     <article className="card overflow-hidden">
       <div className="aspect-video">
