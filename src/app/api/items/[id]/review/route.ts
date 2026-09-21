@@ -163,10 +163,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
      * runs once the request — and its cookies — are gone.
      */
     if (body.status === 'accepted' && result.from !== 'accepted' && result.item.access === 'public') {
-      const to = await contributorEmailForItem(id).catch(() => null);
+      const to = await contributorEmailForItem(id).catch((error) => {
+        console.error('[mail] published notice: could not read the address', error);
+        return null;
+      });
       if (to) {
         const mail = publishedMail(to, result.item.title, `${siteUrl()}/portal/${id}`);
-        after(() => sendMail(mail).then(() => undefined));
+        after(async () => {
+          if (await sendMail(mail)) console.info('[mail] published notice sent', id);
+        });
+      } else {
+        console.info('[mail] published notice skipped: no address on record', id);
       }
     }
 

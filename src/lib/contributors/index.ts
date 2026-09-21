@@ -292,15 +292,29 @@ export async function setContributorName(id: string, fullName: string | null) {
  */
 export async function contributorEmailForItem(itemId: string): Promise<string | null> {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase
+
+  /*
+   * Two plain reads, the same two the review screen makes, rather than one
+   * embedded select. The embed returned nothing on production (21.09.2026)
+   * while the review screen, reading the same rows on the same session, showed
+   * the address — and the published notice was skipped without a word.
+   */
+  const { data: item, error: itemError } = await supabase
     .from('items')
-    .select('contributors(email)')
+    .select('contributor_id')
     .eq('id', itemId)
     .maybeSingle();
+  if (itemError) throw itemError;
 
+  const contributorId = (item as { contributor_id: string | null } | null)?.contributor_id;
+  if (!contributorId) return null;
+
+  const { data: person, error } = await supabase
+    .from('contributors')
+    .select('email')
+    .eq('id', contributorId)
+    .maybeSingle();
   if (error) throw error;
-  const row = (data as { contributors: { email: string | null } | { email: string | null }[] | null } | null)
-    ?.contributors;
-  const email = Array.isArray(row) ? row[0]?.email : row?.email;
-  return email?.trim() || null;
+
+  return (person as { email: string | null } | null)?.email?.trim() || null;
 }

@@ -183,7 +183,9 @@ export async function POST(request: NextRequest) {
     const to = body.contributorEmail?.trim();
     if (to) {
       const mail = receiptMail(to, item.title, `${siteUrl()}/receipt/${item.id}?t=${receipt}`);
-      after(() => sendMail(mail).then(() => undefined));
+      after(async () => {
+        if (await sendMail(mail)) console.info('[mail] receipt sent', item.id);
+      });
     }
     return ok({ id: item.id, receipt }, { status: 201 });
   } catch (error) {
