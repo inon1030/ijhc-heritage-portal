@@ -321,6 +321,8 @@ export function UploadFlow({
     grant: string;
     expiresAt: number;
     durationMs: number | null;
+    /** What the browser measured of the file, when there was a file to measure. */
+    measured?: FileMetadata;
   }): Promise<Analysed> {
     const analyseRes = await fetch('/api/analyze', {
       method: 'POST',
@@ -336,7 +338,34 @@ export function UploadFlow({
         language: analysisLang,
       }),
     });
-    const read = await analyseRes.json();
+    /*
+     * Not every answer is ours to parse.
+     *
+     * When the platform stops the route it answers with its own plain-text
+     * page, and `.json()` on that threw "Unexpected token 'A' … is not valid
+     * JSON" at a contributor (Tirza, 22.09.2026). The file is already in
+     * storage by then, so an unreadable answer loses the machine's help and
+     * not the contribution: carry on without a reading, as the route itself
+     * does when the model fails.
+     */
+    const read = await analyseRes.json().catch(() => null);
+    if (!read) {
+      console.error('[upload] /api/analyze answered with something other than JSON', analyseRes.status);
+      if (!input.measured) throw new Error(t('error.didNotGoThrough'));
+      return {
+        id: input.id,
+        fileName: input.fileName,
+        path: input.path,
+        grant: input.grant,
+        expiresAt: input.expiresAt,
+        metadata: input.measured,
+        durationMs: input.durationMs,
+        previewPath: null,
+        previewUrl: null,
+        analysis: null,
+        analysisError: t('err.noResponse'),
+      };
+    }
     if (!read.ok) throw new Error(read.error.message);
 
     if (read.data.simulated) setSimulated(true);
@@ -366,7 +395,8 @@ export function UploadFlow({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fileName: file.name, mimeType: file.type, byteSize: file.size }),
     });
-    const signed = await signRes.json();
+    const signed = await signRes.json().catch(() => null);
+    if (!signed) throw new Error(t('error.didNotGoThrough'));
     if (!signed.ok) throw new Error(signed.error.message);
 
     const supabase = createBrowserSupabase();
@@ -394,6 +424,9 @@ export function UploadFlow({
       grant: signed.data.grant,
       expiresAt: signed.data.expiresAt,
       durationMs,
+      // Size as the browser counted it. The type only when the browser knew
+      // one: an empty type is not measured, and is not guessed here either.
+      measured: file.type ? { mimeType: file.type, byteSize: file.size } : undefined,
     });
 
     // The browser already drew a thumbnail for a format it can draw; keep it,

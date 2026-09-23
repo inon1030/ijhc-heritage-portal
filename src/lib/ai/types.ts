@@ -17,6 +17,14 @@ export interface AnalysisInput {
   known?: string;
   /** The language the reading should come back in. */
   language?: string;
+  /**
+   * When the reading must have finished, as a `Date.now()` timestamp.
+   *
+   * The route has sixty seconds before the platform kills it, and a killed
+   * route answers with a plain-text page the upload screen cannot read.
+   * Absent means the provider sets its own.
+   */
+  deadline?: number;
 }
 
 export interface AnalysisResult {

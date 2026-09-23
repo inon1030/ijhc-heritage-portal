@@ -57,7 +57,19 @@ function outOfAllowance(error: unknown): boolean {
   return status === 429 || /RESOURCE_EXHAUSTED|exceeded your current quota/i.test(message);
 }
 
+/**
+ * What the model may spend, counted from the moment the request arrives.
+ *
+ * `maxDuration` is sixty seconds and it is enforced by killing the function.
+ * A killed function does not answer with JSON: it answers with Vercel's own
+ * "An error occurred…" page, and the upload screen reported that as
+ * "Unexpected token 'A' … is not valid JSON" (Tirza, 22.09.2026). The model
+ * stops at fifty, which leaves the rest of the handler room to answer properly.
+ */
+const MODEL_DEADLINE_MS = 50_000;
+
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now();
     /*
      * The reader, before anything can be refused.
      *
@@ -191,6 +203,7 @@ export async function POST(request: NextRequest) {
         known: parsed.data.known,
         language: parsed.data.language,
         vocabulary,
+        deadline: startedAt + MODEL_DEADLINE_MS,
       });
 
       /*
