@@ -83,7 +83,7 @@ function responseSchema(allowed: string[]) {
       type: Type.STRING,
       nullable: true,
       description:
-        'Up to six sentences of context a knowledgeable person would add: what kind of object or document this is, its likely period and community, and what is known about the place or people it shows. May draw on web search. Unverified by definition; never repeated as a field.',
+        'A general description in the manner of a Deep Research briefing: short "## " headings (what this is, period, community and place, historical context, worth finding out), a paragraph under each, about 250 to 450 words. May draw on web search. Unverified by definition; never repeated as a field.',
     },
     belongsToArchive: {
       type: Type.BOOLEAN,

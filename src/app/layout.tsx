@@ -16,6 +16,7 @@ import { currentBucket } from '@/lib/experiment-server';
 import { cookies } from 'next/headers';
 import { getMessages } from '@/lib/i18n';
 import { MessagesProvider } from '@/lib/i18n/provider';
+import { ProblemListener } from '@/components/problem-listener';
 import './globals.css';
 
 /**
@@ -207,6 +208,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {t('site.skipToContent')}
         </a>
         <MessagesProvider catalogue={catalogue}>
+          <ProblemListener />
           <Masthead />
           <main id="main" className="flex-1">
             {children}
@@ -247,6 +249,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
             <p className="mt-12 border-t border-rule pt-6 text-sm leading-relaxed text-muted">
               {t('footer.promise')}
+            </p>
+            {/* Rafi, 21.09: the Center's notice on the site. The second line
+                is not decoration - the terms say copyright in the material
+                stays with whoever holds it, and a bare "all rights reserved"
+                under every family photograph would say the opposite. */}
+            <p className="mt-4 text-sm text-muted">
+              {t('footer.copyright')} {t('footer.itemRights')}
             </p>
           </div>
         </footer>

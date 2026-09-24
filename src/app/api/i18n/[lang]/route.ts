@@ -57,6 +57,6 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ la
       },
     );
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/i18n/[lang]');
   }
 }

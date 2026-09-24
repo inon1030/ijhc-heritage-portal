@@ -9,6 +9,9 @@ import { SUPABASE_URL, serviceRoleKey } from '@/lib/env';
  *   2. minting signed upload URLs
  *   3. minting signed download URLs after an explicit permission check
  *
+ * (Since then it also writes server-side records nobody may write from the
+ * browser — among them the problem log, 0031, through `recordProblem`.)
+ *
  * The `server-only` import makes it a build error to reach this from a client
  * component.
  */

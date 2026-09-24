@@ -251,6 +251,6 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/analyze');
   }
 }

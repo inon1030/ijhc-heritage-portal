@@ -218,7 +218,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     return ok({ id: result.item.id, status: result.item.status });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items/[id]/review');
   }
 }
 
@@ -258,6 +258,6 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     return ok({ id });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items/[id]/review');
   }
 }

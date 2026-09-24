@@ -42,6 +42,6 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ pa
     response.headers.set('Cache-Control', 'private, no-store');
     return response;
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/guides/[...path]');
   }
 }

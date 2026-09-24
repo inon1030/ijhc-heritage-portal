@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     if ((error as { code?: string }).code === '23505') {
       return fail(409, 'already_exists', 'That family is already registered for this community.');
     }
-    return unexpected(error);
+    return unexpected(error, '/api/manage/families');
   }
 }
 
@@ -53,6 +53,6 @@ export async function DELETE(request: NextRequest) {
     await deleteFamily(id);
     return ok({ deleted: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/families');
   }
 }

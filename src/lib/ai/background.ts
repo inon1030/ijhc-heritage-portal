@@ -16,6 +16,13 @@
  * shown under its own heading, marked as unverified, and no button copies it
  * into a record. A Moderator who wants a sentence of it checks it and types it.
  *
+ * Since 24.09.2026 it is a general description in the manner of a Deep
+ * Research answer (Inon): five short headings — what this is, period,
+ * community and place, historical context, worth finding out — with a
+ * paragraph under each, instead of six loose sentences. Same field, same
+ * rules, same single model call; `sectionsOf` splits it for the screen, and a
+ * reading stored before the change, with no headings, is one untitled section.
+ *
  * Client-safe: a pure reader of the stored answer, used by the upload screen
  * and the review workbench alike.
  */
@@ -66,4 +73,46 @@ export function backgroundOf(raw: unknown): Background | null {
   const text = typeof record.background === 'string' ? record.background.trim() : '';
   if (!text) return null;
   return { text, sources: cleanSources(record.backgroundSources) };
+}
+
+export interface BackgroundSection {
+  heading: string | null;
+  paragraphs: string[];
+}
+
+/**
+ * The description split at its "## " headings.
+ *
+ * Text before the first heading — or a whole answer written before headings
+ * were asked for — is a section with no heading. Bold markers a model adds
+ * despite being asked not to are dropped rather than shown as asterisks.
+ */
+export function sectionsOf(text: string): BackgroundSection[] {
+  const sections: BackgroundSection[] = [];
+  let current: BackgroundSection = { heading: null, paragraphs: [] };
+  let paragraph: string[] = [];
+
+  const closeParagraph = () => {
+    if (paragraph.length) current.paragraphs.push(paragraph.join(' '));
+    paragraph = [];
+  };
+  const closeSection = () => {
+    closeParagraph();
+    if (current.heading || current.paragraphs.length) sections.push(current);
+  };
+
+  for (const raw of text.replace(/\*\*/g, '').split(/\r?\n/)) {
+    const line = raw.trim();
+    const heading = /^#{1,4}\s+(.+)$/.exec(line);
+    if (heading) {
+      closeSection();
+      current = { heading: heading[1].trim(), paragraphs: [] };
+    } else if (!line) {
+      closeParagraph();
+    } else {
+      paragraph.push(line.replace(/^[-*•]\s+/, ''));
+    }
+  }
+  closeSection();
+  return sections;
 }

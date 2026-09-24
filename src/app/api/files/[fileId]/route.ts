@@ -134,6 +134,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
       },
     });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/files/[fileId]');
   }
 }

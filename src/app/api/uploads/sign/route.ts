@@ -54,6 +54,6 @@ export async function POST(request: NextRequest) {
     // from here rather than from a stranger who guessed one.
     return ok({ path: data.path, token: data.token, ...issueGrant(data.path) });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/uploads/sign');
   }
 }

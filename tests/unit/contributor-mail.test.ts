@@ -61,8 +61,29 @@ describe('background', () => {
 
   it('is told search never counts as reading, and follows the reader’s language', () => {
     const prompt = buildInstructions([], 'Hebrew');
-    expect(prompt).toContain('── Background ──');
+    expect(prompt).toContain('── General description ──');
+    // Inon, 24.09: the description reads like a Deep Research answer, under headings.
+    expect(prompt).toContain('## What this is');
+    expect(prompt).toContain('## Worth finding out');
     expect(prompt).toMatch(/nothing you found by searching counts as having read anything/);
     expect(prompt).toContain('`summary`, `background`, the `note`');
+  });
+});
+
+describe('the general description, split at its headings', () => {
+  it('turns "## " lines into sections and keeps paragraphs apart', async () => {
+    const { sectionsOf } = await import('@/lib/ai/background');
+    const sections = sectionsOf('## What this is\nA ketubah.\n\nIt is **illuminated**.\n## Period\nLikely 1890s.');
+    expect(sections).toEqual([
+      { heading: 'What this is', paragraphs: ['A ketubah.', 'It is illuminated.'] },
+      { heading: 'Period', paragraphs: ['Likely 1890s.'] },
+    ]);
+  });
+
+  it('shows a description stored before headings as one untitled section', async () => {
+    const { sectionsOf } = await import('@/lib/ai/background');
+    expect(sectionsOf('Probably 1930s.\nLikely Bene Israel.')).toEqual([
+      { heading: null, paragraphs: ['Probably 1930s. Likely Bene Israel.'] },
+    ]);
   });
 });

@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     if ((error as { code?: string }).code === '23505') {
       return fail(409, 'already_exists', 'That term is already in the vocabulary.');
     }
-    return unexpected(error);
+    return unexpected(error, '/api/manage/keywords');
   }
 }
 
@@ -99,7 +99,7 @@ export async function PATCH(request: NextRequest) {
     // has variants of its own. Its message says which, and it is worth showing.
     const message = (error as { message?: string }).message ?? '';
     if (message.includes('variant')) return fail(409, 'invalid_merge', message);
-    return unexpected(error);
+    return unexpected(error, '/api/manage/keywords');
   }
 }
 
@@ -117,6 +117,6 @@ export async function DELETE(request: NextRequest) {
     revalidatePath('/manage/vocabulary');
     return ok({ deleted: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/keywords');
   }
 }

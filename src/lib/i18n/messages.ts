@@ -50,7 +50,7 @@ export const en = {
   'nav.openMenu': 'Open the menu',
   'nav.closeMenu': 'Close the menu',
   'nav.portal': 'Portal',
-  'nav.contribute': 'Contribute',
+  'nav.contribute': "Upload",
   'nav.review': 'Review',
   'nav.manage': 'Manage',
   'nav.signIn': 'Sign in',
@@ -81,10 +81,10 @@ export const en = {
   'guides.title': "How to use the archive",
   'guides.standfirst': "Click through a guide step by step, keep the full guide as a PDF, or watch the video. Each section is written for one role.",
   'guides.sections': "Guides by role",
-  'guides.contributor.heading': "For contributors",
+  'guides.contributor.heading': "For users",
   'guides.contributor.intro': "How to send a photograph, a document, a recording or a link to the archive, check what the machine read, and keep your receipt. No account needed.",
   'guides.expert.heading': "For knowledge experts",
-  'guides.expert.intro': "Reviewing a contribution against the original, correcting what the machine wrote, deciding, and looking after the keywords and the family list.",
+  'guides.expert.intro': "Reviewing an item against the original, correcting what the machine wrote, deciding, and looking after the keywords and the family list.",
   'guides.expert.locked': "This guide is for knowledge experts. Sign in with an approved account to open it.",
   'guides.admin.heading': "For administrators",
   'guides.admin.intro': "Approving accounts, deciding who reviews, and the bin: restoring a record or removing it for good.",
@@ -109,10 +109,12 @@ export const en = {
   'guides.quickGuideHint': "One page with the steps that matter, to print or keep. Opens in a new tab.",
   'footer.legal': "Legal",
   'footer.browse': 'Browse the archive',
-  'footer.contribute': 'Contribute an item',
-  'footer.handling': 'How your contribution is handled',
+  'footer.contribute': "Upload an item",
+  'footer.handling': "How your item is handled",
   'footer.promise':
     'Every description in this archive was written or checked by a person. Machine suggestions are marked as such and are never published unread.',
+  'footer.copyright': "Copyright © 2026 IJHC. All rights reserved.",
+  'footer.itemRights': "Rights in each archived item stay with the family or person who holds them.",
 
   // ── the four streams, and what a record is ────────────────────────────────
   // The communities are proper names, but a Malayalam reader should meet them
@@ -176,7 +178,7 @@ export const en = {
   'record.backToPortal': 'Back to the portal',
   'record.readItIn': 'Read it in {language}',
   'record.provenance': 'Provenance',
-  'record.contributor': 'Contributor',
+  'record.contributor': "User",
   'record.capturedFrom': 'Captured from',
   'record.period': 'Period',
   'record.placeOfOrigin': 'Place of origin',
@@ -204,11 +206,11 @@ export const en = {
   'streams.communityNotIdentified': 'Community not yet identified',
 
   // ── contributing ──────────────────────────────────────────────────────────
-  'upload.title': 'Contribute',
+  'upload.title': "Upload",
   'upload.description':
     'Add a photograph, document, or recording to the Indian Jewish Heritage Center archive.',
   'upload.eyebrow': 'Open to everyone — no account needed',
-  'upload.headline': 'Contribute an item',
+  'upload.headline': "Upload an item",
   'upload.standfirst':
     'A photograph, a document, a recording. The AI reads what it can from the file and suggests a description — the knowledge expert checks it, approves it and publishes it.',
 
@@ -312,9 +314,8 @@ export const en = {
   'review.history': 'History',
 
   // ── the pre-review panel a contributor edits ──────────────────────────────
-  'bg.heading': 'Background from the web · not verified',
-  'bg.explain':
-    'What the AI adds about this kind of item, sometimes after searching the web. It is not evidence and it is never saved to the record. Check anything here before you use it.',
+  'bg.heading': "General description · researched on the web, not verified",
+  'bg.explain': "An overview of this item written by the AI in the manner of a deep-research answer: what it is, its period, the community and places it touches, its history, and what is worth finding out next. It may have searched the web to write it. It is not evidence and it is never saved to the record. Check anything here before you use it.",
   'bg.sources': 'Pages it used',
   'prereview.heading': 'What the AI found',
   'prereview.aiSuggested': 'The AI suggested:',
@@ -381,7 +382,7 @@ export const en = {
   'login.signingIn': 'Signing in…',
   'login.sending': 'Sending…',
   'login.sendRequest': 'Send the request',
-  'login.noAccountNeeded': 'Browsing and contributing need no account. Reviewing does.',
+  'login.noAccountNeeded': "Browsing and uploading need no account. Reviewing does.",
   'login.approvalNote':
     'An administrator approves each request. Until then the account can sign in and see only what any visitor sees.',
   'login.badCredentials': 'That email and password do not match an account.',
@@ -392,26 +393,24 @@ export const en = {
   'login.browseMeanwhile': 'Browse the archive in the meantime',
 
   // ── the receipt a contributor keeps ───────────────────────────────────────
-  'receipt.title': 'Your contribution',
+  'receipt.title': "Your item",
   'receipt.badLink': 'That link is not right',
-  'receipt.contributeSomething': 'Contribute something',
-  'receipt.gone': 'This contribution is no longer held',
+  'receipt.contributeSomething': "Upload something",
+  'receipt.gone': "This item is no longer held",
   'receipt.withdrawn': 'Withdrawn',
-  'receipt.withdrawnBody':
-    'This contribution has been taken out of the archive. If you did not ask for that and it looks wrong, get in touch.',
+  'receipt.withdrawnBody': "This item has been taken out of the archive. If you did not ask for that and it looks wrong, get in touch.",
   'receipt.published': 'Published',
   'receipt.keptNotPublic': 'Kept, but not public',
   'receipt.notAdded': 'Not added to the archive',
   'receipt.waiting': 'Waiting for the knowledge expert',
-  'receipt.badLinkBody': 'This address does not match a contribution. Check the link you were given, or contribute something new.',
+  'receipt.badLinkBody': "This address does not match an uploaded item. Check the link you were given, or upload something new.",
   'receipt.goneBody': 'The record this receipt pointed at is no longer held in the archive.',
   'receipt.publishedBody': 'The knowledge expert checked it and it is in the public archive.',
   'receipt.keptNotPublicBody':
     'The knowledge expert catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
   'receipt.notAddedBody':
     'The knowledge expert looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
-  'receipt.waitingBody':
-    'It has arrived safely. The knowledge expert checks each contribution against the original before anything is published, so this can take a while.',
+  'receipt.waitingBody': "It has arrived safely. The knowledge expert checks each item against the original before anything is published, so this can take a while.",
 
   // ── the review queue ──────────────────────────────────────────────────────
   'queue.title': 'Review queue',
@@ -423,6 +422,8 @@ export const en = {
   'error.label': 'Error',
   'error.unreachable': 'The archive could not be reached',
   'error.tryAgain': 'Try again',
+  'problem.codeLabel': "Problem code:",
+  'problem.codeHint': "If you report this, include the code. It lets us find exactly what happened.",
 
   // ── the archive's own tools ───────────────────────────────────────────────
   'manage.heading': 'Archive administration',
@@ -464,7 +465,7 @@ export const en = {
   'notfound.body':
     'It may still be awaiting review, or it may have been taken out of the archive.',
 
-  'upload.contributeAnother': 'Contribute another',
+  'upload.contributeAnother': "Upload another",
   'common.backToPortal': 'Back to the portal',
   'receipt.seeInArchive': 'See it in the archive',
   'file.accepted': 'Images, PDFs, audio and video. Up to {size} each.',
@@ -477,7 +478,7 @@ export const en = {
   // may not read, inside the one sentence where that matters most.
   'consent.howHandled': 'how it will be handled',
   'consent.openTerms': 'Open the full terms in their own page',
-  'handling.title': 'How your contribution is handled',
+  'handling.title': "How your item is handled",
   'handling.description':
     'What happens to material sent to the Indian Jewish Heritage Center archive, what is published, and what is done with an email address.',
   'login.requestIn': 'Your request is in',
@@ -494,9 +495,9 @@ export const en = {
   'wb.showMachineReading': 'Show the machine’s reading',
   'wb.hideMachineReading': 'Hide the machine’s reading',
   'wb.correctedByVolunteer': 'Corrected by a volunteer. The machine’s reading is kept beside it.',
-  'wb.correctedByContributor': 'Corrected by the contributor before submitting. The machine’s reading is kept beside it.',
+  'wb.correctedByContributor': "Corrected by the user before submitting. The machine’s reading is kept beside it.",
   'wb.theRecord': 'The record',
-  'wb.contributorSaid': 'What the contributor said',
+  'wb.contributorSaid': "What the user said",
   'wb.theyCorrected': 'They corrected the archive on',
   'wb.useThis': 'Use this',
   'wb.knownFamily': 'Known family:',
@@ -542,6 +543,12 @@ export const en = {
   'manage.families': 'Families',
   'manage.accounts': 'Accounts',
   'manage.bin': 'Bin',
+  'manage.problems': "Problems",
+  'problems.adminsOnly': "The problem log holds technical details of failures, so it is kept to administrators.",
+  'problems.intro': "Every failure the site sees leaves a row here, and the person who met it is shown its code. Paste a code from a bug report to find it. Rows are kept for ninety days.",
+  'problems.find': "Find",
+  'problems.notFound': "No problem with that code. Check it was copied whole, including the E-.",
+  'problems.none': "Nothing has failed in the last ninety days.",
 
   'vocab.everyCommunity': 'Every community',
   'vocab.empty': 'The vocabulary is empty. Until it has terms, records can carry no keywords at all.',
@@ -561,9 +568,9 @@ export const en = {
   'families.noteOptional': 'Note — optional',
   'families.noAddresses': 'No addresses linked to this family yet.',
   'families.theirName': 'Their name, if known',
-  'families.contributors': 'Contributors',
+  'families.contributors': "Users",
   'families.nobodyLeftAddress': 'Nobody has left an address yet.',
-  'families.searchContributors': 'Search contributors',
+  'families.searchContributors': "Search users",
   'families.erase': 'Erase',
   'families.onlyRegisterGoes': 'They have sent nothing, so only the register entry goes.',
   'families.nameOptional': 'Name — optional',
@@ -578,7 +585,7 @@ export const en = {
 
   'common.remove': 'Remove',
   'common.notDetermined': 'Not determined',
-  'common.editedByContributor': 'Edited by the contributor',
+  'common.editedByContributor': "Edited by the user",
   'families.examplePlaceholder': 'Merchant family, Bombay and Shanghai',
   'prereview.vocabularyNote':
     'The knowledge expert matches these to the archive’s own vocabulary before publishing.',
@@ -681,7 +688,7 @@ export const en = {
     'You can also ask to be forgotten without withdrawing what you sent. Your name and address are erased and the material stays in the archive, no longer linked to a person. The two are separate requests and you can make either one.',
 
   // ── finding what one person sent (volunteers only) ────────────────────────
-  'contributor.search': 'Find what someone contributed',
+  'contributor.search': "Find what someone uploaded",
   'contributor.placeholder': 'their email address',
   'contributor.find': 'Find',
   'contributor.publicOnly':
@@ -730,7 +737,7 @@ export const en = {
   'filters.stream': 'Stream',
   'filters.type': 'Type',
   'filters.text': 'Title or place',
-  'filters.contributor': 'Contributor email',
+  'filters.contributor': "User email",
   'filters.clear': 'Clear filters',
   'filters.showing': 'Showing {shown} of {total}',
   'filters.more': 'More filters',
@@ -791,8 +798,7 @@ export const en = {
     'These predate the tree. Until a term says which branch it subdivides, nothing can reason about it — and the model is never offered it as a proposal target.',
   'upload.done.linkExplain':
     'It shows you whether a knowledge expert has published it yet. Save it somewhere; we have no other way to reach you.',
-  'upload.done.linksExplainMany':
-    'They show you whether a knowledge expert has published each contribution yet. Save them somewhere; we have no other way to reach you.',
+  'upload.done.linksExplainMany': "They show you whether a knowledge expert has published each item yet. Save them somewhere; we have no other way to reach you.",
   'vocab.noBranch': 'No branch — from before the tree',
   'accounts.noName': 'No name given',
   'accounts.mail': 'Mail',
@@ -804,8 +810,7 @@ export const en = {
   'wb.noFamiliesYet': 'No families registered for {community} yet.',
   'flow.together': 'Front and back, or the pages of one letter.',
   'flow.separate': 'Different photographs, each its own record.',
-  'receipt.copyWholeAddress':
-    'Contribution links are long and are easily broken by an email client or a chat app. Copy the whole address, including everything after the question mark.',
+  'receipt.copyWholeAddress': "Item links are long and are easily broken by an email client or a chat app. Copy the whole address, including everything after the question mark.",
   'receipt.noRecordUnderLink':
     'The archive no longer has a record under this link. If that is unexpected, get in touch and quote the reference below.',
 

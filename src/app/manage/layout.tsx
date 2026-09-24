@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getMessages } from '@/lib/i18n';
 import { redirect } from 'next/navigation';
-import { BookMarked, ShieldCheck, Trash2, Users } from 'lucide-react';
+import { BookMarked, Bug, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { AwaitingApproval } from '@/components/awaiting-approval';
 import { getCurrentProfile, getCurrentVolunteer } from '@/lib/supabase/server';
 
@@ -46,6 +46,7 @@ export default async function ManageLayout({ children }: { children: React.React
         <Tab href="/manage/families" icon={<Users size={17} />} label={t('manage.families')} />
         {isAdmin && <Tab href="/manage/accounts" icon={<ShieldCheck size={17} />} label={t('manage.accounts')} />}
         {isAdmin && <Tab href="/manage/bin" icon={<Trash2 size={17} />} label={t('manage.bin')} />}
+        {isAdmin && <Tab href="/manage/problems" icon={<Bug size={17} />} label={t('manage.problems')} />}
       </nav>
 
       {children}

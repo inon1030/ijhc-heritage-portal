@@ -1,5 +1,6 @@
 'use client';
 
+import { reportProblem } from '@/lib/problems/report';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
@@ -556,7 +557,7 @@ export function UploadFlow({
        */
       void prefetchReadings(results);
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('upload.error.generic'));
+      setError(withProblemCode(e instanceof Error ? e.message : t('upload.error.generic'), e, 'upload/analyse'));
       setPhase('describe');
     } finally {
       setProgress(null);
@@ -689,7 +690,7 @@ export function UploadFlow({
       setCreated(made);
       setPhase('done');
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('upload.error.save'));
+      setError(withProblemCode(e instanceof Error ? e.message : t('upload.error.save'), e, 'upload/save'));
       setPhase('reviewing');
       setScreen(3);
     }
@@ -1371,4 +1372,16 @@ function InReadingLanguage({
 }) {
   if (!catalogue) return <>{children}</>;
   return <MessagesProvider catalogue={catalogue}>{children}</MessagesProvider>;
+}
+
+/**
+ * The message, with the problem's code on the end (0031).
+ *
+ * A server failure already carries its code, recorded by the server; anything
+ * else — a response that was not JSON, a network that dropped — is reported
+ * from here, so every error on this screen ends with something to quote.
+ */
+function withProblemCode(message: string, error: unknown, place: string): string {
+  if (/\(E-[0-9A-Z]{6}\)\s*$/.test(message)) return message;
+  return `${message} (${reportProblem(error, place)})`;
 }

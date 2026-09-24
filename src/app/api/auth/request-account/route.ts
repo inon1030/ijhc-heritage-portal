@@ -64,6 +64,6 @@ export async function POST(request: NextRequest) {
 
     return ok({ requested: true }, { status: 202 });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/auth/request-account');
   }
 }

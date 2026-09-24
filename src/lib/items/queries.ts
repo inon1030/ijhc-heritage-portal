@@ -385,3 +385,36 @@ export async function countReviewQueue(): Promise<number> {
   if (error) throw error;
   return count ?? 0;
 }
+
+/** One row of the problem log (0031), as an administrator reads it. */
+export interface ProblemEntry {
+  code: string;
+  created_at: string;
+  source: 'server' | 'browser';
+  place: string | null;
+  path: string | null;
+  message: string;
+  detail: string | null;
+  user_agent: string | null;
+}
+
+/**
+ * The newest problems, or the one a report quotes.
+ *
+ * Through the signed-in client, so RLS (`problems_admin_select`) is what
+ * decides: anybody but an administrator gets an empty list, whatever the
+ * screen above this asked for.
+ */
+export async function listProblems(code?: string): Promise<ProblemEntry[]> {
+  const supabase = await createServerSupabase();
+  let query = supabase
+    .from('problems')
+    .select('code, created_at, source, place, path, message, detail, user_agent')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  const wanted = code?.trim().toUpperCase();
+  if (wanted) query = query.eq('code', wanted.startsWith('E-') ? wanted : `E-${wanted}`);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as ProblemEntry[];
+}

@@ -31,7 +31,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
 
     return ok({ id, restored: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/bin/[id]');
   }
 }
 
@@ -49,6 +49,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
     return ok({ id, purged: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/bin/[id]');
   }
 }

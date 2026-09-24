@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { ZodError } from 'zod';
+import { describeThrown, problemCode } from '@/lib/problems/code';
+import { recordProblem } from '@/lib/problems/record';
 
-export type ApiError = { code: string; message: string; fields?: Record<string, string> };
+export type ApiError = { code: string; message: string; fields?: Record<string, string>; ref?: string };
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError };
 
 export function ok<T>(data: T, init?: ResponseInit) {
@@ -27,10 +29,31 @@ export function invalid(error: ZodError) {
 /**
  * Turns anything thrown into a safe response. Database errors carry table and
  * column names, so they are logged but never sent to the browser.
+ *
+ * It also leaves a trace (0031): one row in `problems`, written after the
+ * response has gone, and the row's short code in the answer as `ref` and at
+ * the end of the message. The person sees "... (E-7KQ2WX)", quotes it in the
+ * bug sheet, and the report is one query away instead of a day of
+ * reconstruction (Rafi, 24.09.2026).
  */
-export function unexpected(error: unknown) {
-  console.error('[api]', error);
-  return fail(500, 'internal_error', 'Something went wrong on our side. Try again.');
+export function unexpected(error: unknown, place?: string) {
+  console.error('[api]', place ?? '', error);
+  const code = problemCode();
+  const { message, detail } = describeThrown(error);
+  const write = () => recordProblem({ code, source: 'server', place: place ?? null, message, detail });
+  try {
+    after(write);
+  } catch {
+    // Outside a request (a script, a test) there is no `after`. Best effort.
+    void write();
+  }
+  return NextResponse.json<ApiResult<never>>(
+    {
+      ok: false,
+      error: { code: 'internal_error', message: `Something went wrong on our side. Try again. (${code})`, ref: code },
+    },
+    { status: 500 },
+  );
 }
 
 /**

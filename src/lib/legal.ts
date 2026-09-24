@@ -43,7 +43,7 @@ export interface LegalDocument {
 }
 
 /** The day these documents were last written. Changed by hand, with the text. */
-export const LEGAL_UPDATED = '2026-09-21';
+export const LEGAL_UPDATED = '2026-09-24';
 
 const aiParagraphEn = GEMINI_PAID_TIER
   ? 'The Center uses this service on a paid account. Under Google’s paid terms the material sent is not used to train or improve Google’s models. It still leaves the Center’s systems to be read.'
@@ -70,18 +70,19 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
       },
       {
         heading: 'What is collected, and why',
-        body: ['Three kinds of thing, and nothing else:'],
+        body: ['Four kinds of thing, and nothing else:'],
         list: [
           'What a contributor sends: the file itself, and the description, dates, places and names given with it. This is the archive’s subject matter and it is kept for as long as the archive exists.',
-          'An email address, and a name if one is given. The address is required in order to contribute. It is used for three things only: a Moderator coming back with a question about the item, a message with the receipt link when the item is sent, and a message with the item’s public link when it is published. It is never published beside a record and it is never used for a newsletter.',
-          'An account, for the Moderators who review items: a name, an email address, and a password the Center never sees in readable form.',
+          'An email address, and a name if one is given. The address is required in order to contribute. It is used for three things only: a Knowledge Expert coming back with a question about the item, a message with the receipt link when the item is sent, and a message with the item’s public link when it is published. It is never published beside a record and it is never used for a newsletter.',
+          'An account, for the Knowledge Experts who review items: a name, an email address, and a password the Center never sees in readable form.',
+          'A record of what failed. When a page or a request fails, the archive keeps the time, the page address without anything after its question mark, the error message, the name of the browser and, for a signed-in account, which account it was. No file and no form contents are kept. Whoever met the failure is shown a short code to quote when they report it. Only administrators can read this record, and it is deleted after ninety days.',
         ],
       },
       {
         heading: 'Family names',
         body: [
           'A family name attached to a record is published with it, because a heritage archive that cannot be searched by family is not much of a heritage archive. That also means the surname of living relatives can appear in public.',
-          'A name is attached by a Moderator, from a list the Center maintains, and only where the name is already part of the historical record. A contributor’s own name is not published merely because they gave it.',
+          'A name is attached by a Knowledge Expert, from a list the Center maintains, and only where the name is already part of the historical record. A contributor’s own name is not published merely because they gave it.',
         ],
       },
       {
@@ -89,7 +90,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         body: [
           'Every uploaded file is read by an automated service, Google Gemini, which proposes a description, a period, a place and keywords. A person checks that reading against the original before anything is published; nothing the machine produces is published unread.',
           'To be read, the file is sent to Google. It leaves the Center’s systems at that moment.',
-          'While reading, the service may also search the web for background on what it sees — a place, a community, a kind of object. What such a search finds is shown to the Moderator as unverified background, apart from the catalogue, and is never written into a record as fact.',
+          'While reading, the service may also search the web for background on what it sees — a place, a community, a kind of object. What such a search finds is shown to the Knowledge Expert as unverified background, apart from the catalogue, and is never written into a record as fact.',
           aiParagraphEn,
         ],
       },
@@ -107,14 +108,14 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         list: [
           'ijhc.lang — the language chosen for the site. A year.',
           'ijhc.theme — light or dark, if either was chosen. A year.',
-          'A session cookie, for a signed-in Moderator only. It is what keeps them signed in.',
+          'A session cookie, for a signed-in Knowledge Expert only. It is what keeps them signed in.',
           'If the Center turns on visitor statistics, those cookies are set only after a visitor agrees, and the choice itself is remembered in a cookie. Declining leaves the archive fully usable.',
         ],
       },
       {
         heading: 'Who else sees it',
         body: [
-          'Moderators and administrators of the Center see everything in the review screens, including contributors’ email addresses. Nobody outside the Center is given this material, and none of it is sold or exchanged.',
+          'Knowledge Experts and administrators of the Center see everything in the review screens, including contributors’ email addresses. Nobody outside the Center is given this material, and none of it is sold or exchanged.',
           'A published record is public by definition: anyone can read it, link to it and copy it.',
         ],
       },
@@ -155,18 +156,19 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
       },
       {
         heading: 'מה נאסף, ולשם מה',
-        body: ['שלושה סוגים של מידע, ולא מעבר לכך:'],
+        body: ['ארבעה סוגים של מידע, ולא מעבר לכך:'],
         list: [
-          'מה שהתורם שולח: הקובץ עצמו, והתיאור, התאריכים, המקומות והשמות שנמסרו איתו. זה החומר של הארכיון, והוא נשמר כל עוד הארכיון קיים.',
-          'כתובת מייל, ושם אם נמסר. הכתובת נדרשת כדי לתרום, והיא משמשת לשלושה דברים בלבד: מודרטור שחוזר עם שאלה על הפריט, מייל עם קישור הקבלה כשהפריט נשלח, ומייל עם הקישור הציבורי לפריט כשהוא מתפרסם. היא לא מתפרסמת לצד רשומה ולא משמשת לדיוור.',
-          'חשבון, למודרטורים שבודקים פריטים: שם, כתובת מייל, וסיסמה שהמרכז אינו רואה בשום שלב בצורה קריאה.',
+          'מה שהמשתמש שולח: הקובץ עצמו, והתיאור, התאריכים, המקומות והשמות שנמסרו איתו. זה החומר של הארכיון, והוא נשמר כל עוד הארכיון קיים.',
+          'כתובת מייל, ושם אם נמסר. הכתובת נדרשת כדי להעלות פריט, והיא משמשת לשלושה דברים בלבד: מומחה ידע שחוזר עם שאלה על הפריט, מייל עם קישור הקבלה כשהפריט נשלח, ומייל עם הקישור הציבורי לפריט כשהוא מתפרסם. היא לא מתפרסמת לצד רשומה ולא משמשת לדיוור.',
+          'חשבון, למומחי ידע שבודקים פריטים: שם, כתובת מייל, וסיסמה שהמרכז אינו רואה בשום שלב בצורה קריאה.',
+          'רישום של תקלות. כשעמוד או בקשה נכשלים, הארכיון שומר את השעה, את כתובת העמוד בלי מה שאחרי סימן השאלה, את הודעת השגיאה, את סוג הדפדפן, ובחשבון מחובר גם איזה חשבון זה היה. קבצים ותוכן של טפסים לא נשמרים. מי שנתקל בתקלה רואה קוד קצר שאפשר למסור כשמדווחים עליה. רק מנהלים יכולים לקרוא את הרישום, והוא נמחק אחרי תשעים יום.',
         ],
       },
       {
         heading: 'שמות משפחה',
         body: [
           'שם משפחה שמחובר לרשומה מתפרסם יחד איתה, כי ארכיון מורשת שאי אפשר לחפש בו לפי משפחה הוא ארכיון חסר. משמעות הדבר היא ששם משפחה של קרובים חיים עשוי להופיע בפומבי.',
-          'את השם מחבר מודרטור, מתוך רשימה שהמרכז מנהל, ורק כשהשם כבר חלק מהתיעוד ההיסטורי. שמו של תורם אינו מתפרסם רק משום שמסר אותו.',
+          'את השם מחבר מומחה ידע, מתוך רשימה שהמרכז מנהל, ורק כשהשם כבר חלק מהתיעוד ההיסטורי. שמו של משתמש אינו מתפרסם רק משום שמסר אותו.',
         ],
       },
       {
@@ -174,7 +176,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         body: [
           'כל קובץ שמועלה נקרא על ידי שירות אוטומטי, Google Gemini, שמציע תיאור, תקופה, מקום ומילות מפתח. אדם בודק את הקריאה הזאת מול המקור לפני כל פרסום, ושום דבר שהמכונה מייצרת אינו מתפרסם בלי שנקרא.',
           'כדי שהקובץ ייקרא, הוא נשלח לגוגל. באותו רגע הוא יוצא מהמערכות של המרכז.',
-          'תוך כדי הקריאה השירות עשוי גם לחפש ברשת רקע על מה שהוא רואה - מקום, קהילה, סוג של חפץ. מה שחיפוש כזה מוצא מוצג למודרטור כרקע שלא אומת, בנפרד מהקטלוג, ולעולם אינו נכתב לרשומה כעובדה.',
+          'תוך כדי הקריאה השירות עשוי גם לחפש ברשת רקע על מה שהוא רואה - מקום, קהילה, סוג של חפץ. מה שחיפוש כזה מוצא מוצג למומחה ידע כרקע שלא אומת, בנפרד מהקטלוג, ולעולם אינו נכתב לרשומה כעובדה.',
           aiParagraphHe,
         ],
       },
@@ -182,7 +184,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         heading: 'איפה המידע יושב',
         body: [
           'הרשומות, הקבצים והחשבונות מאוחסנים אצל Supabase בפרנקפורט, באיחוד האירופי. האתר עצמו מוגש על ידי Vercel, גם הוא מפרנקפורט. שתי החברות שומרות יומני בקשות טכניים, הכוללים כתובות IP, לצורכי תפעול ואבטחה.',
-          'המיילים שהארכיון שולח לתורמים יוצאים דרך חשבון Google (ג׳ימייל) של המרכז, ולכן הכתובת של הנמען ותוכן המייל עוברים דרך Google.',
+          'המיילים שהארכיון שולח למשתמשים יוצאים דרך חשבון Google (ג׳ימייל) של המרכז, ולכן הכתובת של הנמען ותוכן המייל עוברים דרך Google.',
           'המרכז שומר גם עותקים משלו של מסד הנתונים ושל הקבצים, כדי שתקלה אצל ספק לא תחסל את הארכיון.',
         ],
       },
@@ -192,14 +194,14 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         list: [
           'ijhc.lang — השפה שנבחרה לאתר. שנה.',
           'ijhc.theme — בהיר או כהה, אם נבחר. שנה.',
-          'עוגיית התחברות, רק למודרטור מחובר. היא זו ששומרת אותו מחובר.',
+          'עוגיית התחברות, רק למומחה ידע מחובר. היא זו ששומרת אותו מחובר.',
           'אם המרכז יפעיל סטטיסטיקות מבקרים, העוגיות שלהן ייקבעו רק אחרי הסכמה, והבחירה עצמה תישמר בעוגייה. סירוב משאיר את הארכיון שמיש במלואו.',
         ],
       },
       {
         heading: 'מי עוד רואה את זה',
         body: [
-          'מודרטורים ומנהלים מטעם המרכז רואים את הכל במסכי הבדיקה, כולל כתובות המייל של התורמים. החומר אינו נמסר לאיש מחוץ למרכז, ואינו נמכר או מוחלף.',
+          'מומחי ידע ומנהלים מטעם המרכז רואים את הכל במסכי הבדיקה, כולל כתובות המייל של המשתמשים. החומר אינו נמסר לאיש מחוץ למרכז, ואינו נמכר או מוחלף.',
           'רשומה שפורסמה היא ציבורית מעצם הגדרתה: כל אחד יכול לקרוא אותה, לקשר אליה ולהעתיק אותה.',
         ],
       },
@@ -207,7 +209,7 @@ export const PRIVACY: Record<'en' | 'he', LegalDocument> = {
         heading: 'בקשה להסרה',
         body: [
           'כל אדם רשאי לשאול מה מוחזק עליו, לבקש לתקן, או לבקש להסיר חומר ששלח. אפשר גם לבקש להימחק בלי למשוך את החומר: השם והכתובת נמחקים, והפריט נשאר בארכיון.',
-          'בידי כל תורם יש גם קישור קבלה שהתקבל בעת השליחה. הוא מראה מה קרה לאותה הגשה ואינו דורש חשבון.',
+          'בידי כל משתמש יש גם קישור קבלה שהתקבל בעת השליחה. הוא מראה מה קרה לאותה הגשה ואינו דורש חשבון.',
         ],
       },
       {
@@ -290,7 +292,7 @@ export const TERMS: Record<'en' | 'he', LegalDocument> = {
 
   he: {
     title: 'תנאי שימוש',
-    standfirst: 'מה האתר הזה, מה מותר לעשות במה שיש בו, ומה מצופה מתורם.',
+    standfirst: 'מה האתר הזה, מה מותר לעשות במה שיש בו, ומה מצופה ממשתמש.',
     updated: LEGAL_UPDATED,
     missingContact: 'המרכז עדיין לא פרסם כתובת לפניות בנוגע לתנאים אלה.',
     clauses: [
@@ -301,7 +303,7 @@ export const TERMS: Record<'en' | 'he', LegalDocument> = {
         ],
       },
       {
-        heading: 'תרומת חומר',
+        heading: 'העלאת חומר',
         body: [
           'בשליחת חומר אתם מאשרים שהוא שלכם לשיתוף, או שיש לכם רשות ממי שמחזיק בו, ונותנים למרכז רשות לשמור אותו, לתאר אותו ולפרסם אותו כחלק מהארכיון. הבעלות אינה עוברת.',
           'אין לשלוח חומר שמציג או מזכיר אדם חי בלי הסכמתו, ואין לשלוח דבר שאינכם חופשיים לשתף.',
@@ -310,7 +312,7 @@ export const TERMS: Record<'en' | 'he', LegalDocument> = {
       {
         heading: 'מה המרכז רשאי לעשות',
         body: [
-          'המרכז מחליט מה הארכיון מכיל. הוא רשאי לא לקבל תרומה, לערוך תיאור, להוציא רשומה שפורסמה מהעין הציבורית, או להסיר אותה — בלי לנמק, ובלי להתחייב להודיע לתורם בזמן ההחלטה.',
+          'המרכז מחליט מה הארכיון מכיל. הוא רשאי לא לקבל פריט, לערוך תיאור, להוציא רשומה שפורסמה מהעין הציבורית, או להסיר אותה — בלי לנמק, ובלי להתחייב להודיע למשתמש בזמן ההחלטה.',
           'רשומה שהוסרה במסכי הבדיקה עוברת לפח, ומנהל יכול לשחזר אותה משם. רק פעולה שנייה ומכוונת מוחקת אותה.',
         ],
       },
@@ -383,7 +385,7 @@ export const ACCESSIBILITY: Record<'en' | 'he', LegalDocument> = {
         heading: 'What is not finished',
         body: ['Stated plainly, because a statement that claims everything is finished is not worth reading:'],
         list: [
-          'Parts of the review and administration screens, which only Moderators see, still show some English wording when the site is set to another language.',
+          'Parts of the review and administration screens, which only Knowledge Experts see, still show some English wording when the site is set to another language.',
           'Recordings and video in the archive have a machine transcription where one could be made, but not captions on the player itself.',
           'Scans of handwriting are images. The machine reads what it can and that text is published beside the record, but a hand nobody could read remains a picture.',
           'PDF files contributed to the archive are published as they arrived; the Center does not remake them.',
@@ -436,7 +438,7 @@ export const ACCESSIBILITY: Record<'en' | 'he', LegalDocument> = {
         heading: 'מה עוד לא הושלם',
         body: ['נאמר במפורש, כי הצהרה שטוענת שהכל מושלם אינה שווה קריאה:'],
         list: [
-          'חלקים ממסכי הבדיקה והניהול, שרק מודרטורים רואים, עדיין מציגים ניסוחים באנגלית כשהאתר מוגדר לשפה אחרת.',
+          'חלקים ממסכי הבדיקה והניהול, שרק מומחי ידע רואים, עדיין מציגים ניסוחים באנגלית כשהאתר מוגדר לשפה אחרת.',
           'להקלטות ולווידאו בארכיון יש תמלול מכונה במקום שאפשר היה להפיק אותו, אבל אין כתוביות בנגן עצמו.',
           'סריקות של כתב יד הן תמונות. המכונה קוראת מה שניתן והטקסט מתפרסם לצד הרשומה, אבל כתב שאיש לא הצליח לפענח נשאר תמונה.',
           'קובצי PDF שנתרמו לארכיון מתפרסמים כפי שהתקבלו, והמרכז אינו בונה אותם מחדש.',

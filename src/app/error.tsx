@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { reportProblem } from '@/lib/problems/report';
+import { problemCode } from '@/lib/problems/code';
 import { useMessages } from '@/lib/i18n/provider';
 
 /**
@@ -9,9 +11,12 @@ import { useMessages } from '@/lib/i18n/provider';
  */
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
   const t = useMessages();
+  // Made once, on the client, so the code on screen is the one reported.
+  const [code] = useState(problemCode);
   useEffect(() => {
     console.error(error);
-  }, [error]);
+    reportProblem(error, 'app/error', code);
+  }, [error, code]);
 
   return (
     <div className="mx-auto max-w-lg px-6 py-24">
@@ -30,6 +35,10 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
       </p>
       <p className="mt-3 text-sm leading-relaxed text-muted">
         Setup steps are in <code className="machine">README.md</code>.
+      </p>
+      <p className="mt-6 text-sm">
+        {t('problem.codeLabel')} <code className="machine select-all">{code}</code>
+        <span className="block text-muted">{t('problem.codeHint')}</span>
       </p>
       <button
         onClick={reset}

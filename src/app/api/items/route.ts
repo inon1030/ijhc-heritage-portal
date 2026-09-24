@@ -217,6 +217,6 @@ export async function POST(request: NextRequest) {
     });
     return ok({ id: item.id, receipt }, { status: 201 });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items');
   }
 }
