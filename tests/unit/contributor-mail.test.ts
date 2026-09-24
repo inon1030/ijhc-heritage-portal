@@ -65,6 +65,8 @@ describe('background', () => {
     // Inon, 24.09: the description reads like a Deep Research answer, under headings.
     expect(prompt).toContain('## What this is');
     expect(prompt).toContain('## Worth finding out');
+    // Measured live 24.09: without this, a Hebrew description came back under English headings.
+    expect(prompt).toContain('a Hebrew description has Hebrew headings');
     expect(prompt).toMatch(/nothing you found by searching counts as having read anything/);
     expect(prompt).toContain('`summary`, `background`, the `note`');
   });

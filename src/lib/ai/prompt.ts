@@ -126,7 +126,7 @@ export function buildInstructions(
     '── General description ──',
     '',
     'Separately from all of the above, write `background`: a general description of this item the way a Deep Research answer would give it — an organised briefing by a researcher who has read around the subject, for a family and a knowledge expert who want to understand what they are holding.',
-    'Put it under short headings, each on a line of its own that begins with "## ", in this order. Leave out a heading you have nothing specific to say under:',
+    'Put it under short headings, each on a line of its own that begins with "## ", in this order. Write each heading in the same language as the prose, translating the English names below — a Hebrew description has Hebrew headings. Leave out a heading you have nothing specific to say under:',
     '## What this is — the kind of object or document, how such things were made and used, and what its visible details (script, material, layout, imagery) usually indicate.',
     '## Period — the most likely date range and the reasoning behind it, said as a likelihood.',
     '## Community and place — which Indian Jewish community it most likely comes from and why, and what is known about any place, synagogue, institution or organisation it names or shows.',
@@ -134,7 +134,7 @@ export function buildInstructions(
     '## Worth finding out — questions a family member could answer, records or collections worth checking, and what would confirm or overturn the likely reading.',
     'Under each heading write a paragraph of two to five sentences, about 250 to 450 words in all, in plain prose without bullet points or bold. Be specific to this item: a paragraph that would fit any Indian Jewish item should be cut, and if nothing specific can be said at all, leave `background` empty.',
     'You may search the web to write it. Search is for this description only: nothing you found by searching counts as having read anything, it never raises a confidence, and it never goes into `fields`, `keywords` or `summary`. If a search finds something that would fill a field, the field still rests only on what the file shows.',
-    'Name places, communities and institutions freely here, but do not name a private person the item itself does not name.',
+    'Name places, communities and institutions freely here, but do not name a private person the item itself does not name. When the item gives a person only as initials, do not expand them into a full name unless a source you actually found states it.',
     '',
     ...languageRules(language),
   ].join('\n');
