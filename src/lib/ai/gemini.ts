@@ -270,6 +270,30 @@ const SEARCH_PAUSE_MS = 60 * 60_000;
  * A contributor is watching a spinner; background is not worth minutes.
  */
 const SEARCH_TIMEOUT_MS = 45_000;
+
+/**
+ * The reading's own clock, when the caller does not give one.
+ *
+ * Search could take forty-five seconds and then hand over to an ordinary
+ * reading with no limit at all, retried by the SDK five times. The route has
+ * sixty. Past that the platform kills it, and the contributor sees
+ * "Unexpected token 'A' … is not valid JSON" instead of their upload
+ * (22.09.2026). Everything below now runs against one deadline.
+ */
+const DEFAULT_BUDGET_MS = 50_000;
+
+/**
+ * What the ordinary reading is guaranteed after search gives up.
+ *
+ * Search is the optional half. It gets whatever is left over this, so a slow
+ * search costs the background section and never the reading itself.
+ */
+const PLAIN_READ_RESERVE_MS = 20_000;
+
+/** The error a spent deadline raises, named like the SDK's own timeout. */
+function outOfTime(): Error {
+  return Object.assign(new Error('The reading ran out of time.'), { name: 'TimeoutError' });
+}
 let searchPausedUntil = 0;
 
 function searchWorthPausing(error: unknown): boolean {
@@ -346,14 +370,28 @@ function floorConfidence(suggestions: FieldSuggestion[]): number {
 async function withFallback(
   client: GoogleGenAI,
   request: (model: string) => Parameters<GoogleGenAI['models']['generateContent']>[0],
+  deadline: number,
 ): Promise<{ response: Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>; model: string }> {
   const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS.filter((m) => m !== GEMINI_MODEL)];
   let lastError: unknown = null;
 
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt += 1) {
+      const left = deadline - Date.now();
+      if (left <= 0) throw outOfTime();
       try {
-        return { response: await client.models.generateContent(request(model)), model };
+        const asked = request(model);
+        const response = await client.models.generateContent({
+          ...asked,
+          config: {
+            ...asked.config,
+            // Each call stops when the reading's time does, and the SDK does
+            // not retry behind this loop's back: this loop is the retry.
+            abortSignal: AbortSignal.timeout(left),
+            httpOptions: { retryOptions: { attempts: 1 } },
+          },
+        });
+        return { response, model };
       } catch (error) {
         const status = (error as { status?: number })?.status;
         const message = String((error as { message?: string })?.message ?? '');
@@ -382,7 +420,7 @@ async function withFallback(
           break;
         }
         if (status === 503 || /UNAVAILABLE/.test(message)) {
-          if (attempt === 0) {
+          if (attempt === 0 && deadline - Date.now() > 900) {
             await new Promise((r) => setTimeout(r, 900));
             continue; // a queue a moment may clear
           }
@@ -463,15 +501,18 @@ export function createGeminiProvider(): AIProvider {
         },
       });
 
+      const deadline = input.deadline ?? Date.now() + DEFAULT_BUDGET_MS;
+
       const read = async () => {
-        if (GEMINI_WEB_SEARCH && Date.now() >= searchPausedUntil) {
+        const searchTime = Math.min(SEARCH_TIMEOUT_MS, deadline - Date.now() - PLAIN_READ_RESERVE_MS);
+        if (GEMINI_WEB_SEARCH && Date.now() >= searchPausedUntil && searchTime > 0) {
           try {
             const asked = request(GEMINI_MODEL, true);
             const response = await client.models.generateContent({
               ...asked,
               config: {
                 ...asked.config,
-                abortSignal: AbortSignal.timeout(SEARCH_TIMEOUT_MS),
+                abortSignal: AbortSignal.timeout(searchTime),
                 // The SDK retries a refusal five times with a back-off by
                 // default. Measured: that turned one search 429 into most of a
                 // 158-second upload. One answer is enough to know.
@@ -485,7 +526,7 @@ export function createGeminiProvider(): AIProvider {
             console.warn('[gemini] reading without search:', String((error as Error)?.message ?? error).slice(0, 200));
           }
         }
-        return withFallback(client, (model) => request(model, false));
+        return withFallback(client, (model) => request(model, false), deadline);
       };
 
       const { response, model: usedModel } = await read().finally(() => discard(client, source.uploaded));

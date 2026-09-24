@@ -42,6 +42,11 @@ export interface Draft {
    * origin between them, not five.
    */
   fields: FieldValue[];
+  /**
+   * The contributor's corrections to what the machine read off this file.
+   * Absent means untouched. Per file, like the reading itself.
+   */
+  reading?: Partial<Record<'ocrText' | 'transcript', string>>;
 }
 
 export interface PreReviewEntry {
@@ -393,7 +398,13 @@ function EntryPanel({
             more thing to scroll past and one more place to disagree with.
           */}
 
-          <Reading entry={entry} analysis={analysis} languages={languages} />
+          <Reading
+            entry={entry}
+            analysis={analysis}
+            languages={languages}
+            correction={draft.reading}
+            onCorrect={(key, text) => onChange({ ...draft, reading: { ...draft.reading, [key]: text } })}
+          />
           <BackgroundNote
             background={
               analysis.background
@@ -642,14 +653,25 @@ function Reading({
   entry,
   analysis,
   languages,
+  correction,
+  onCorrect,
 }: {
   entry: PreReviewEntry;
   analysis: AnalysisResult;
   languages: PickableLanguage[];
+  /** The contributor's own version of the text, where they changed it. */
+  correction?: Partial<Record<'ocrText' | 'transcript', string>>;
+  onCorrect: (key: 'ocrText' | 'transcript', text: string) => void;
 }) {
   const t = useMessages();
   const [lang, setLang] = useState<string | null>(null);
   const [fetched, setFetched] = useState<Record<string, Record<string, string>>>({});
+  /*
+   * Once the text is corrected, a translation made earlier is a translation of
+   * the wrong text. The prefetch is set aside and the switch asks again, of
+   * what the contributor wrote.
+   */
+  const corrected = Boolean(correction && Object.keys(correction).length);
 
   /*
    * What is known, worked out during render rather than copied into state.
@@ -660,18 +682,24 @@ function Reading({
    * the union, and a language present in both is the same translation twice.
    */
   const made = useMemo(
-    () => ({ ...(entry.translations ?? {}), ...fetched }),
-    [entry.translations, fetched],
+    () => (corrected ? fetched : { ...(entry.translations ?? {}), ...fetched }),
+    [corrected, entry.translations, fetched],
   );
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
 
   const blocks = useMemo(() => {
     const found: { key: 'ocrText' | 'transcript'; label: string; text: string }[] = [];
-    if (analysis.ocrText) found.push({ key: 'ocrText', label: t('prereview.textFound'), text: analysis.ocrText });
-    if (analysis.transcript) found.push({ key: 'transcript', label: t('prereview.transcript'), text: analysis.transcript });
+    if (analysis.ocrText)
+      found.push({ key: 'ocrText', label: t('prereview.textFound'), text: correction?.ocrText ?? analysis.ocrText });
+    if (analysis.transcript)
+      found.push({
+        key: 'transcript',
+        label: t('prereview.transcript'),
+        text: correction?.transcript ?? analysis.transcript,
+      });
     return found;
-  }, [analysis.ocrText, analysis.transcript, t]);
+  }, [analysis.ocrText, analysis.transcript, correction, t]);
 
   if (!blocks.length) return null;
 
@@ -722,14 +750,43 @@ function Reading({
 
   return (
     <div className="mt-5">
-      {blocks.map((block) => (
-        <Excerpt
-          key={block.key}
-          label={block.label}
-          text={showing?.[block.key] ?? block.text}
-          rtl={showing?.[block.key] ? chosen?.rtl : undefined}
-        />
-      ))}
+      {blocks.map((block) =>
+        /*
+         * The original is where a wrong reading gets fixed.
+         *
+         * It was a paragraph, so a contributor who saw the machine misread an
+         * inscription had nowhere to say so (Tirza, 22.09.2026). A translation
+         * stays read-only: it is a lens over the text, and correcting a lens
+         * would correct nothing that is kept.
+         */
+        lang === null ? (
+          <label key={block.key} className="mt-5 block first:mt-0">
+            <span className="eyebrow mb-1.5 block">{block.label}</span>
+            <textarea
+              dir="auto"
+              value={block.text}
+              onChange={(e) => {
+                setFetched({});
+                onCorrect(block.key, e.target.value);
+              }}
+              rows={Math.min(12, Math.max(4, block.text.split('\n').length + 1))}
+              className="transcription w-full resize-y rounded-lg border border-rule bg-paper p-3 focus:border-accent-strong focus:outline-none"
+            />
+            <span className="mt-1.5 block text-sm text-muted">
+              {correction?.[block.key] !== undefined && correction[block.key] !== (analysis[block.key] ?? '')
+                ? t('reading.corrected')
+                : t('reading.correctHere')}
+            </span>
+          </label>
+        ) : (
+          <Excerpt
+            key={block.key}
+            label={block.label}
+            text={showing?.[block.key] ?? block.text}
+            rtl={showing?.[block.key] ? chosen?.rtl : undefined}
+          />
+        ),
+      )}
 
       <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
         <span className="flex items-center gap-1.5 text-muted">

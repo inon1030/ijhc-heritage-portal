@@ -107,3 +107,40 @@ describe('reading with web search', () => {
     expect(generateContent).toHaveBeenCalledTimes(1);
   });
 });
+
+/*
+ * The route has sixty seconds and a killed route answers with a page the
+ * upload screen cannot parse (22.09.2026). Every call now runs on one clock.
+ */
+describe('reading against a deadline', () => {
+  const analyseBy = (deadline: number) =>
+    createGeminiProvider().analyze({
+      bytes: new Uint8Array(10),
+      mimeType: 'image/jpeg',
+      fileName: 'ketuba.jpg',
+      title: '',
+      deadline,
+    });
+
+  it('gives every call a time limit and no hidden SDK retries', async () => {
+    generateContent.mockResolvedValue(answer());
+    await analyseBy(Date.now() + 50_000);
+    for (const [request] of generateContent.mock.calls) {
+      expect(request.config.abortSignal).toBeInstanceOf(AbortSignal);
+      expect(request.config.httpOptions.retryOptions.attempts).toBe(1);
+    }
+  });
+
+  it('skips search when only the reserve for the plain reading is left', async () => {
+    generateContent.mockResolvedValue(answer());
+    await analyseBy(Date.now() + 15_000);
+    expect(generateContent).toHaveBeenCalledTimes(1);
+    expect(usedSearch(0)).toBe(false);
+  });
+
+  it('stops instead of asking the model once the time is spent', async () => {
+    generateContent.mockResolvedValue(answer());
+    await expect(analyseBy(Date.now() - 1)).rejects.toMatchObject({ name: 'TimeoutError' });
+    expect(generateContent).not.toHaveBeenCalled();
+  });
+});

@@ -306,7 +306,7 @@ export async function verifyRecord(itemId: string): Promise<Verification> {
       .maybeSingle(),
     admin
       .from('ai_analyses')
-      .select('ocr_text, transcript')
+      .select('ocr_text, transcript, ocr_text_corrected, transcript_corrected')
       .eq('item_id', itemId)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -323,7 +323,7 @@ export async function verifyRecord(itemId: string): Promise<Verification> {
   const source: Translatable = {
     ...(item as Record<string, unknown>),
     id: item.id as string,
-    transcript: analysis?.transcript ?? analysis?.ocr_text ?? null,
+    transcript: analysis?.transcript_corrected ?? analysis?.transcript ?? analysis?.ocr_text_corrected ?? analysis?.ocr_text ?? null,
   };
 
   const held = new Map<string, CachedTranslation[]>();
@@ -548,7 +548,7 @@ export async function translateRecord(
 
   const { data: analysis } = await admin
     .from('ai_analyses')
-    .select('ocr_text, transcript')
+    .select('ocr_text, transcript, ocr_text_corrected, transcript_corrected')
     .eq('item_id', itemId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -558,7 +558,7 @@ export async function translateRecord(
     {
       ...(item as Record<string, unknown>),
       id: item.id as string,
-      transcript: analysis?.transcript ?? analysis?.ocr_text ?? null,
+      transcript: analysis?.transcript_corrected ?? analysis?.transcript ?? analysis?.ocr_text_corrected ?? analysis?.ocr_text ?? null,
     },
     options,
   );

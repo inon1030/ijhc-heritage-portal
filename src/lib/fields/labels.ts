@@ -26,7 +26,7 @@ import type { FieldDef, FieldGroupKey, FieldOption } from './registry';
  *
  * ── the one thing left in English on purpose ────────────────────────────────
  *
- * `path` — "The EHIC Archive Project > Content Domains > Religious and Art" —
+ * `path` — "The IJHC Archive Project > Content Domains > Religious and Art" —
  * is a citation of Erez's own spreadsheet, the way a footnote names a source in
  * the language the source is written in. The sentence around it is translated;
  * the address inside it is not. Say the word and it becomes segment keys.
