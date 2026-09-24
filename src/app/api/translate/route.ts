@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     // so an empty result is both the answer and the permission check.
     const { data: analysis } = await supabase
       .from('ai_analyses')
-      .select('ocr_text, transcript')
+      .select('ocr_text, transcript, ocr_text_corrected, transcript_corrected')
       .eq('item_id', item.id)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       {
         ...(item as Record<string, unknown>),
         id: item.id as string,
-        transcript: analysis?.transcript ?? analysis?.ocr_text ?? null,
+        transcript: analysis?.transcript_corrected ?? analysis?.transcript ?? analysis?.ocr_text_corrected ?? analysis?.ocr_text ?? null,
       },
       language.code,
       { deadline: Date.now() + BUDGET_MS },

@@ -239,35 +239,29 @@ export function ReviewWorkbench({
         </p>
 
         {analysis?.ocr_text && (
-          <details className="mt-4 card bg-paper-2/50">
-            <summary className="eyebrow cursor-pointer px-4 py-3">{t('wb.textRead')}</summary>
-            {/* `transcription`, not `machine`: the mono stack ends in the
-                generic `monospace`, which matches every character, so a Hebrew
-                or Malayalam transcription never reached a face that could draw
-                it. `dir="auto"` lets each line find its own direction. */}
-            <p
-              dir="auto"
-              className="transcription max-h-72 overflow-auto border-t border-rule px-4 py-3"
-            >
-              {analysis.ocr_text}
-            </p>
-          </details>
+          <ReadingEditor
+            itemId={item.id}
+            analysisId={analysis.id}
+            label={t('wb.textRead')}
+            machine={analysis.ocr_text}
+            corrected={analysis.ocr_text_corrected}
+            other={{ transcript: analysis.transcript_corrected }}
+            field="ocrText"
+            correctedBy={analysis.corrected_by}
+          />
         )}
 
         {analysis?.transcript && (
-          <details className="mt-3 card bg-paper-2/50">
-            <summary className="eyebrow cursor-pointer px-4 py-3">{t('wb.transcript')}</summary>
-            {/* `transcription`, not `machine`: the mono stack ends in the
-                generic `monospace`, which matches every character, so a Hebrew
-                or Malayalam transcription never reached a face that could draw
-                it. `dir="auto"` lets each line find its own direction. */}
-            <p
-              dir="auto"
-              className="transcription max-h-72 overflow-auto border-t border-rule px-4 py-3"
-            >
-              {analysis.transcript}
-            </p>
-          </details>
+          <ReadingEditor
+            itemId={item.id}
+            analysisId={analysis.id}
+            label={t('wb.transcript')}
+            machine={analysis.transcript}
+            corrected={analysis.transcript_corrected}
+            other={{ ocrText: analysis.ocr_text_corrected }}
+            field="transcript"
+            correctedBy={analysis.corrected_by}
+          />
         )}
 
         <BackgroundNote background={backgroundOf(analysis?.raw)} />
@@ -741,6 +735,127 @@ function AudiencePicker({
         ))}
       </div>
     </fieldset>
+  );
+}
+
+/**
+ * What the machine read off the file, and the place to correct it.
+ *
+ * It was a read-only paragraph, so a misread inscription could be seen and not
+ * fixed anywhere in the archive (Tirza, 22.09.2026). The correction is kept
+ * beside the machine's text, never over it, and the machine's version stays
+ * one click away. See migration 0030.
+ */
+function ReadingEditor({
+  itemId,
+  analysisId,
+  label,
+  machine,
+  corrected,
+  other,
+  field,
+  correctedBy,
+}: {
+  itemId: string;
+  analysisId: string;
+  label: string;
+  machine: string;
+  corrected: string | null;
+  /** The other block's saved correction, sent back unchanged: the route writes both. */
+  other: { ocrText?: string | null; transcript?: string | null };
+  field: 'ocrText' | 'transcript';
+  correctedBy: string | null;
+}) {
+  const t = useMessages();
+  const router = useRouter();
+  const [text, setText] = useState(corrected ?? machine);
+  const [saved, setSaved] = useState(corrected);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showMachine, setShowMachine] = useState(false);
+
+  const dirty = text.trim() !== (saved ?? machine).trim();
+
+  async function save() {
+    setBusy(true);
+    setError(null);
+    // Back to exactly the machine's text is no correction at all.
+    const value = text.trim() === machine.trim() ? null : text.trim();
+    try {
+      const res = await fetch(`/api/items/${itemId}/reading`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId,
+          ocrText: field === 'ocrText' ? value : (other.ocrText ?? null),
+          transcript: field === 'transcript' ? value : (other.transcript ?? null),
+        }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.ok) throw new Error(body?.error?.message ?? t('error.didNotGoThrough'));
+      setSaved(value);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('error.didNotGoThrough'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <details className="mt-4 card bg-paper-2/50" open={Boolean(saved)}>
+      <summary className="eyebrow cursor-pointer px-4 py-3">
+        {label}
+        {saved && <span className="ms-2 normal-case text-positive">· {t('wb.readingCorrected')}</span>}
+      </summary>
+      <div className="border-t border-rule px-4 py-3">
+        {/* `transcription`, not `machine`: the mono stack ends in the generic
+            `monospace`, which matches every character, so a Hebrew or
+            Malayalam transcription never reached a face that could draw it. */}
+        <textarea
+          dir="auto"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={Math.min(14, Math.max(4, text.split('\n').length + 1))}
+          className="transcription w-full resize-y rounded-lg border border-rule bg-paper p-3 focus:border-accent-strong focus:outline-none"
+        />
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={save}
+            disabled={!dirty || busy}
+            className="flex h-9 items-center gap-1.5 rounded-full bg-accent-strong px-4 text-sm font-medium text-paper transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
+          >
+            {busy ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+            {t('wb.saveReading')}
+          </button>
+          {saved && (
+            <button
+              type="button"
+              onClick={() => setShowMachine((v) => !v)}
+              className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline"
+            >
+              {showMachine ? t('wb.hideMachineReading') : t('wb.showMachineReading')}
+            </button>
+          )}
+        </div>
+        {saved && (
+          <p className="mt-2 text-sm text-muted">
+            {correctedBy ? t('wb.correctedByVolunteer') : t('wb.correctedByContributor')}
+          </p>
+        )}
+        {error && (
+          <p role="status" className="mt-2 text-sm text-caution">
+            {error}
+          </p>
+        )}
+        {showMachine && (
+          <p dir="auto" className="transcription mt-3 max-h-72 overflow-auto rounded-lg bg-paper-3/60 p-3 text-muted">
+            {machine}
+          </p>
+        )}
+      </div>
+    </details>
   );
 }
 

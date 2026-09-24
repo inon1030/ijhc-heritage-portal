@@ -22,6 +22,11 @@ export interface CreateFileInput {
   /** What the model said about this file. One analysis per file. */
   analysis: AnalysisResult | null;
   analysisError: string | null;
+  /**
+   * What the contributor says the file reads, where the machine got it wrong.
+   * Stored beside the model's text in `ai_analyses`, never over it. See 0030.
+   */
+  corrected?: { ocrText: string | null; transcript: string | null } | null;
 }
 
 export interface CreateItemInput {
@@ -152,6 +157,11 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
       confidence: file.analysis?.confidence ?? null,
       ocr_text: file.analysis?.ocrText ?? null,
       transcript: file.analysis?.transcript ?? null,
+      // No `corrected_by`: the contributor has no account. A correction with
+      // nobody named is the contributor's, and the review screen says so.
+      ocr_text_corrected: file.corrected?.ocrText ?? null,
+      transcript_corrected: file.corrected?.transcript ?? null,
+      corrected_at: file.corrected?.ocrText || file.corrected?.transcript ? new Date().toISOString() : null,
       suggested_community: file.analysis?.suggestedCommunity ?? null,
       suggested_period: file.analysis?.suggestedPeriod ?? null,
       suggested_origin: file.analysis?.suggestedOrigin ?? null,
@@ -435,6 +445,52 @@ export async function reviewItem(input: ReviewInput): Promise<ReviewOutcome> {
  * The files are left exactly where they are. Deleting the bytes here would
  * make the bin a promise the storage could not keep.
  */
+/**
+ * A volunteer's correction of what the machine read off one file.
+ *
+ * Written with the service-role client because `ai_analyses` has no update
+ * policy and should not gain one for this: the route has already required an
+ * approved volunteer, and the match on both ids below is what stops one
+ * record's reading being written through another record's address. The
+ * machine's own text is never touched. Returns false when no such reading
+ * exists on a live record.
+ */
+export async function correctReading(input: {
+  itemId: string;
+  analysisId: string;
+  ocrText: string | null;
+  transcript: string | null;
+  actorId: string;
+}): Promise<boolean> {
+  const admin = createAdminSupabase();
+
+  const { data: item, error: itemError } = await admin
+    .from('items')
+    .select('id')
+    .eq('id', input.itemId)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (itemError) throw itemError;
+  if (!item) return false;
+
+  const { error, count } = await admin
+    .from('ai_analyses')
+    .update(
+      {
+        ocr_text_corrected: input.ocrText,
+        transcript_corrected: input.transcript,
+        corrected_by: input.actorId,
+        corrected_at: new Date().toISOString(),
+      },
+      { count: 'exact' },
+    )
+    .eq('id', input.analysisId)
+    .eq('item_id', input.itemId);
+
+  if (error) throw error;
+  return Boolean(count);
+}
+
 export async function binItem(itemId: string, actorId: string, reason: string | null): Promise<boolean> {
   const supabase = await createServerSupabase();
 

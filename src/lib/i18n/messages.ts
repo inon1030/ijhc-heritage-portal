@@ -357,6 +357,10 @@ export const en = {
   'reading.machine':
     'Machine translation of the text above, made for you to check it. The original is one click away, and it is the original that is submitted.',
   'reading.failed': 'That translation could not be made. The text above is unchanged.',
+  'reading.correctHere':
+    'Did the machine misread something? Correct the text here. The machine’s version is kept beside yours.',
+  'reading.corrected':
+    'Corrected by you. The archive keeps your text, and the machine’s version beside it.',
 
   // ── files ─────────────────────────────────────────────────────────────────
   'file.none': 'No file attached',
@@ -485,6 +489,12 @@ export const en = {
   'wb.measured': 'Measured from the file itself. Nothing above was generated.',
   'wb.textRead': 'Text the model read',
   'wb.transcript': 'Transcript',
+  'wb.readingCorrected': 'corrected',
+  'wb.saveReading': 'Save correction',
+  'wb.showMachineReading': 'Show the machine’s reading',
+  'wb.hideMachineReading': 'Hide the machine’s reading',
+  'wb.correctedByVolunteer': 'Corrected by a volunteer. The machine’s reading is kept beside it.',
+  'wb.correctedByContributor': 'Corrected by the contributor before submitting. The machine’s reading is kept beside it.',
   'wb.theRecord': 'The record',
   'wb.contributorSaid': 'What the contributor said',
   'wb.theyCorrected': 'They corrected the archive on',

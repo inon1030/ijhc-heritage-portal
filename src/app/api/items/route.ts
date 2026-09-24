@@ -118,6 +118,14 @@ const Body = z.object({
         previewPath: z.string().max(500).nullable().optional(),
         analysis: Analysis.nullable(),
         analysisError: z.string().max(500).nullable().optional(),
+        /** The contributor's correction of what the machine read. See 0030. */
+        corrected: z
+          .object({
+            ocrText: z.string().trim().max(20000).nullable(),
+            transcript: z.string().trim().max(100000).nullable(),
+          })
+          .nullable()
+          .optional(),
       }),
     )
     .min(1)
@@ -174,6 +182,11 @@ export async function POST(request: NextRequest) {
         previewPath: file.previewPath ?? null,
         analysis: file.analysis as never,
         analysisError: file.analysisError ?? null,
+        // A correction only means something beside a reading. Without one there
+        // is nothing to correct, and the text belongs in the description.
+        corrected: file.analysis
+          ? { ocrText: file.corrected?.ocrText || null, transcript: file.corrected?.transcript || null }
+          : null,
       })),
     });
 

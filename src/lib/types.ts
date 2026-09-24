@@ -115,6 +115,11 @@ export interface AiAnalysis {
   confidence: number | null;
   ocr_text: string | null;
   transcript: string | null;
+  /** What a person says the item reads, beside what the model said. See 0030. */
+  ocr_text_corrected: string | null;
+  transcript_corrected: string | null;
+  corrected_by: string | null;
+  corrected_at: string | null;
   suggested_category: ItemCategory | null;
   suggested_community: Community | null;
   suggested_period: string | null;

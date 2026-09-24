@@ -10,6 +10,7 @@ import { PhoneScanner } from '@/components/phone-scanner';
 import { groupFiles, looseCount } from '@/lib/upload/groups';
 import { LinkInput, type CapturedLink } from '@/components/link-input';
 import { PreReview, type Draft, type OfferedTerm } from '@/components/pre-review';
+import { correctionOf } from '@/lib/items/correction';
 import type { PickableLanguage } from '@/components/language-picker';
 import { CONSENT_VERSION } from '@/lib/consent';
 import { MessagesProvider, useMessages } from '@/lib/i18n/provider';
@@ -675,6 +676,7 @@ export function UploadFlow({
               previewPath: entry.previewPath,
               analysis: entry.analysis,
               analysisError: entry.analysisError,
+              corrected: correctionOf(entry.analysis, drafts[entry.id]?.reading),
             })),
           }),
         });

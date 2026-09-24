@@ -712,7 +712,15 @@
     "accounts.mail": "07ed6ccf6bf6393d",
     "accounts.notifyUploads": "777197ae026e43a0",
     "accounts.notifyPublications": "0475d49b755db0cd",
-    "accounts.mailNote": "0321e63b64fd2f9e"
+    "accounts.mailNote": "0321e63b64fd2f9e",
+    "reading.correctHere": "e6a94292c12811d5",
+    "reading.corrected": "aedf0ca01414bd60",
+    "wb.readingCorrected": "3def73f15b56a47b",
+    "wb.saveReading": "16d626ca5f78ceec",
+    "wb.showMachineReading": "dc2ebb94eeaa4097",
+    "wb.hideMachineReading": "ce65ed648a14631a",
+    "wb.correctedByVolunteer": "1ec60a1234bc0bbc",
+    "wb.correctedByContributor": "ee50661fc76b4264"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",
@@ -1427,7 +1435,15 @@
     "accounts.mail": "07ed6ccf6bf6393d",
     "accounts.notifyUploads": "777197ae026e43a0",
     "accounts.notifyPublications": "0475d49b755db0cd",
-    "accounts.mailNote": "0321e63b64fd2f9e"
+    "accounts.mailNote": "0321e63b64fd2f9e",
+    "reading.correctHere": "e6a94292c12811d5",
+    "reading.corrected": "aedf0ca01414bd60",
+    "wb.readingCorrected": "3def73f15b56a47b",
+    "wb.saveReading": "16d626ca5f78ceec",
+    "wb.showMachineReading": "dc2ebb94eeaa4097",
+    "wb.hideMachineReading": "ce65ed648a14631a",
+    "wb.correctedByVolunteer": "1ec60a1234bc0bbc",
+    "wb.correctedByContributor": "ee50661fc76b4264"
   },
   "mr": {
     "site.name": "e5dadf70da927c9f",
@@ -2142,7 +2158,15 @@
     "accounts.mail": "07ed6ccf6bf6393d",
     "accounts.notifyUploads": "777197ae026e43a0",
     "accounts.notifyPublications": "0475d49b755db0cd",
-    "accounts.mailNote": "0321e63b64fd2f9e"
+    "accounts.mailNote": "0321e63b64fd2f9e",
+    "reading.correctHere": "e6a94292c12811d5",
+    "reading.corrected": "aedf0ca01414bd60",
+    "wb.readingCorrected": "3def73f15b56a47b",
+    "wb.saveReading": "16d626ca5f78ceec",
+    "wb.showMachineReading": "dc2ebb94eeaa4097",
+    "wb.hideMachineReading": "ce65ed648a14631a",
+    "wb.correctedByVolunteer": "1ec60a1234bc0bbc",
+    "wb.correctedByContributor": "ee50661fc76b4264"
   },
   "ml": {
     "site.name": "e5dadf70da927c9f",
@@ -2857,6 +2881,14 @@
     "accounts.mail": "07ed6ccf6bf6393d",
     "accounts.notifyUploads": "777197ae026e43a0",
     "accounts.notifyPublications": "0475d49b755db0cd",
-    "accounts.mailNote": "0321e63b64fd2f9e"
+    "accounts.mailNote": "0321e63b64fd2f9e",
+    "reading.correctHere": "e6a94292c12811d5",
+    "reading.corrected": "aedf0ca01414bd60",
+    "wb.readingCorrected": "3def73f15b56a47b",
+    "wb.saveReading": "16d626ca5f78ceec",
+    "wb.showMachineReading": "dc2ebb94eeaa4097",
+    "wb.hideMachineReading": "ce65ed648a14631a",
+    "wb.correctedByVolunteer": "1ec60a1234bc0bbc",
+    "wb.correctedByContributor": "ee50661fc76b4264"
   }
 }
