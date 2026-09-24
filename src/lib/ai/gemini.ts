@@ -286,7 +286,7 @@ const DEFAULT_BUDGET_MS = 50_000;
  * The most one model in the fallback chain may take before the next is asked.
  * A normal reading, general description included, took 21 seconds live.
  */
-const PER_MODEL_MS = 28_000;
+const PER_MODEL_MS = 40_000;
 
 /**
  * What the ordinary reading is guaranteed after search gives up.
@@ -294,7 +294,7 @@ const PER_MODEL_MS = 28_000;
  * Search is the optional half. It gets whatever is left over this, so a slow
  * search costs the background section and never the reading itself.
  */
-const PLAIN_READ_RESERVE_MS = 20_000;
+const PLAIN_READ_RESERVE_MS = 45_000;
 
 /** The error a spent deadline raises, named like the SDK's own timeout. */
 function outOfTime(): Error {

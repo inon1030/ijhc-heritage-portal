@@ -36,7 +36,7 @@ const Body = z.object({
   language: z.string().max(40).optional(),
 });
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 /**
  * Runs the AI pass over an already-uploaded file and returns suggestions for
@@ -67,8 +67,14 @@ function outOfAllowance(error: unknown): boolean {
  * "An error occurred…" page, and the upload screen reported that as
  * "Unexpected token 'A' … is not valid JSON" (Tirza, 22.09.2026). The model
  * stops at fifty, which leaves the rest of the handler room to answer properly.
+ *
+ * Raised on 24.09.2026 to 105 against 120. Measured live that day: with the
+ * search allowance spent, Google took about twenty-five seconds to say so,
+ * and the ordinary reading — now carrying the general description — did not
+ * fit in the twenty that were left. The upload failed three times in a row
+ * while the same file read in twenty-one seconds when search answered.
  */
-const MODEL_DEADLINE_MS = 50_000;
+const MODEL_DEADLINE_MS = 105_000;
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
