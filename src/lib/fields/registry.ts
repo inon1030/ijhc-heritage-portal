@@ -185,9 +185,11 @@ function value(
   return { key, label, group, type: 'text', path, hint, lookFor, maxLength };
 }
 
-const D = 'The EHIC Archive Project > Content Domains';
-const M = 'The EHIC Archive Project > Content Media Types';
-const C = 'The EHIC Archive Project > Communities Mapping';
+// "EHIC" in Erez's file name; the archive is IJHC, and a reader sees this line
+// under every field (Tirza, 24.09.2026).
+const D = 'The IJHC Archive Project > Content Domains';
+const M = 'The IJHC Archive Project > Content Media Types';
+const C = 'The IJHC Archive Project > Communities Mapping';
 
 export const FIELDS: readonly FieldDef[] = [
   // ══ Record basics — columns on `items`, not from the document ══════════════
