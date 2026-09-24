@@ -1,4 +1,6 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
+import { describeThrown, problemCode } from '@/lib/problems/code';
+import { recordProblem } from '@/lib/problems/record';
 import { z } from 'zod';
 import { getAIProvider } from '@/lib/ai';
 import { getMessages } from '@/lib/i18n';
@@ -226,6 +228,16 @@ export async function POST(request: NextRequest) {
       });
     } catch (analysisError) {
       console.error('[analyze] provider failed', analysisError);
+      /*
+       * Handled, so `unexpected` never sees it — but this is the failure the
+       * bug sheet hears about most (Tirza, 22.09), so it leaves a trace too
+       * and the contributor gets the code to quote (0031).
+       */
+      const problem = problemCode();
+      const described = describeThrown(analysisError);
+      after(() =>
+        recordProblem({ code: problem, source: 'server', place: '/api/analyze (reading)', message: described.message, detail: described.detail }),
+      );
       return ok({
         analysis: null,
         simulated: provider.isSimulated,
@@ -244,9 +256,7 @@ export async function POST(request: NextRequest) {
          * archive keeps finding in itself — a system reporting a state it is
          * not in.
          */
-        error: outOfAllowance(analysisError)
-          ? t('err.allowanceSpent')
-          : t('err.noResponse'),
+        error: `${outOfAllowance(analysisError) ? t('err.allowanceSpent') : t('err.noResponse')} (${problem})`,
         metadata: { mimeType, byteSize: bytes.byteLength, ...(dimensions ?? decodedSize ?? {}) },
       });
     }

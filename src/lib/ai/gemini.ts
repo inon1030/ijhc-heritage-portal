@@ -83,7 +83,7 @@ function responseSchema(allowed: string[]) {
       type: Type.STRING,
       nullable: true,
       description:
-        'A general description in the manner of a Deep Research briefing: short "## " headings (what this is, period, community and place, historical context, worth finding out), a paragraph under each, about 250 to 450 words. May draw on web search. Unverified by definition; never repeated as a field.',
+        'A general description in the manner of a Deep Research briefing: short "## " headings (what this is, period, community and place, historical context, worth finding out), a paragraph under each, about 200 to 350 words. May draw on web search. Unverified by definition; never repeated as a field.',
     },
     belongsToArchive: {
       type: Type.BOOLEAN,
