@@ -172,6 +172,23 @@ describe('the file, on its way to the model', () => {
     expect(remove).toHaveBeenCalledTimes(1);
   });
 
+  it('gives the next model a turn when one does not answer in time', async () => {
+    // Measured live 24.09: the preferred model sat silent until the whole
+    // reading was aborted, and the rest of the chain was never asked.
+    const timedOut = Object.assign(new Error('The operation was aborted due to timeout'), { name: 'TimeoutError' });
+    // Works whether or not an earlier test left search paused: either the
+    // search or the preferred model is refused, then one model times out.
+    const searchRefused = Object.assign(new Error('RESOURCE_EXHAUSTED'), { status: 429 });
+    generateContent
+      .mockRejectedValueOnce(searchRefused)
+      .mockRejectedValueOnce(timedOut)
+      .mockResolvedValueOnce(reading);
+    const result = await analyse(1000, 'image/jpeg');
+    expect(result.summary).toBe('An interview.');
+    expect(generateContent).toHaveBeenCalledTimes(3);
+    expect(generateContent.mock.calls[2][0].model).not.toBe(generateContent.mock.calls[1][0].model);
+  });
+
   it('refuses a reading that ran out of room instead of parsing half of it', async () => {
     // A schema-constrained answer that hits the output ceiling does not come
     // back short — it comes back as JSON with no closing brace, and the

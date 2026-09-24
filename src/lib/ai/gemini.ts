@@ -283,6 +283,12 @@ const SEARCH_TIMEOUT_MS = 45_000;
 const DEFAULT_BUDGET_MS = 50_000;
 
 /**
+ * The most one model in the fallback chain may take before the next is asked.
+ * A normal reading, general description included, took 21 seconds live.
+ */
+const PER_MODEL_MS = 28_000;
+
+/**
  * What the ordinary reading is guaranteed after search gives up.
  *
  * Search is the optional half. It gets whatever is left over this, so a slow
@@ -379,6 +385,12 @@ async function withFallback(
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const left = deadline - Date.now();
       if (left <= 0) throw outOfTime();
+      // One model may not spend the whole reading. Measured live 24.09: the
+      // preferred model sat silent for fifty seconds and was aborted with the
+      // rest of the chain never asked. A model that has not answered in
+      // PER_MODEL_MS leaves what remains to the next one.
+      const isLast = model === models[models.length - 1];
+      const allowed = isLast ? left : Math.min(left, PER_MODEL_MS);
       try {
         const asked = request(model);
         const response = await client.models.generateContent({
@@ -387,7 +399,7 @@ async function withFallback(
             ...asked.config,
             // Each call stops when the reading's time does, and the SDK does
             // not retry behind this loop's back: this loop is the retry.
-            abortSignal: AbortSignal.timeout(left),
+            abortSignal: AbortSignal.timeout(allowed),
             httpOptions: { retryOptions: { attempts: 1 } },
           },
         });
@@ -416,6 +428,13 @@ async function withFallback(
          */
         if (status === 404 || /NOT_FOUND|no longer available|is not found/i.test(message)) {
           console.error(`[gemini] ${model} is gone; moving to the next model`, message);
+          lastError = error;
+          break;
+        }
+        const name = (error as { name?: string })?.name ?? '';
+        if ((name === 'TimeoutError' || name === 'AbortError') && deadline - Date.now() > 1_000) {
+          // Our own per-model limit, not the reading's: the next model gets the rest.
+          console.warn(`[gemini] ${model} did not answer in time; moving to the next model`);
           lastError = error;
           break;
         }
