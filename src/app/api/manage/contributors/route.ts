@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     revalidatePath('/manage/families');
     return ok({ contributor }, { status: 201 });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/contributors');
   }
 }
 
@@ -104,7 +104,7 @@ export async function PATCH(request: NextRequest) {
         'The archive already holds that address under another contributor. Link the records to that one instead.',
       );
     }
-    return unexpected(error);
+    return unexpected(error, '/api/manage/contributors');
   }
 }
 
@@ -162,6 +162,6 @@ export async function DELETE(request: NextRequest) {
     revalidatePath('/manage/families');
     return ok({ erased: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/contributors');
   }
 }

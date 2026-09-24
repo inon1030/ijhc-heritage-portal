@@ -47,7 +47,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     await setAccountRole(id, parsed.data.role, admin.id);
     return ok({ role: parsed.data.role });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/accounts/[id]');
   }
 }
 
@@ -64,6 +64,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     await declineAccount(id);
     return ok({ deleted: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/accounts/[id]');
   }
 }

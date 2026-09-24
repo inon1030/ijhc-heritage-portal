@@ -44,7 +44,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const { id } = await context.params;
     return ok(await collect(id));
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items/[id]/translations');
   }
 }
 
@@ -63,7 +63,7 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
     const state = await collect(id);
     return ok({ ...state, made: sweep.made, quota: sweep.quota });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items/[id]/translations');
   }
 }
 
@@ -129,7 +129,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     return ok(await collect(id));
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items/[id]/translations');
   }
 }
 

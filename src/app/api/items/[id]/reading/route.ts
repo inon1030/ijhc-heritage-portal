@@ -44,6 +44,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     revalidatePath(`/review/${id}`);
     return ok({ saved: true });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/items/[id]/reading');
   }
 }

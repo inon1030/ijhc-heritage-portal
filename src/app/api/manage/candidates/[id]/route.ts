@@ -28,6 +28,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return ok({ decision: parsed.data.decision });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/manage/candidates/[id]');
   }
 }

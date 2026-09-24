@@ -43,15 +43,15 @@ export function receiptMail(to: string, title: string, receiptUrl: string): Mail
     to,
     subject: 'קיבלנו את הפריט ששלחת · We received your item',
     text: [
-      `תודה. קיבלנו את "${title}" והוא ממתין לבדיקה של מומחה.`,
+      `תודה. קיבלנו את "${title}" והוא ממתין לבדיקה של מומחה ידע.`,
       `בקישור הזה אפשר לראות מה קרה איתו: ${receiptUrl}`,
       '',
-      `Thank you. We received "${title}" and it is waiting for a Moderator to review it.`,
+      `Thank you. We received "${title}" and it is waiting for a Knowledge Expert to review it.`,
       `This link shows what happened to it: ${receiptUrl}`,
     ].join('\n'),
     html: shell(
-      `<p>תודה. קיבלנו את <strong>${t}</strong> והוא ממתין לבדיקה של מומחה.</p><p>בקישור הזה אפשר לראות מה קרה איתו, בכל זמן:</p>${button(receiptUrl, 'מה קרה עם הפריט')}`,
-      `<p>Thank you. We received <strong>${t}</strong> and it is waiting for a Moderator to review it.</p><p>This link shows what happened to it, at any time:</p>${button(receiptUrl, 'Where my item is')}`,
+      `<p>תודה. קיבלנו את <strong>${t}</strong> והוא ממתין לבדיקה של מומחה ידע.</p><p>בקישור הזה אפשר לראות מה קרה איתו, בכל זמן:</p>${button(receiptUrl, 'מה קרה עם הפריט')}`,
+      `<p>Thank you. We received <strong>${t}</strong> and it is waiting for a Knowledge Expert to review it.</p><p>This link shows what happened to it, at any time:</p>${button(receiptUrl, 'Where my item is')}`,
     ),
   };
 }

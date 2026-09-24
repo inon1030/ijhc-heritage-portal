@@ -193,7 +193,7 @@ export async function GET(request: NextRequest) {
       ms: Date.now() - started,
     });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/cron/backup');
   }
 }
 

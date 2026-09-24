@@ -30,3 +30,5 @@ comment on column ai_analyses.transcript_corrected is
   'The transcript as a person corrected it. Null means nobody corrected the machine reading.';
 comment on column ai_analyses.corrected_by is
   'The volunteer who last corrected the reading. Null with a correction present means the contributor corrected it before submitting.';
+comment on column ai_analyses.corrected_at is
+  'When the reading was last corrected by a person.';

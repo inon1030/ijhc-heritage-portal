@@ -195,6 +195,6 @@ export async function POST(request: NextRequest) {
      * not work and a page that looks like it has failed.
      */
     console.error('[analyze/translate] failed', error);
-    return unexpected(error);
+    return unexpected(error, '/api/analyze/translate');
   }
 }

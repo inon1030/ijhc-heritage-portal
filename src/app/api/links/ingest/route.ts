@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
       files,
     });
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/links/ingest');
   }
 }
 

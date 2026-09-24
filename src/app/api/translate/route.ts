@@ -117,6 +117,6 @@ export async function POST(request: NextRequest) {
 
     return ok(rendered);
   } catch (error) {
-    return unexpected(error);
+    return unexpected(error, '/api/translate');
   }
 }
