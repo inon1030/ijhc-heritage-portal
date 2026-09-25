@@ -7,7 +7,7 @@ vi.mock('@/components/site-nav', () => ({
   PrimaryNav: () => null,
   AccountNav: () => null,
   PendingNotice: () => null,
-  ArchiveNav: () => <a href="/review">queue</a>,
+  ArchiveNav: () => <a href="#queue">queue</a>,
 }));
 
 import { MastheadShell, ROW_FOLD_MS } from '@/components/masthead-shell';
