@@ -61,6 +61,8 @@ export const en = {
   'nav.main': 'Main',
   'nav.archiveAdmin': 'Archive administration',
   'nav.archive': 'Archive',
+  'nav.pinRow': "Keep this row open",
+  'nav.unpinRow': "Let this row fold after four seconds",
   'nav.keywords': 'Keywords',
   'nav.families': 'Families',
   'nav.accounts': 'Accounts',

@@ -730,7 +730,9 @@
     "problems.intro": "fb80abcc6b64da3c",
     "problems.find": "822b2ae4542bc74b",
     "problems.notFound": "d0851205fbe55ea4",
-    "problems.none": "393bbc2d18f8e595"
+    "problems.none": "393bbc2d18f8e595",
+    "nav.pinRow": "2b2783854d6f8a11",
+    "nav.unpinRow": "5567d6571696808e"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",

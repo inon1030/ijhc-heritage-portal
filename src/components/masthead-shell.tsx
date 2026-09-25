@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, Pin, PinOff, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import type { Profile } from '@/lib/types';
 import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/site-nav';
@@ -23,11 +23,17 @@ import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/
  *
  * An approved knowledge expert gets a second, quieter row for the archive's own
  * tools, so they never compete with the three things everyone else came for.
- * It shows for 3.5 seconds after a page opens and then folds away, and comes
+ * It shows for four seconds after a page opens and then folds away, and comes
  * back when the reader scrolls or pulls upward - the way the folded strip used
  * to behave (Inon, 21.09.2026). It floats over the page rather than sitting in
- * the flow, so folding it never moves a line of the page beneath. A mouse over
- * the header or keyboard focus inside it keeps it open.
+ * the flow, so folding it never moves a line of the page beneath.
+ *
+ * A click on the row pins it open; another click lets it fold after four
+ * seconds again (Inon, 25.09.2026). A mouse resting over the header no longer
+ * holds it - that made "four seconds" mean "until the mouse leaves", and the
+ * pin is the deliberate way to keep it. Keyboard focus inside the row still
+ * holds it, because a folded row takes the focused link out of reach. Clicking
+ * one of its links navigates and leaves the pin as it was.
  *
  * "Pulling up" turned out to mean more than one gesture: a wheel or trackpad
  * at the top of the page, where there is nothing to scroll and no scroll event
@@ -38,6 +44,9 @@ import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/
  * Logical properties throughout - `start`/`end`, `ms`/`me` - because in Hebrew
  * the whole bar mirrors.
  */
+/** How long the tools row stays open when nobody has pinned it (Inon, 25.09.2026). */
+export const ROW_FOLD_MS = 4000;
+
 export function MastheadShell({
   home,
   rule,
@@ -64,11 +73,13 @@ export function MastheadShell({
   const approved = profile?.role === 'volunteer' || profile?.role === 'admin';
   const hasRow = approved || profile?.role === 'pending';
 
-  // The tools row: open on arrival, folded after 3.5 seconds of nobody using
-  // it. Folded means folded on this page; a new page shows it again, with no
-  // effect needed to reset it.
+  // The tools row: open on arrival, folded after ROW_FOLD_MS unless pinned.
+  // Folded means folded on this page; a new page shows it again, with no
+  // effect needed to reset it. The pin outlives navigation - it is a choice
+  // about the row, not about one page.
   const [foldedOn, setFoldedOn] = useState<string | null>(null);
-  const rowOpen = foldedOn !== pathname;
+  const [pinned, setPinned] = useState(false);
+  const rowOpen = pinned || foldedOn !== pathname;
   const [holding, setHolding] = useState(false);
   const [shownAt, setShownAt] = useState(0);
   const reveal = useCallback(() => {
@@ -77,10 +88,17 @@ export function MastheadShell({
   }, []);
 
   useEffect(() => {
-    if (!hasRow || !rowOpen || holding) return;
-    const timer = window.setTimeout(() => setFoldedOn(pathname), 3500);
+    if (!hasRow || !rowOpen || holding || pinned) return;
+    const timer = window.setTimeout(() => setFoldedOn(pathname), ROW_FOLD_MS);
     return () => window.clearTimeout(timer);
-  }, [hasRow, rowOpen, holding, shownAt, pathname]);
+  }, [hasRow, rowOpen, holding, pinned, shownAt, pathname]);
+
+  // Pinned, or unpinned and folding four seconds from now.
+  const togglePin = useCallback(() => {
+    setPinned((was) => !was);
+    setFoldedOn(null);
+    setShownAt((n) => n + 1);
+  }, []);
 
   // Scrolling up, or pulling up at the very top where there is nothing left to
   // scroll, brings it back.
@@ -138,11 +156,11 @@ export function MastheadShell({
       ref={header}
       className="sticky top-0 z-40 bg-paper/92 backdrop-blur-md"
       onPointerEnter={(e) => {
-        if (e.pointerType !== 'mouse' || !hasRow) return;
-        setHolding(true);
-        setFoldedOn(null);
+        // The mouse travelling up to the menu still opens the row; it no
+        // longer holds it. The pin does that.
+        if (e.pointerType !== 'mouse' || !hasRow || rowOpen) return;
+        reveal();
       }}
-      onPointerLeave={(e) => e.pointerType === 'mouse' && setHolding(false)}
     >
       {/*
         Three columns from `lg:` up: the mark at the start, the navigation in
@@ -194,6 +212,11 @@ export function MastheadShell({
             <ChevronDown size={14} aria-hidden />
           </button>
           <div
+            onClick={(e) => {
+              // A link or a button inside does its own job; the row itself is the pin.
+              if ((e.target as HTMLElement).closest('a,button,input,select,textarea')) return;
+              togglePin();
+            }}
             onFocus={() => {
               setHolding(true);
               setFoldedOn(null);
@@ -202,7 +225,7 @@ export function MastheadShell({
               if (!e.currentTarget.contains(e.relatedTarget as Node)) setHolding(false);
             }}
             className={[
-              'absolute inset-x-0 top-0 grid transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              'absolute inset-x-0 top-0 grid cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
               rowOpen
                 ? 'grid-rows-[1fr] border-b border-rule bg-paper/95 opacity-100 shadow-lift backdrop-blur-md'
                 : 'pointer-events-none grid-rows-[0fr] opacity-0',
@@ -212,6 +235,19 @@ export function MastheadShell({
               <div className="mx-auto flex min-h-12 max-w-6xl items-center justify-center gap-4 px-6 py-1.5">
                 <ArchiveNav profile={profile} queueCount={queueCount} layout="bar" />
                 <PendingNotice profile={profile} />
+                <button
+                  type="button"
+                  onClick={togglePin}
+                  aria-pressed={pinned}
+                  aria-label={pinned ? t('nav.unpinRow') : t('nav.pinRow')}
+                  title={pinned ? t('nav.unpinRow') : t('nav.pinRow')}
+                  className={[
+                    'flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-surface',
+                    pinned ? 'text-accent-strong' : 'text-muted',
+                  ].join(' ')}
+                >
+                  {pinned ? <Pin size={15} aria-hidden /> : <PinOff size={15} aria-hidden />}
+                </button>
               </div>
             </div>
           </div>
