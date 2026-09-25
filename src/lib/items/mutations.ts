@@ -27,6 +27,11 @@ export interface CreateFileInput {
    * Stored beside the model's text in `ai_analyses`, never over it. See 0030.
    */
   corrected?: { ocrText: string | null; transcript: string | null } | null;
+  /**
+   * Sent on before its reading finished (0032). Its analysis row is saved as
+   * `pending` and finished in the background — see background-reading.ts.
+   */
+  analysisPending?: boolean;
 }
 
 export interface CreateItemInput {
@@ -149,8 +154,8 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
       file_id: row?.id ?? null,
       provider: file.analysis?.provider ?? 'none',
       model: file.analysis?.model ?? 'none',
-      status: file.analysis ? 'succeeded' : 'failed',
-      error: file.analysisError,
+      status: file.analysis ? 'succeeded' : file.analysisPending ? 'pending' : 'failed',
+      error: file.analysisPending ? null : file.analysisError,
       summary: file.analysis?.summary ?? null,
       keywords: file.analysis?.keywords ?? [],
       language: file.analysis?.language ?? null,

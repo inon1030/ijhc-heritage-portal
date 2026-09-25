@@ -13,6 +13,8 @@ import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { FIELD_KEYS, isValidValue } from '@/lib/fields/registry';
 import { SUGGESTION_THRESHOLD } from '@/lib/fields/suggestions';
 import { createItem } from '@/lib/items/mutations';
+import { readInBackground } from '@/lib/items/background-reading';
+import { createAdminSupabase } from '@/lib/supabase/admin';
 import { CATEGORIES, COMMUNITIES } from '@/lib/types';
 
 const Analysis = z.object({
@@ -102,6 +104,13 @@ const Body = z.object({
       message: 'A value is not one that field takes.',
     })
     .optional(),
+  /**
+   * What the reading needs when it happens after the item is saved (0032):
+   * the contributor's own account and the language they want it in. The same
+   * two things /api/analyze is given.
+   */
+  known: z.string().max(2000).optional(),
+  language: z.string().max(40).optional(),
   files: z
     .array(
       z.object({
@@ -118,6 +127,8 @@ const Body = z.object({
         previewPath: z.string().max(500).nullable().optional(),
         analysis: Analysis.nullable(),
         analysisError: z.string().max(500).nullable().optional(),
+        /** Sent on before the reading finished; read in the background (0032). */
+        analysisPending: z.boolean().optional(),
         /** The contributor's correction of what the machine read. See 0030. */
         corrected: z
           .object({
@@ -133,6 +144,13 @@ const Body = z.object({
 });
 
 /** Anyone may submit. Everything lands as pending, no exceptions. */
+/**
+ * Five minutes, for the one case that needs it: an item sent on before its
+ * reading finished, read after the response has gone (0032). Everything else
+ * this route does takes a second.
+ */
+export const maxDuration = 300;
+
 export async function POST(request: NextRequest) {
   const { t } = await getMessages();
 
@@ -182,6 +200,7 @@ export async function POST(request: NextRequest) {
         previewPath: file.previewPath ?? null,
         analysis: file.analysis as never,
         analysisError: file.analysisError ?? null,
+        analysisPending: !file.analysis && file.analysisPending === true,
         // A correction only means something beside a reading. Without one there
         // is nothing to correct, and the text belongs in the description.
         corrected: file.analysis
@@ -194,6 +213,28 @@ export async function POST(request: NextRequest) {
     // and sent to the address they gave as well, so closing the tab does not
     // lose it. The mail goes after the response: a slow mail server must not
     // hold up the screen that says the item arrived.
+    /*
+     * Files sent on before their reading finished (Inon, 25.09.2026). The item
+     * is already in a Knowledge Expert's queue; the reading follows it there.
+     */
+    const pendingPaths = new Set(body.files.filter((f) => !f.analysis && f.analysisPending).map((f) => f.path));
+    if (pendingPaths.size) {
+      const startedAt = Date.now();
+      after(async () => {
+        const { data: rows } = await createAdminSupabase()
+          .from('item_files')
+          .select('id, storage_path, file_name')
+          .eq('item_id', item.id);
+        const files = (rows ?? [])
+          .filter((r) => pendingPaths.has(r.storage_path as string))
+          .map((r) => ({ fileId: r.id as string, storagePath: r.storage_path as string, fileName: r.file_name as string }));
+        await readInBackground(
+          { itemId: item.id, title: item.title, known: body.known, language: body.language, files },
+          startedAt,
+        );
+      });
+    }
+
     const receipt = receiptFor(item.id);
     const to = body.contributorEmail?.trim();
     if (to) {

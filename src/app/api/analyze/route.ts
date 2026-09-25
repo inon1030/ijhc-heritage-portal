@@ -36,7 +36,7 @@ const Body = z.object({
   language: z.string().max(40).optional(),
 });
 
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 /**
  * Runs the AI pass over an already-uploaded file and returns suggestions for
@@ -73,8 +73,14 @@ function outOfAllowance(error: unknown): boolean {
  * and the ordinary reading — now carrying the general description — did not
  * fit in the twenty that were left. The upload failed three times in a row
  * while the same file read in twenty-one seconds when search answered.
+ *
+ * And on 25.09.2026 the limit went altogether (Inon): the reading may take as
+ * long as the platform allows a function, five minutes, less fifteen seconds
+ * to answer in. What the contributor waits for is decided on the upload
+ * screen instead - after fifty seconds they are asked whether to keep waiting
+ * or to send the item on and let it be read in the background.
  */
-const MODEL_DEADLINE_MS = 105_000;
+const MODEL_DEADLINE_MS = 285_000;
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
@@ -212,6 +218,9 @@ export async function POST(request: NextRequest) {
         language: parsed.data.language,
         vocabulary,
         deadline: startedAt + MODEL_DEADLINE_MS,
+        // The contributor chose to send the item on; the reading they left
+        // runs again on the server with the item, so this one can stop.
+        signal: request.signal,
       });
 
       /*

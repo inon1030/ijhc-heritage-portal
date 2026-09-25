@@ -302,6 +302,12 @@ function outOfTime(): Error {
 }
 let searchPausedUntil = 0;
 
+/** A time limit, and the caller's own stop when there is one. */
+function within(ms: number, signal?: AbortSignal): AbortSignal {
+  const timeout = AbortSignal.timeout(Math.max(0, ms));
+  return signal ? AbortSignal.any([timeout, signal]) : timeout;
+}
+
 function searchWorthPausing(error: unknown): boolean {
   const status = (error as { status?: number })?.status;
   const message = String((error as { message?: string })?.message ?? '');
@@ -377,6 +383,7 @@ async function withFallback(
   client: GoogleGenAI,
   request: (model: string) => Parameters<GoogleGenAI['models']['generateContent']>[0],
   deadline: number,
+  signal?: AbortSignal,
 ): Promise<{ response: Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>; model: string }> {
   const models = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS.filter((m) => m !== GEMINI_MODEL)];
   let lastError: unknown = null;
@@ -399,7 +406,7 @@ async function withFallback(
             ...asked.config,
             // Each call stops when the reading's time does, and the SDK does
             // not retry behind this loop's back: this loop is the retry.
-            abortSignal: AbortSignal.timeout(allowed),
+            abortSignal: within(allowed, signal),
             httpOptions: { retryOptions: { attempts: 1 } },
           },
         });
@@ -431,6 +438,8 @@ async function withFallback(
           lastError = error;
           break;
         }
+        // The caller let go: nobody is waiting for the next model either.
+        if (signal?.aborted) throw error;
         const name = (error as { name?: string })?.name ?? '';
         if ((name === 'TimeoutError' || name === 'AbortError') && deadline - Date.now() > 1_000) {
           // Our own per-model limit, not the reading's: the next model gets the rest.
@@ -531,7 +540,7 @@ export function createGeminiProvider(): AIProvider {
               ...asked,
               config: {
                 ...asked.config,
-                abortSignal: AbortSignal.timeout(searchTime),
+                abortSignal: within(searchTime, input.signal),
                 // The SDK retries a refusal five times with a back-off by
                 // default. Measured: that turned one search 429 into most of a
                 // 158-second upload. One answer is enough to know.
@@ -540,12 +549,12 @@ export function createGeminiProvider(): AIProvider {
             });
             return { response, model: GEMINI_MODEL };
           } catch (error) {
-            if (!searchMayGiveWay(error)) throw error;
+            if (input.signal?.aborted || !searchMayGiveWay(error)) throw error;
             if (searchWorthPausing(error)) searchPausedUntil = Date.now() + SEARCH_PAUSE_MS;
             console.warn('[gemini] reading without search:', String((error as Error)?.message ?? error).slice(0, 200));
           }
         }
-        return withFallback(client, (model) => request(model, false), deadline);
+        return withFallback(client, (model) => request(model, false), deadline, input.signal);
       };
 
       const { response, model: usedModel } = await read().finally(() => discard(client, source.uploaded));

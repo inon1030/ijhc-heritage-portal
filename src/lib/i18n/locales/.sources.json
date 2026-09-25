@@ -732,7 +732,13 @@
     "problems.notFound": "d0851205fbe55ea4",
     "problems.none": "393bbc2d18f8e595",
     "nav.pinRow": "2b2783854d6f8a11",
-    "nav.unpinRow": "5567d6571696808e"
+    "nav.unpinRow": "5567d6571696808e",
+    "flow.slow.title": "c55e499f2c8e54a6",
+    "flow.slow.body": "d93f67678e039b1e",
+    "flow.slow.wait": "b9ad2e4e8954b13e",
+    "flow.slow.alone": "38e67e91256950b1",
+    "upload.done.bodyAlone": "2091170123ee177a",
+    "wb.readingPending": "4e1b017781b44e96"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",

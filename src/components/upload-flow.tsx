@@ -1,7 +1,7 @@
 'use client';
 
 import { reportProblem } from '@/lib/problems/report';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Check, Sparkles } from 'lucide-react';
 import { ConsentBlock } from '@/components/consent-block';
@@ -43,6 +43,9 @@ import { materialLanguage } from '@/lib/i18n/material';
  * of the archive.
  */
 
+/** When the contributor is asked whether to keep waiting for the reading (Inon, 25.09.2026). */
+export const SLOW_READING_MS = 50_000;
+
 interface FileMetadata {
   mimeType: string;
   byteSize: number;
@@ -73,6 +76,8 @@ interface Analysed {
   previewUrl: string | null;
   analysis: AnalysisResult | null;
   analysisError: string | null;
+  /** Sent on before its reading finished; the server reads it (0032). */
+  pending?: boolean;
 }
 
 type Grouping = 'one' | 'separate';
@@ -249,6 +254,22 @@ export function UploadFlow({
   const [created, setCreated] = useState<{ id: string; receipt: string }[]>([]);
 
   /*
+   * A reading that takes longer than SLOW_READING_MS (Inon, 25.09.2026).
+   *
+   * There is no time limit on the reading any more. Instead, at fifty seconds
+   * the contributor is asked: keep waiting, or send the item on now - straight
+   * to a Knowledge Expert, without the pre-review - and let the server finish
+   * the reading by itself. `alone` is that choice; the controller drops the
+   * request in flight so the reading is not paid for twice.
+   */
+  const [slow, setSlow] = useState(false);
+  const [keepWaiting, setKeepWaiting] = useState(false);
+  const [sentAlone, setSentAlone] = useState(false);
+  const [goingAlone, setGoingAlone] = useState(false);
+  const alone = useRef(false);
+  const inFlight = useRef<AbortController | null>(null);
+
+  /*
    * From the moment the reading language is chosen until the contribution is
    * sent, the site's language control is not on the page.
    *
@@ -313,6 +334,11 @@ export function UploadFlow({
     setProgress(null);
     setPhase('describe');
     setScreen(1);
+    setSlow(false);
+    setKeepWaiting(false);
+    setSentAlone(false);
+    setGoingAlone(false);
+    alone.current = false;
   }
 
   /** Reads a file the archive already holds. The two paths meet here. */
@@ -325,8 +351,29 @@ export function UploadFlow({
     durationMs: number | null;
     /** What the browser measured of the file, when there was a file to measure. */
     measured?: FileMetadata;
+    /** What to submit the file as if it is sent on unread. The server measures it again. */
+    fallback: FileMetadata;
   }): Promise<Analysed> {
-    const analyseRes = await fetch('/api/analyze', {
+    const unread = (): Analysed => ({
+      id: input.id,
+      fileName: input.fileName,
+      path: input.path,
+      grant: input.grant,
+      expiresAt: input.expiresAt,
+      metadata: input.measured ?? input.fallback,
+      durationMs: input.durationMs,
+      previewPath: null,
+      previewUrl: null,
+      analysis: null,
+      analysisError: null,
+      pending: true,
+    });
+    if (alone.current) return unread();
+
+    let analyseRes: Response;
+    try {
+      analyseRes = await fetch('/api/analyze', {
+      signal: inFlight.current?.signal,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -340,6 +387,11 @@ export function UploadFlow({
         language: analysisLang,
       }),
     });
+    } catch (e) {
+      // Dropped on purpose: the contributor sent the item on.
+      if (alone.current) return unread();
+      throw e;
+    }
     /*
      * Not every answer is ours to parse.
      *
@@ -351,6 +403,7 @@ export function UploadFlow({
      * does when the model fails.
      */
     const read = await analyseRes.json().catch(() => null);
+    if (!read && alone.current) return unread();
     if (!read) {
       console.error('[upload] /api/analyze answered with something other than JSON', analyseRes.status);
       if (!input.measured) throw new Error(t('error.didNotGoThrough'));
@@ -429,6 +482,7 @@ export function UploadFlow({
       // Size as the browser counted it. The type only when the browser knew
       // one: an empty type is not measured, and is not guessed here either.
       measured: file.type ? { mimeType: file.type, byteSize: file.size } : undefined,
+      fallback: { mimeType: file.type || 'application/octet-stream', byteSize: Math.max(1, file.size) },
     });
 
     // The browser already drew a thumbnail for a format it can draw; keep it,
@@ -440,6 +494,12 @@ export function UploadFlow({
     if (!hasSomething) return;
     setError(null);
     setPhase('analysing');
+    setSlow(false);
+    setKeepWaiting(false);
+    setGoingAlone(false);
+    alone.current = false;
+    inFlight.current = new AbortController();
+    const slowTimer = window.setTimeout(() => setSlow(true), SLOW_READING_MS);
 
     // A captured page is already in storage — the ingest route put it there —
     // so there is nothing to upload and only the reading is left.
@@ -461,6 +521,12 @@ export function UploadFlow({
               grant: file.grant,
               expiresAt: file.expiresAt,
               durationMs: null,
+              fallback: {
+                mimeType: file.mimeType,
+                byteSize: Math.max(1, file.byteSize),
+                ...(file.width ? { width: file.width } : {}),
+                ...(file.height ? { height: file.height } : {}),
+              },
             }),
           );
           setProgress({ done: results.length, total });
@@ -473,6 +539,12 @@ export function UploadFlow({
       }
 
       setAnalysed(results);
+
+      // Sent on: no pre-review. Straight to the Knowledge Expert.
+      if (alone.current) {
+        await sendAlone(results);
+        return;
+      }
 
       /*
        * Seed the catalogue fields.
@@ -560,7 +632,80 @@ export function UploadFlow({
       setError(withProblemCode(e instanceof Error ? e.message : t('upload.error.generic'), e, 'upload/analyse'));
       setPhase('describe');
     } finally {
+      window.clearTimeout(slowTimer);
+      setSlow(false);
       setProgress(null);
+    }
+  }
+
+  /** The contributor chose not to wait. The files still upload; the reading is dropped. */
+  function goAlone() {
+    setGoingAlone(true);
+    alone.current = true;
+    inFlight.current?.abort();
+  }
+
+  /**
+   * Submits without the pre-review, each unread file marked as pending.
+   *
+   * The same records `submit` would make - one per group - with the title the
+   * contributor typed or the file's name, their own account as the
+   * description, and no field list, which tells the server to let the
+   * machine's suggestions stand when they arrive.
+   */
+  async function sendAlone(results: Analysed[]) {
+    setPhase('submitting');
+    const byId = new Map(results.map((entry) => [entry.id, entry]));
+    const records = (captured ? [results.map((entry) => entry.id)] : groups)
+      .map((ids) => ids.map((id) => byId.get(id)).filter((e): e is Analysed => Boolean(e)))
+      .filter((entries) => entries.length > 0);
+
+    try {
+      const made: { id: string; receipt: string }[] = [];
+      for (const entries of records) {
+        const res = await fetch('/api/items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: (oneRecord ? title.trim() || captured?.title : null) || stemOf(entries[0].fileName),
+            source: source.trim() || null,
+            sourceUrl: captured?.sourceUrl ?? null,
+            contributorEmail: email.trim() || null,
+            contributorFullName: fullName.trim() || null,
+            consentVersion: CONSENT_VERSION,
+            contributorDescription: known.trim() || null,
+            contributorKeywords: [],
+            known: known.trim() || undefined,
+            language: analysisLang,
+            files: entries.map((entry) => ({
+              path: entry.path,
+              grant: entry.grant,
+              expiresAt: entry.expiresAt,
+              fileName: entry.fileName,
+              mimeType: entry.metadata.mimeType,
+              byteSize: entry.metadata.byteSize,
+              width: entry.metadata.width ?? null,
+              height: entry.metadata.height ?? null,
+              durationMs: entry.durationMs,
+              previewPath: entry.previewPath,
+              analysis: entry.analysis,
+              analysisError: entry.analysisError,
+              analysisPending: entry.pending === true,
+            })),
+          }),
+        });
+        const body = await res.json().catch(() => null);
+        if (!body) throw new Error(t('error.didNotGoThrough'));
+        if (!body.ok) throw new Error(readableError(body.error));
+        made.push({ id: body.data.id, receipt: body.data.receipt });
+      }
+      setCreated(made);
+      setSentAlone(true);
+      setPhase('done');
+    } catch (e) {
+      setError(withProblemCode(e instanceof Error ? e.message : t('upload.error.save'), e, 'upload/send-alone'));
+      alone.current = false;
+      setPhase('describe');
     }
   }
 
@@ -708,7 +853,7 @@ export function UploadFlow({
             : t('upload.done.one')}
         </h2>
         <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted">
-          {t('upload.done.body')}
+          {t(sentAlone ? 'upload.done.bodyAlone' : 'upload.done.body')}
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <button
@@ -894,6 +1039,20 @@ export function UploadFlow({
           {phase === 'analysing' ? (
             <div className="mt-6">
               <Thinking mark={mark} fileName={files[0]?.file.name ?? captured?.title ?? null} progress={progress} />
+              {slow && !keepWaiting && !goingAlone && (
+                <div role="alertdialog" aria-labelledby="slow-reading-title" className="card mt-4 rounded-2xl p-5 text-start">
+                  <p id="slow-reading-title" className="font-medium">{t('flow.slow.title')}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">{t('flow.slow.body')}</p>
+                  <div className="mt-4 flex flex-wrap gap-2.5">
+                    <button type="button" onClick={() => setKeepWaiting(true)} className={buttonClass('quiet', 'h-11 px-5')}>
+                      {t('flow.slow.wait')}
+                    </button>
+                    <button type="button" onClick={goAlone} className={buttonClass('primary', 'h-11 px-5')}>
+                      {t('flow.slow.alone')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
           <>

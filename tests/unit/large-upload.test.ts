@@ -189,6 +189,26 @@ describe('the file, on its way to the model', () => {
     expect(generateContent.mock.calls[2][0].model).not.toBe(generateContent.mock.calls[1][0].model);
   });
 
+  it('stops when the caller lets go, instead of asking the next model', async () => {
+    // The contributor chose to send the item on (25.09.2026): nobody is
+    // waiting for this reading, and the server reads it again with the item.
+    const controller = new AbortController();
+    generateContent.mockImplementation(async () => {
+      controller.abort();
+      throw Object.assign(new Error('This operation was aborted'), { name: 'AbortError' });
+    });
+    await expect(
+      createGeminiProvider().analyze({
+        bytes: new Uint8Array(1000),
+        mimeType: 'image/jpeg',
+        fileName: 'x.jpg',
+        title: 'x',
+        signal: controller.signal,
+      }),
+    ).rejects.toThrow();
+    expect(generateContent).toHaveBeenCalledTimes(1);
+  });
+
   it('refuses a reading that ran out of room instead of parsing half of it', async () => {
     // A schema-constrained answer that hits the output ceiling does not come
     // back short — it comes back as JSON with no closing brace, and the

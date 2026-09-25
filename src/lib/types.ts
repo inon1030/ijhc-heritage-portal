@@ -3,7 +3,8 @@ export type ItemStatus = 'pending' | 'accepted' | 'rejected' | 'shadow_gallery';
 export type ItemCategory = 'material_culture' | 'documents' | 'oral_histories';
 export type Community = 'bene_israel' | 'cochin' | 'baghdadi' | 'bnei_menashe' | 'general_india';
 export type AccessLevel = 'public' | 'restricted' | 'research' | 'administrative';
-export type AnalysisStatus = 'succeeded' | 'failed';
+/** `pending`: the item was sent on while its reading was still running (0032). */
+export type AnalysisStatus = 'succeeded' | 'failed' | 'pending';
 
 export interface Profile {
   id: string;

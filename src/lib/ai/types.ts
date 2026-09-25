@@ -25,6 +25,12 @@ export interface AnalysisInput {
    * Absent means the provider sets its own.
    */
   deadline?: number;
+  /**
+   * Stops the reading when whoever asked for it no longer wants it — the
+   * contributor chose to send the item on and let it be read in the
+   * background, and the browser dropped this request (25.09.2026).
+   */
+  signal?: AbortSignal;
 }
 
 export interface AnalysisResult {
