@@ -862,6 +862,11 @@ export function UploadFlow({
         <p className="mx-auto mt-2 max-w-md leading-relaxed text-muted">
           {t(sentAlone ? 'upload.done.bodyAlone' : 'upload.done.body')}
         </p>
+        {/* The receipt email lands in spam for some addresses (Eden, 29.09).
+            Only shown when an address was given, which is always now. */}
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+          {t('upload.done.checkSpam')}
+        </p>
         <div className="mt-6 flex justify-center gap-3">
           <button
             onClick={reset}

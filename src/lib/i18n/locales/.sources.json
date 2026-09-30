@@ -637,6 +637,7 @@
     "stats.accept": "e213c161d5cefa52",
     "stats.decline": "49780701dc2d7cc6",
     "upload.done.body": "1bf1e0dbf341021b",
+    "upload.done.checkSpam": "8ae9007e1d456427",
     "upload.link.hint": "c9fb0a419fbb7f47",
     "wb.moveToBin": "aa9e47727bce86c7",
     "wb.moveToBinConfirm": "a9f1b8ecae3d7331",

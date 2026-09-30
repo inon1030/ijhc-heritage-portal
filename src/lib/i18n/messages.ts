@@ -511,6 +511,8 @@ export const en = {
   'wb.publish': 'Publish',
   'wb.shadowGallery': 'Hold in Shadow Gallery',
   'upload.done.body': 'A knowledge expert checks the description and the suggestions against the original. It appears in the public portal once it is approved.',
+  'upload.done.checkSpam':
+    'We sent you an email with a link to follow the item. If it has not arrived within a few minutes, check the spam folder.',
   'flow.slow.title': "The reading is taking longer than usual",
   'flow.slow.body': "You can keep waiting, or send the item now. It goes straight to a Knowledge Expert without the preview of what the AI found, and the reading finishes by itself in the background.",
   'flow.slow.wait': "Keep waiting",
