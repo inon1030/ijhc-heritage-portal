@@ -154,7 +154,6 @@ export function LinkInput({
             }
           }}
           disabled={disabled || busy}
-          placeholder={t('upload.linkPlaceholder')}
           className="h-11 w-full rounded-lg border border-rule bg-paper px-4 sm:flex-1 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
         />
         <button

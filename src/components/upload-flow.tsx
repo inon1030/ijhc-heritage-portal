@@ -325,6 +325,13 @@ export function UploadFlow({
     setTitle('');
     setSource('');
     setEmail('');
+    // The next item may be someone else's, and a box that opens already
+    // filled in reads as an answer rather than as a question (Rafi, 24.09).
+    setFullName('');
+    setKnown('');
+    setDontKnow({});
+    setGrouping('one');
+    setReadings({});
     setAgreed(false);
     setAnalysed([]);
     setDrafts({});
@@ -1080,7 +1087,6 @@ export function UploadFlow({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
                 aria-invalid={email.trim().length > 0 && !emailOk}
                 className={cn(
                   'h-14 w-full rounded-lg border bg-paper px-4 text-[1.05rem] focus:outline-none',
@@ -1110,7 +1116,6 @@ export function UploadFlow({
                 rows={3}
                 maxLength={2000}
                 dir="auto"
-                placeholder={t('flow.whatYouKnowPlaceholder')}
                 className="w-full resize-y rounded-lg border border-rule bg-paper px-4 py-3 text-[1.05rem] leading-relaxed focus:border-accent-strong focus:outline-none"
               />
               <span className="mt-1 block text-sm text-muted">{t('flow.whatYouKnowHint')}</span>
@@ -1129,7 +1134,6 @@ export function UploadFlow({
               <Answerable
                 id="title"
                 label={t('upload.field.title')}
-                placeholder={t('upload.field.titlePlaceholder')}
                 value={title}
                 onChange={setTitle}
                 dontKnow={dontKnow}
@@ -1139,7 +1143,6 @@ export function UploadFlow({
               <Answerable
                 id="source"
                 label={t('upload.field.origin')}
-                placeholder={t('upload.field.originPlaceholder')}
                 value={source}
                 onChange={setSource}
                 dontKnow={dontKnow}
@@ -1149,7 +1152,6 @@ export function UploadFlow({
               <Answerable
                 id="fullName"
                 label={t('upload.field.yourName')}
-                placeholder={t('upload.field.yourNamePlaceholder')}
                 value={fullName}
                 onChange={setFullName}
                 dontKnow={dontKnow}
@@ -1396,7 +1398,6 @@ function Thinking({
 function Answerable({
   id,
   label,
-  placeholder,
   value,
   onChange,
   dontKnow,
@@ -1405,7 +1406,6 @@ function Answerable({
 }: {
   id: string;
   label: string;
-  placeholder: string;
   value: string;
   onChange: (value: string) => void;
   dontKnow: Record<string, boolean>;
@@ -1437,7 +1437,6 @@ function Answerable({
         value={unknown ? '' : value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled || unknown}
-        placeholder={unknown ? '' : placeholder}
         maxLength={200}
         dir="auto"
         className="h-14 w-full rounded-lg border border-rule bg-paper px-4 text-[1.05rem] focus:border-accent-strong focus:outline-none disabled:bg-paper-2 disabled:text-muted"
