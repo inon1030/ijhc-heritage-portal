@@ -6,6 +6,7 @@ import { useMessages } from '@/lib/i18n/provider';
 import { communityKey } from '@/lib/i18n/labels';
 import { ArrowLeft, Check, EyeOff, Loader2, RotateCcw, Trash2, X } from 'lucide-react';
 import { BackgroundNote } from '@/components/background-note';
+import { DescriptionOrigin } from '@/components/description-origin';
 import { EvidenceLedger } from '@/components/evidence-ledger';
 import { FieldSheet } from '@/components/field-sheet';
 import { FilePreview } from '@/components/file-preview';
@@ -289,8 +290,13 @@ export function ReviewWorkbench({
           item.consent_version) && (
           <section className="mb-5 rounded-lg border-s-[3px] border-cochin bg-turquoise-wash/60 px-4 py-3.5">
             <p className="eyebrow mb-1.5">{t('wb.contributorSaid')}</p>
+            {analysis?.user_rating ? (
+              <p className="mb-2 text-sm text-muted">
+                {t('wb.userRating', { n: analysis.user_rating })}
+              </p>
+            ) : null}
             {item.contributor_description && (
-              <p className="leading-relaxed">{item.contributor_description}</p>
+              <DescriptionOrigin person={item.contributor_description} machine={analysis?.summary} />
             )}
             {item.contributor_keywords.length > 0 && (
               <p className="mt-2 flex flex-wrap gap-1.5">

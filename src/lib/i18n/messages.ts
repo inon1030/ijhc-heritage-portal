@@ -49,7 +49,7 @@ export const en = {
   'nav.menu': 'menu',
   'nav.openMenu': 'Open the menu',
   'nav.closeMenu': 'Close the menu',
-  'nav.portal': 'Portal',
+  'nav.portal': 'Explore',
   'nav.contribute': "Upload",
   'nav.review': 'Review',
   'nav.manage': 'Manage',
@@ -148,7 +148,7 @@ export const en = {
   'home.recordPublished': '{count} record published',
 
   // ── the portal ────────────────────────────────────────────────────────────
-  'portal.title': 'Heritage Portal',
+  'portal.title': 'Explore the archive',
   'portal.description':
     'Search verified records from the Bene Israel, Cochin, Baghdadi and Bnei Menashe communities.',
   'portal.eyebrow': 'A digital archive of Indian Jewish life',
@@ -177,7 +177,7 @@ export const en = {
 
   // ── one record ────────────────────────────────────────────────────────────
   'record.notFound': 'Record not found',
-  'record.backToPortal': 'Back to the portal',
+  'record.backToPortal': 'Back to Explore',
   'record.readItIn': 'Read it in {language}',
   'record.provenance': 'Provenance',
   'record.contributor': "User",
@@ -418,7 +418,7 @@ export const en = {
   'queue.title': 'Review queue',
   'queue.volunteersOnly': 'Knowledge experts only',
   'queue.clear': 'The queue is clear',
-  'queue.openPortal': 'Open the portal',
+  'queue.openPortal': 'Open Explore',
 
   // ── when something breaks ─────────────────────────────────────────────────
   'error.label': 'Error',
@@ -468,7 +468,7 @@ export const en = {
     'It may still be awaiting review, or it may have been taken out of the archive.',
 
   'upload.contributeAnother': "Upload another",
-  'common.backToPortal': 'Back to the portal',
+  'common.backToPortal': 'Back to Explore',
   'receipt.seeInArchive': 'See it in the archive',
   'file.accepted': 'Images, PDFs, audio and video. Up to {size} each.',
   'file.viewableCopy': 'A viewable copy appears once the archive reads it',
@@ -500,6 +500,17 @@ export const en = {
   'wb.correctedByContributor': "Corrected by the user before submitting. The machine’s reading is kept beside it.",
   'wb.theRecord': 'The record',
   'wb.contributorSaid': "What the user said",
+  'rating.question': "How accurate was the AI's reading?",
+  'rating.why': "Optional. It helps the archive see where the AI gets things wrong.",
+  'rating.low': "1 - not accurate",
+  'rating.high': "5 - very accurate",
+  'wb.userRating': "The user rated the AI's reading {n} out of 5",
+  'wb.origin.unchanged': "The AI's text, accepted unchanged",
+  'wb.origin.own': "Written by the user",
+  'wb.origin.edited': "The AI's text, edited by the user: {added} words added, {removed} removed",
+  'wb.origin.legend': "Marked: the user's own words. Unmarked: the AI's.",
+  'wb.origin.showAi': "Show the AI's original",
+  'wb.origin.hideAi': "Hide the AI's original",
   'wb.theyCorrected': 'They corrected the archive on',
   'wb.useThis': 'Use this',
   'wb.knownFamily': 'Known family:',

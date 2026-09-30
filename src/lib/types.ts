@@ -121,6 +121,8 @@ export interface AiAnalysis {
   transcript_corrected: string | null;
   corrected_by: string | null;
   corrected_at: string | null;
+  /** How accurate the user who sent it said the reading was, 1-5. See 0033. */
+  user_rating?: number | null;
   suggested_category: ItemCategory | null;
   suggested_community: Community | null;
   suggested_period: string | null;

@@ -56,6 +56,8 @@ export interface CreateItemInput {
   /** The contributor's own words, kept apart from what a reviewer approves. */
   contributorDescription: string | null;
   contributorKeywords: string[];
+  /** The user's answer to "how accurate was the reading", 1-5, or null. See 0033. */
+  aiRating?: number | null;
   /**
    * The row-held tree fields as the contributor left the pre-review: the
    * machine's suggestions they kept, the ones they corrected, and any they
@@ -175,6 +177,8 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
       off_topic: file.analysis?.offTopic ?? false,
       off_topic_reason: file.analysis?.offTopicReason ?? null,
       raw: file.analysis?.raw ?? null,
+      // Only when answered, and only on a reading that exists to be rated.
+      ...(input.aiRating && file.analysis ? { user_rating: input.aiRating } : {}),
     };
   });
 

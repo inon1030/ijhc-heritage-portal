@@ -87,6 +87,8 @@ const Body = z.object({
   consentVersion: z.string().trim().min(1).max(40),
   contributorDescription: z.string().trim().max(4000).nullable().optional(),
   contributorKeywords: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
+  /** "How accurate was the AI's reading?" 1-5, optional (Michal, 24.09). */
+  aiRating: z.number().int().min(1).max(5).nullable().optional(),
   /**
    * The catalogue fields as the contributor left the pre-review — the machine's
    * findings they kept, the ones they corrected, and any they added.
@@ -188,6 +190,7 @@ export async function POST(request: NextRequest) {
       consentVersion: body.consentVersion,
       contributorDescription: body.contributorDescription?.trim() || null,
       contributorKeywords: body.contributorKeywords ?? [],
+      aiRating: body.aiRating ?? null,
       contributorFields: body.contributorFields ?? null,
       files: body.files.map((file) => ({
         storagePath: file.path,

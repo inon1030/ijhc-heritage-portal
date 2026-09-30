@@ -248,6 +248,8 @@ export function UploadFlow({
   const [simulated, setSimulated] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [showPreReview, setShowPreReview] = useState(true);
+  /** "How accurate was the AI's reading?" - optional, one per submission. */
+  const [aiRating, setAiRating] = useState<number | null>(null);
   // The id and its signed receipt. The receipt is the only thing that lets a
   // contributor — who has no account and never will — come back to what they
   // sent, so it is kept alongside the id rather than thrown away.
@@ -336,6 +338,7 @@ export function UploadFlow({
     setAnalysed([]);
     setDrafts({});
     setShowPreReview(true);
+    setAiRating(null);
     setCreated([]);
     setError(null);
     setProgress(null);
@@ -600,11 +603,22 @@ export function UploadFlow({
           results.map((entry) => {
             const record = recordOf.get(entry.id);
             const members = record?.members ?? [entry];
-            const fields = !record?.first
+            const found = !record?.first
               ? []
               : members.length > 1
                 ? asValues(mergeSuggestions(members.map((m) => m.analysis?.fields ?? [])))
                 : fieldsFor(entry);
+            /*
+             * "Kind of item" is always asked (Michal, 24.09).
+             *
+             * It used to appear only when the machine cleared 70% on it, so a
+             * contributor holding a ketubah might never be asked what it is.
+             * Left empty it is dropped before sending, like any empty field.
+             */
+            const fields =
+              record?.first && !found.some((f) => f.key === 'category')
+                ? [...found, { key: 'category', value: '' }]
+                : found;
             return [
               entry.id,
               {
@@ -810,6 +824,7 @@ export function UploadFlow({
             contributorFullName: fullName.trim() || null,
             consentVersion: CONSENT_VERSION,
             contributorDescription: draft?.description?.trim() || null,
+            aiRating: simulated ? null : aiRating,
             contributorKeywords: draft?.keywords ?? [],
             // The whole set as they left it, not a change list. A field they
             // deleted is a field they decided the record does not have.
@@ -1289,6 +1304,8 @@ export function UploadFlow({
               blocked={!agreed}
               vocabulary={vocabulary}
               languages={languages}
+              rating={aiRating}
+              onRating={setAiRating}
             />
           </div>
           </InReadingLanguage>

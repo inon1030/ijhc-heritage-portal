@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Eye, Languages, Loader2, Plus, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
+import { AiRating } from '@/components/ai-rating';
 import { FieldSheet } from '@/components/field-sheet';
 import type { PickableLanguage } from '@/components/language-picker';
 import { BackgroundNote } from '@/components/background-note';
@@ -96,6 +97,8 @@ export function PreReview({
   blocked,
   vocabulary,
   languages,
+  rating,
+  onRating,
 }: {
   entries: PreReviewEntry[];
   drafts: Record<string, Draft>;
@@ -121,6 +124,9 @@ export function PreReview({
    * adding Judeo-Arabic stays a row rather than a deploy.
    */
   languages: PickableLanguage[];
+  /** "How accurate was the AI's reading?" See AiRating. */
+  rating: number | null;
+  onRating: (value: number | null) => void;
 }) {
   const t = useMessages();
   const many = groups.length > 1;
@@ -242,6 +248,11 @@ export function PreReview({
             </section>
           );
         })}
+
+        {/* Only a real reading is worth rating. */}
+        {!simulated && entries.some((entry) => entry.analysis) && (
+          <AiRating value={rating} onChange={onRating} disabled={submitting} />
+        )}
 
         {submitButton}
       </div>
