@@ -77,6 +77,7 @@ export function parseTarget(raw: string): { url: URL } | { rejection: LinkReject
 }
 
 const YOUTUBE_HOSTS = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'www.youtu.be'];
+const VIMEO_HOSTS = ['vimeo.com', 'www.vimeo.com', 'player.vimeo.com'];
 
 /**
  * An exact host list, never a substring match.
@@ -85,6 +86,68 @@ const YOUTUBE_HOSTS = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu
  * hand an attacker-controlled page to the oEmbed path to be trusted as a
  * description of a video.
  */
+export function videoProvider(url: URL): 'youtube' | 'vimeo' | null {
+  const host = url.hostname.toLowerCase();
+  if (YOUTUBE_HOSTS.includes(host)) return 'youtube';
+  if (VIMEO_HOSTS.includes(host)) return 'vimeo';
+  return null;
+}
+
 export function isVideoHost(url: URL): boolean {
-  return YOUTUBE_HOSTS.includes(url.hostname.toLowerCase());
+  return videoProvider(url) !== null;
+}
+
+/**
+ * What an address turned out to be, decided on the type the server sent back.
+ *
+ * An address is not only an article (30.09.2026). People paste a PDF of a
+ * community register, a scan of a ketubah, a recording of an interview, a film
+ * on a museum's own server. Each of those is the material itself, and the
+ * archive can hold it exactly as if it had been uploaded, which is better than
+ * holding a sentence about it. So the type decides:
+ *
+ *   page   read the words, keep them as a capture beside the lead image
+ *   file   download the thing itself and put it through the ordinary pipeline
+ *   no     something the archive cannot hold, and says so plainly
+ */
+export function captureKind(contentType: string): 'page' | 'file' | 'no' {
+  const type = contentType.split(';')[0].trim().toLowerCase();
+  if (!type) return 'no';
+  if (/^(text\/html|application\/xhtml\+xml)$/.test(type)) return 'page';
+  if (type === 'application/pdf') return 'file';
+  if (/^(image|audio|video)\//.test(type)) return 'file';
+  // Plain text is a file the archive already accepts; anything else - a Word
+  // document, a spreadsheet, an archive - is not in the bucket's allow-list,
+  // and pretending otherwise would fail later with a worse message.
+  if (type === 'text/plain') return 'file';
+  return 'no';
+}
+
+/**
+ * Is this refusal one that a public archive copy might answer instead?
+ *
+ * A growing share of sites answer a server with a bot challenge rather than
+ * their article - the Jewish Museum's own page does (30.09.2026, the failure
+ * that prompted this). The archive does not try to defeat the challenge. It
+ * asks the Internet Archive, which is a public service that already holds a
+ * copy of most such pages, and says on the record that this is what it read.
+ *
+ * 401 and 404 are not in the list: the first is private material and the
+ * second never existed at that address, and neither is ours to work around.
+ */
+export function mightBeArchived(status: number): boolean {
+  return status === 403 || status === 406 || status === 429 || status === 451 || status >= 500;
+}
+
+/** A file name for something fetched from an address, with a sane extension. */
+export function fileNameFor(url: URL, mimeType: string): string {
+  const last = url.pathname.split('/').filter(Boolean).pop() ?? '';
+  const cleaned = decodeURIComponent(last).replace(/[^\w.\- ]+/g, '').slice(0, 80);
+  if (cleaned && /\.[a-z0-9]{2,5}$/i.test(cleaned)) return cleaned;
+  const extension =
+    { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/tiff': 'tif', 'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov', 'text/plain': 'txt' }[
+      mimeType.split(';')[0].trim().toLowerCase()
+    ] ?? 'bin';
+  const base = cleaned || url.hostname.replace(/^www\./, '');
+  return `${base}.${extension}`;
 }

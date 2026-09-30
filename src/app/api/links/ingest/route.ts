@@ -58,6 +58,49 @@ export async function POST(request: NextRequest) {
     }
 
     const admin = createAdminSupabase();
+
+    /*
+     * The address was the material itself (30.09.2026).
+     *
+     * A PDF of a community register, a scan, a recording, a film on a museum's
+     * own server. It is stored exactly as an upload is - the same type
+     * check, the same ceiling, the same reading afterwards - because a copy of
+     * the thing is worth more to the archive than a sentence about it.
+     */
+    if (captured.kind === 'file') {
+      const mimeType = resolveMimeType(captured.bytes, captured.mimeType);
+      const refused = validateFile({ mimeType, byteSize: captured.bytes.byteLength });
+      if (refused) {
+        return fail(422, refused.code, t(refused.key, refused.vars));
+      }
+
+      const path = buildStoragePath(captured.fileName);
+      const { error } = await admin.storage
+        .from('heritage')
+        .upload(path, captured.bytes, { contentType: mimeType, upsert: false });
+      if (error) {
+        console.error('[links] file upload failed', error.message);
+        return fail(502, 'storage_unavailable', t('err.pageNotStored'));
+      }
+
+      return ok({
+        sourceUrl: captured.url,
+        title: captured.fileName,
+        siteName: hostOf(captured.url),
+        video: null,
+        files: [
+          {
+            path,
+            ...issueGrant(path),
+            fileName: captured.fileName,
+            mimeType,
+            byteSize: captured.bytes.byteLength,
+            width: null,
+            height: null,
+          },
+        ],
+      });
+    }
     // The captured files are stored here rather than by the browser, so this
     // route mints their grants — the same proof /api/uploads/sign hands back.
     const files: {
@@ -113,6 +156,9 @@ export async function POST(request: NextRequest) {
       captured.siteName ? `Site: ${captured.siteName}` : null,
       captured.title ? `Title: ${captured.title}` : null,
       captured.video ? `Video on ${captured.video.provider}, not watched by the archive.` : null,
+      captured.archivedFrom
+        ? `The site did not answer the archive, so this was read from the Internet Archive's copy: ${captured.archivedFrom}`
+        : null,
       '',
       captured.description ?? '',
       captured.description ? '' : null,

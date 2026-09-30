@@ -1,5 +1,6 @@
 import 'server-only';
 import { createAdminSupabase } from '@/lib/supabase/admin';
+import { alertOnProblem } from './alert';
 
 /** Rows older than this are deleted by the next write. The privacy page says ninety days. */
 export const KEEP_DAYS = 90;
@@ -39,6 +40,10 @@ export async function recordProblem(row: ProblemRow): Promise<void> {
 
     const cutoff = new Date(Date.now() - KEEP_DAYS * 86_400_000).toISOString();
     await supabase.from('problems').delete().lt('created_at', cutoff);
+
+    // And told to a person. The row is written first, so a mail that fails
+    // still leaves the fault in the log (30.09.2026).
+    await alertOnProblem(row);
   } catch (error) {
     console.error('[problems] not recorded:', error);
   }

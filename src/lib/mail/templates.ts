@@ -124,3 +124,36 @@ export function publicationNoticeMail(to: string, title: string, publicUrl: stri
     ),
   };
 }
+
+/**
+ * A fault, sent to whoever is on `PROBLEM_ALERT_EMAIL` (30.09.2026).
+ *
+ * In English only, and deliberately: this one is read by whoever maintains the
+ * archive, not by a contributor, and it carries a stack trace. Escaped like
+ * every other message here, because a fault's text can contain anything a
+ * stranger typed.
+ */
+export function problemMail(
+  to: string,
+  problem: { code: string; source: string; place: string | null; path: string | null; message: string; detail: string | null },
+): Mail {
+  const lines = [
+    `Code: ${problem.code}`,
+    `Where: ${problem.place ?? 'unknown'} (${problem.source})`,
+    problem.path ? `Page: ${problem.path}` : null,
+    '',
+    problem.message,
+    problem.detail ? '' : null,
+    problem.detail ? problem.detail.slice(0, 1200) : null,
+  ].filter((line) => line !== null) as string[];
+
+  return {
+    to,
+    subject: `Archive problem ${problem.code}: ${problem.message.slice(0, 80)}`,
+    text: lines.join('\n'),
+    html: shell(
+      `<p>תקלה בארכיון. הקוד שאפשר לחפש לפיו ביומן: <strong>${escape(problem.code)}</strong></p>`,
+      `<p><strong>${escape(problem.message.slice(0, 300))}</strong></p><pre style="white-space:pre-wrap;font-size:13px;background:#f6f4ef;padding:12px;border-radius:6px">${escape(lines.join('\n'))}</pre>`,
+    ),
+  };
+}
