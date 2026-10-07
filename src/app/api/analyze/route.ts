@@ -2,6 +2,7 @@ import { NextRequest, after } from 'next/server';
 import { describeThrown, problemCode } from '@/lib/problems/code';
 import { recordProblem } from '@/lib/problems/record';
 import { z } from 'zod';
+import { COMMUNITY_ORDER } from '@/lib/communities';
 import { getAIProvider } from '@/lib/ai';
 import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
@@ -32,6 +33,7 @@ const Body = z.object({
    * than as a hint — they are holding the object and it is not.
    */
   known: z.string().max(2000).optional(),
+  communityHint: z.enum(COMMUNITY_ORDER).optional(),
   /** Which language the reading should come back in. */
   language: z.string().max(40).optional(),
 });
@@ -215,6 +217,7 @@ export async function POST(request: NextRequest) {
         fileName: parsed.data.path.split('/').pop() ?? 'file',
         title: parsed.data.title ?? '',
         known: parsed.data.known,
+        communityHint: parsed.data.communityHint,
         language: parsed.data.language,
         vocabulary,
         deadline: startedAt + MODEL_DEADLINE_MS,

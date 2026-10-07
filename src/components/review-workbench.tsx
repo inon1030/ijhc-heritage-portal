@@ -33,6 +33,19 @@ import {
 import { byBranch, termsFor, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
 import { cn, formatBytes, formatDuration } from '@/lib/utils';
 import { backgroundOf } from '@/lib/ai/background';
+import { contributorTextOf } from '@/lib/ai/replace-text';
+
+function ContributorCorrections({ raw }: { raw: unknown }) {
+  const t = useMessages();
+  const text = contributorTextOf(raw);
+  if (!text) return null;
+  return <section className="mt-4 rounded-xl border border-rule bg-paper p-4">
+    <h3 className="font-medium">{t('replace.contributorText')}</h3>
+    <p dir="auto" className="mt-2 whitespace-pre-wrap">{text.summary}</p>
+    {text.keywords.length > 0 && <p dir="auto" className="mt-2">{text.keywords.join(', ')}</p>}
+    <BackgroundNote background={text.background ? { text: text.background, sources: text.backgroundSources } : null} />
+  </section>;
+}
 
 /**
  * The verification workbench.
@@ -266,6 +279,7 @@ export function ReviewWorkbench({
         )}
 
         <BackgroundNote background={backgroundOf(analysis?.raw)} />
+        <ContributorCorrections raw={analysis?.raw} />
       </div>
 
       {/* The record */}

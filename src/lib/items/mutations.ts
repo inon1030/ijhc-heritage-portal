@@ -26,6 +26,7 @@ export interface CreateFileInput {
    * What the contributor says the file reads, where the machine got it wrong.
    * Stored beside the model's text in `ai_analyses`, never over it. See 0030.
    */
+  contributorText?: import('@/lib/ai/replace-text').ContributorText;
   corrected?: { ocrText: string | null; transcript: string | null } | null;
   /**
    * Sent on before its reading finished (0032). Its analysis row is saved as
@@ -64,7 +65,7 @@ export interface CreateItemInput {
    * added from the picklist. Null when the screen never showed them, which is
    * not the same as an empty list — an empty list means they cleared every one.
    */
-  contributorFields: { key: string; value: string }[] | null;
+  contributorFields: { key: string; value: string; source?: 'contributor'; note?: string | null }[] | null;
   /** At least one. The first is the primary — the cover of the record. */
   files: CreateFileInput[];
 }
@@ -176,7 +177,9 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
       evidence: file.analysis?.evidence ?? null,
       off_topic: file.analysis?.offTopic ?? false,
       off_topic_reason: file.analysis?.offTopicReason ?? null,
-      raw: file.analysis?.raw ?? null,
+      raw: file.contributorText
+        ? { ...(file.analysis?.raw && typeof file.analysis.raw === 'object' ? file.analysis.raw : {}), contributorText: file.contributorText }
+        : file.analysis?.raw ?? null,
       // Only when answered, and only on a reading that exists to be rated.
       ...(input.aiRating && file.analysis ? { user_rating: input.aiRating } : {}),
     };
@@ -253,7 +256,7 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
 async function writeFields(
   itemId: string,
   files: CreateFileInput[],
-  contributorFields: { key: string; value: string }[] | null,
+  contributorFields: { key: string; value: string; source?: 'contributor'; note?: string | null }[] | null,
 ): Promise<void> {
   const admin = createAdminSupabase();
 
@@ -281,7 +284,8 @@ async function writeFields(
    */
   const rows = new Map<string, Record<string, unknown>>();
 
-  for (const { key, value } of wanted) {
+  for (const field of wanted) {
+    const { key, value } = field;
     const def = fieldDef(key);
     const trimmed = value.trim();
 
@@ -291,7 +295,7 @@ async function writeFields(
     if (!def || !isValidValue(key, trimmed)) continue;
 
     const machine = suggested.get(key);
-    const untouched = machine?.value === trimmed;
+    const untouched = !('source' in field && field.source === 'contributor') && machine?.value === trimmed;
 
     // A column-backed field is worth a row only as a correction. Unchanged, it
     // would duplicate ai_analyses; changed, it is something the contributor
@@ -305,7 +309,7 @@ async function writeFields(
       source: untouched ? 'ai' : 'contributor',
       confidence: untouched ? machine!.confidence : null,
       basis: untouched ? machine!.basis : null,
-      note: untouched ? machine!.note : null,
+      note: untouched ? machine!.note : ('note' in field ? field.note ?? null : null),
     });
   }
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { replacementFits, replaceReviewText, type ContributorText } from '@/lib/ai/replace-text';
+import { buttonClass } from '@/components/primitives';
 import { useMemo, useState } from 'react';
 import { Eye, Languages, Loader2, Plus, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
@@ -34,6 +36,7 @@ import { materialLanguage } from '@/lib/i18n/material';
  */
 
 export interface Draft {
+  contributorText?: ContributorText;
   title: string;
   description: string;
   keywords: string[];
@@ -129,6 +132,18 @@ export function PreReview({
   onRating: (value: number | null) => void;
 }) {
   const t = useMessages();
+  const [edited, setEdited] = useState(false);
+  const [find, setFind] = useState('');
+  const [replacement, setReplacement] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [applied, setApplied] = useState<number | null>(null);
+  const preview = replaceReviewText(entries, drafts, find, replacement);
+  const canReplace = preview.count > 0 && replacement.trim().length > 0 && replacementFits(preview.drafts);
+  const changeDraft = (id: string, draft: Draft) => {
+    setEdited(true);
+    setConfirming(false);
+    onDraftChange(id, draft);
+  };
   const many = groups.length > 1;
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
   const submitButton = (
@@ -190,6 +205,39 @@ export function PreReview({
       </header>
 
       <div className="space-y-8 px-6 py-6">
+        {submitButton}
+        {edited && (
+          <fieldset disabled={submitting} className="min-w-0 space-y-3 rounded-xl border border-rule bg-paper p-4">
+            <legend className="px-1 font-medium">{t('replace.heading')}</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="min-w-0"><span className="mb-1 block">{t('replace.find')}</span>
+                <input value={find} onChange={(e) => { setFind(e.target.value); setConfirming(false); setApplied(null); }} dir="auto" maxLength={200}
+                  className="h-11 w-full rounded-lg border border-rule px-3 focus:outline-2 focus:outline-accent-strong" />
+              </label>
+              <label className="min-w-0"><span className="mb-1 block">{t('replace.with')}</span>
+                <input value={replacement} onChange={(e) => { setReplacement(e.target.value); setConfirming(false); setApplied(null); }} dir="auto" maxLength={200}
+                  className="h-11 w-full rounded-lg border border-rule px-3 focus:outline-2 focus:outline-accent-strong" />
+              </label>
+            </div>
+            <p className="text-sm text-muted">{t('replace.scope')}</p>
+            <p aria-live="polite">{applied === null ? t('replace.count', { count: preview.count }) : t('replace.applied', { count: applied })}</p>
+            {preview.count > 0 && !replacementFits(preview.drafts) && <p role="alert">{t('replace.tooLong')}</p>}
+            {confirming ? (
+              <div className="flex flex-wrap gap-3">
+                <button type="button" disabled={!canReplace} className={buttonClass('primary', 'min-h-11 h-auto py-2')} onClick={() => {
+                  for (const [id, draft] of Object.entries(preview.drafts)) {
+                    if (draft !== drafts[id]) onDraftChange(id, draft);
+                  }
+                  setApplied(preview.count);
+                  setConfirming(false);
+                }}>{t('replace.confirm', { count: preview.count })}</button>
+                <button type="button" className={buttonClass('quiet')} onClick={() => setConfirming(false)}>{t('replace.cancel')}</button>
+              </div>
+            ) : (
+              <button type="button" disabled={!canReplace} className={buttonClass('quiet', 'min-h-11 h-auto py-2')} onClick={() => setConfirming(true)}>{t('replace.action')}</button>
+            )}
+          </fieldset>
+        )}
         {simulated && <SimulatedNotice label={t('common.simulated')} />}
 
         {groups.map((ids, g) => {
@@ -208,7 +256,7 @@ export function PreReview({
               index={index}
               total={members.length}
               draft={drafts[entry.id] ?? EMPTY_DRAFT}
-              onChange={(draft) => onDraftChange(entry.id, draft)}
+              onChange={(draft) => changeDraft(entry.id, draft)}
               showTitle={many && index === 0}
               showFields={many && !pages}
               /* Every language but the one the item's own text is in - that is
@@ -224,7 +272,7 @@ export function PreReview({
               tone="contributor"
               includeBasics
               values={(drafts[first.id] ?? EMPTY_DRAFT).fields}
-              onChange={(fields) => onDraftChange(first.id, { ...(drafts[first.id] ?? EMPTY_DRAFT), fields })}
+              onChange={(fields) => changeDraft(first.id, { ...(drafts[first.id] ?? EMPTY_DRAFT), fields })}
               disabled={submitting}
             />
           );
@@ -285,7 +333,7 @@ function EntryPanel({
   languages: PickableLanguage[];
 }) {
   const t = useMessages();
-  const { analysis } = entry;
+  const analysis = entry.analysis && { ...entry.analysis, ...draft.contributorText };
 
 
   return (
@@ -338,6 +386,7 @@ function EntryPanel({
             <label className="mb-5 block">
               <span className="eyebrow mb-1.5 block">{t('prereview.yourDescription')}</span>
               <textarea
+                aria-label={t('prereview.yourDescription')}
                 value={draft.description}
                 onChange={(e) => onChange({ ...draft, description: e.target.value })}
                 rows={4}
@@ -392,7 +441,7 @@ function EntryPanel({
             <Fact label={t('prereview.dimensions')}>
               {entry.metadata.width && entry.metadata.height
                 ? `${entry.metadata.width} × ${entry.metadata.height}`
-                : 'not measured'}
+                : t('prereview.notMeasured')}
             </Fact>
             <Fact label={t('prereview.type')}>{entry.metadata.mimeType}</Fact>
             {entry.durationMs !== null && (
@@ -410,12 +459,14 @@ function EntryPanel({
           */}
 
           <Reading
+            key={JSON.stringify(draft.contributorText ?? null)}
             entry={entry}
             analysis={analysis}
             languages={languages}
             correction={draft.reading}
             onCorrect={(key, text) => onChange({ ...draft, reading: { ...draft.reading, [key]: text } })}
           />
+          {draft.contributorText && <p className="text-sm text-muted">{t('replace.contributorText')}</p>}
           <BackgroundNote
             background={
               analysis.background

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo } from 'react';
+import { useId, useMemo, useRef, useLayoutEffect, useState } from 'react';
 import { Eye, HelpCircle, Lightbulb, Pencil, Plus, Undo2, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import {
@@ -87,6 +87,20 @@ export function FieldSheet({
 }) {
   const t = useMessages();
   const addId = useId();
+  const root = useRef<HTMLElement>(null);
+  const chooser = useRef<HTMLDetailsElement>(null);
+  const pendingFocus = useRef<string | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  useLayoutEffect(() => {
+    const key = pendingFocus.current;
+    if (!key) return;
+    const row = Array.from(root.current?.querySelectorAll<HTMLElement>('[data-field-key]') ?? [])
+      .find((element) => element.dataset.fieldKey === key);
+    if (!row) return;
+    row.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+    (row.querySelector<HTMLElement>('input, select') ?? row.querySelector<HTMLElement>('button'))?.focus({ preventScroll: true });
+    pendingFocus.current = null;
+  }, [values]);
   const catalogue = includeBasics ? FIELDS : ROW_FIELDS;
 
   const present = useMemo(
@@ -123,7 +137,10 @@ export function FieldSheet({
     if (!def || taken.has(key)) return;
     // A facet's value is its own name, so choosing it from the list is the
     // whole act. A question field starts empty and waits to be answered.
-    onChange([...values, { key, value: def.type === 'facet' ? def.label : '' }]);
+    pendingFocus.current = key;
+    if (chooser.current) chooser.current.open = false;
+    setAnnouncement(t('fields.added', { field: fieldLabel(t, def) }));
+    onChange([...values, { key, value: def.type === 'facet' ? def.label : '', source: 'contributor' }]);
   }
 
   const groups = GROUP_ORDER.map((group) => ({
@@ -132,7 +149,8 @@ export function FieldSheet({
   })).filter(({ rows }) => rows.length > 0);
 
   return (
-    <section className="space-y-5">
+    <section ref={root} className="space-y-5">
+      <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
       <div>
         <p className="eyebrow">{t('fields.heading')}</p>
         <p className="mt-1 text-sm leading-relaxed text-muted">
@@ -174,11 +192,12 @@ export function FieldSheet({
       )}
 
       {available.length > 0 && (
-        <div className="rounded-2xl bg-surface p-4">
-          <label htmlFor={addId} className="eyebrow mb-1.5 flex items-center gap-1.5">
-            <Plus size={14} aria-hidden />
+        <details ref={chooser} className="rounded-2xl bg-surface p-4">
+          <summary className="min-h-11 cursor-pointer rounded-lg border border-rule-strong bg-paper px-3 py-3 font-medium focus-visible:outline-2 focus-visible:outline-accent-strong">
+            <Plus size={18} className="me-2 inline-block" aria-hidden />
             {t('fields.add')}
-          </label>
+          </summary>
+          <label htmlFor={addId} className="mt-3 mb-2 block">{t('fields.choose')}</label>
           <p className="mb-2.5 text-sm text-muted">
             {t(tone === 'contributor' ? 'fields.addContributor' : 'fields.addVolunteer')}
           </p>
@@ -190,13 +209,14 @@ export function FieldSheet({
           */}
           <select
             id={addId}
+            size={8}
             value=""
             disabled={disabled}
             onChange={(e) => {
               add(e.target.value);
               e.currentTarget.value = '';
             }}
-            className="h-11 w-full rounded-lg border border-rule bg-paper px-3.5 focus:border-accent-strong focus:outline-none sm:max-w-sm"
+            className="min-h-64 w-full rounded-lg border border-rule bg-paper px-2 focus:border-accent-strong focus:outline-2 focus:outline-accent-strong [&_option]:min-h-11 [&_option]:py-3"
           >
             <option value="">{t('fields.choose')}</option>
             {GROUP_ORDER.map((group) => {
@@ -213,7 +233,7 @@ export function FieldSheet({
               );
             })}
           </select>
-        </div>
+        </details>
       )}
     </section>
   );
@@ -237,7 +257,7 @@ function FieldRow({
   const t = useMessages();
   const id = useId();
   const corrected = isCorrected(row);
-  const fromMachine = Boolean(row.basis) && !corrected;
+  const fromMachine = Boolean(row.basis) && !corrected && row.source !== 'contributor';
 
   const control =
     def.type === 'enum' ? (
@@ -270,7 +290,7 @@ function FieldRow({
     );
 
   return (
-    <div>
+    <div data-field-key={row.key} className="scroll-mt-24">
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
         <span className="flex items-baseline gap-1.5">
           {def.type === 'facet' ? (
@@ -290,7 +310,7 @@ function FieldRow({
               onClick={onRevert}
               disabled={disabled}
               title={t('fields.putBack', { value: row.suggested ?? '' })}
-              className="rounded p-1 text-muted transition-colors hover:bg-paper-3 hover:text-ink disabled:opacity-40"
+              className="min-h-11 min-w-11 rounded p-2 text-muted transition-colors hover:bg-paper-3 hover:text-ink disabled:opacity-40"
             >
               <Undo2 size={13} aria-hidden />
               <span className="sr-only">{t('fields.undoChange', { field: fieldLabel(t, def) })}</span>
@@ -300,10 +320,11 @@ function FieldRow({
             type="button"
             onClick={onRemove}
             disabled={disabled}
-            className="rounded p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
+            aria-label={t('fields.removeField', { field: fieldLabel(t, def) })}
+            className="inline-flex min-h-11 min-w-11 items-center gap-1 rounded px-2 text-sm text-muted transition-colors hover:bg-critical/10 hover:text-critical disabled:opacity-40"
           >
             <X size={14} aria-hidden />
-            <span className="sr-only">{t('fields.removeField', { field: fieldLabel(t, def) })}</span>
+            <span>{t('common.remove')}</span>
           </button>
         </span>
       </div>
@@ -327,6 +348,7 @@ function FieldRow({
         analysis a knowledge expert sees.
       */}
       {fromMachine && <Basis basis={row.basis!} note={row.note ?? null} />}
+      {row.source === 'contributor' && row.note && <p className="mt-1 text-sm text-muted">{t('replace.contributorText')}: {row.note}</p>}
     </div>
   );
 }

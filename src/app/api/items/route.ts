@@ -1,5 +1,6 @@
 import { NextRequest, after } from 'next/server';
 import { z } from 'zod';
+import { COMMUNITY_ORDER } from '@/lib/communities';
 import { getMessages } from '@/lib/i18n';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
 import { verifyGrant } from '@/lib/files/grant';
@@ -100,7 +101,7 @@ const Body = z.object({
    * never decides what the portal files the record under. See writeFields.
    */
   contributorFields: z
-    .array(z.object({ key: z.enum(FIELD_KEYS as [string, ...string[]]), value: z.string().trim().min(1).max(2000) }))
+    .array(z.object({ key: z.enum(FIELD_KEYS as [string, ...string[]]), value: z.string().trim().min(1).max(2000), source: z.literal('contributor').optional(), note: z.string().max(400).nullable().optional() }))
     .max(FIELD_KEYS.length)
     .refine((fields) => fields.every((f) => isValidValue(f.key, f.value)), {
       message: 'A value is not one that field takes.',
@@ -112,6 +113,7 @@ const Body = z.object({
    * two things /api/analyze is given.
    */
   known: z.string().max(2000).optional(),
+  communityHint: z.enum(COMMUNITY_ORDER).optional(),
   language: z.string().max(40).optional(),
   files: z
     .array(
@@ -132,6 +134,11 @@ const Body = z.object({
         /** Sent on before the reading finished; read in the background (0032). */
         analysisPending: z.boolean().optional(),
         /** The contributor's correction of what the machine read. See 0030. */
+        contributorText: z.object({
+          summary: z.string().max(4000), background: z.string().max(12000).nullable(),
+          keywords: z.array(z.string().max(200)).max(40),
+          backgroundSources: z.array(z.object({ title: z.string().max(400), url: z.string().url().max(2000) })).max(6),
+        }).optional(),
         corrected: z
           .object({
             ocrText: z.string().trim().max(20000).nullable(),
@@ -206,6 +213,7 @@ export async function POST(request: NextRequest) {
         analysisPending: !file.analysis && file.analysisPending === true,
         // A correction only means something beside a reading. Without one there
         // is nothing to correct, and the text belongs in the description.
+        contributorText: file.analysis ? file.contributorText : undefined,
         corrected: file.analysis
           ? { ocrText: file.corrected?.ocrText || null, transcript: file.corrected?.transcript || null }
           : null,
@@ -232,7 +240,7 @@ export async function POST(request: NextRequest) {
           .filter((r) => pendingPaths.has(r.storage_path as string))
           .map((r) => ({ fileId: r.id as string, storagePath: r.storage_path as string, fileName: r.file_name as string }));
         await readInBackground(
-          { itemId: item.id, title: item.title, known: body.known, language: body.language, files },
+          { itemId: item.id, title: item.title, known: body.known, communityHint: body.communityHint, language: body.language, files },
           startedAt,
         );
       });

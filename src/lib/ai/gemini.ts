@@ -514,7 +514,7 @@ export function createGeminiProvider(): AIProvider {
               source.part,
               // Contributor text only. The rules live in systemInstruction, in
               // a turn nobody outside this codebase can write into.
-              { text: buildContributorNote(input.title, input.fileName, input.known) },
+              { text: buildContributorNote(input.title, input.fileName, input.known, input.communityHint) },
             ],
           },
         ],

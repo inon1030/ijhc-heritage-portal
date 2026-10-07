@@ -15,6 +15,7 @@ export interface AnalysisInput {
   title: string;
   /** The contributor's own account of the object. Treated as verified fact. */
   known?: string;
+  communityHint?: string;
   /** The language the reading should come back in. */
   language?: string;
   /**

@@ -3,16 +3,16 @@
     {
       "id": "menu",
       "title": {
-        "en": "Choose Contribute",
-        "he": "בוחרים \"תרומה\""
+        "en": "Choose Contribute Now",
+        "he": "בוחרים תרמו עכשיו"
       },
       "body": {
-        "en": "Open the site and choose Contribute in the menu at the top. You do not need an account to send something to the archive.",
-        "he": "פותחים את האתר ובוחרים \"תרומה\" בתפריט העליון. לא צריך חשבון כדי לשלוח משהו לארכיון."
+        "en": "Open the site and choose Contribute Now in the menu at the top. You do not need an account to send something to the archive.",
+        "he": "פותחים את האתר ובוחרים תרמו עכשיו בתפריט העליון. לא צריך חשבון כדי לשלוח משהו לארכיון."
       },
       "quick": {
-        "en": "Choose Contribute in the top menu. No account needed.",
-        "he": "בוחרים \"תרומה\" בתפריט העליון. לא צריך חשבון."
+        "en": "Choose Contribute Now. No account needed.",
+        "he": "בוחרים תרמו עכשיו. לא צריך חשבון."
       }
     },
     {
@@ -28,6 +28,21 @@
       "quick": {
         "en": "Drop your files here, or click to choose them. Several at once is fine.",
         "he": "גוררים לכאן את הקבצים או לוחצים כדי לבחור. אפשר כמה בבת אחת."
+      }
+    },
+    {
+      "id": "batch",
+      "title": {
+        "en": "Several items at once",
+        "he": "כמה פריטים בבת אחת"
+      },
+      "body": {
+        "en": "Choose several files at once, then choose Separate items: each file becomes its own item. Enter your details once for the whole batch. For pages of one document, choose One item instead.",
+        "he": "בוחרים כמה קבצים בבת אחת ואז בוחרים פריטים נפרדים: כל קובץ הופך לפריט משלו. ממלאים את הפרטים שלכם פעם אחת לכל הקבוצה. לעמודים של מסמך אחד בוחרים פריט אחד."
+      },
+      "quick": {
+        "en": "Choose several files, select Separate items, and enter your details once. Each file becomes its own item.",
+        "he": "בוחרים כמה קבצים ופריטים נפרדים. כל קובץ הופך לפריט משלו, ואת הפרטים ממלאים פעם אחת."
       }
     },
     {

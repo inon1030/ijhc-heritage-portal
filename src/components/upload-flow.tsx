@@ -1,5 +1,8 @@
 'use client';
 
+import { COMMUNITY_ORDER } from '@/lib/communities';
+import { communityKey } from '@/lib/i18n/labels';
+import { withContributorCommunity } from '@/lib/upload/community';
 import { reportProblem } from '@/lib/problems/report';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -113,6 +116,7 @@ export function UploadFlow({
   const [captured, setCaptured] = useState<CapturedLink | null>(null);
   const [grouping, setGrouping] = useState<Grouping>('one');
   const [title, setTitle] = useState('');
+  const [community, setCommunity] = useState('');
   const [source, setSource] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
@@ -325,6 +329,7 @@ export function UploadFlow({
     setFiles([]);
     setCaptured(null);
     setTitle('');
+    setCommunity('');
     setSource('');
     setEmail('');
     // The next item may be someone else's, and a box that opens already
@@ -394,6 +399,7 @@ export function UploadFlow({
         // The contributor's own account, and the language they want it back in.
         // Both go to the model; `known` goes as fact, not as a hint.
         known: known.trim() || undefined,
+        communityHint: community || undefined,
         language: analysisLang,
       }),
     });
@@ -500,8 +506,8 @@ export function UploadFlow({
     return { ...analysed, previewUrl: analysed.previewUrl ?? picked.previewUrl };
   }
 
-  async function runAnalysis() {
-    if (!hasSomething) return;
+  async function runAnalysis(withoutWaiting = false) {
+    if (!canAnalyse) return;
     setError(null);
     setPhase('analysing');
     setSlow(false);
@@ -509,6 +515,7 @@ export function UploadFlow({
     setGoingAlone(false);
     alone.current = false;
     inFlight.current = new AbortController();
+    if (withoutWaiting) goAlone();
     const slowTimer = window.setTimeout(() => setSlow(true), SLOW_READING_MS);
 
     // A captured page is already in storage — the ingest route put it there —
@@ -629,7 +636,7 @@ export function UploadFlow({
                     : stemOf(entry.fileName),
                 description: entry.analysis?.summary ?? '',
                 keywords: entry.analysis?.keywords ?? [],
-                fields,
+                fields: record?.first ? withContributorCommunity(fields, community) : fields,
               },
             ];
           }),
@@ -696,7 +703,12 @@ export function UploadFlow({
             consentVersion: CONSENT_VERSION,
             contributorDescription: known.trim() || null,
             contributorKeywords: [],
+            contributorFields: community
+              ? withContributorCommunity(mergeSuggestions(entries.map((entry) => entry.analysis?.fields ?? []))
+                  .map(({ key, value }) => ({ key, value })), community)
+              : undefined,
             known: known.trim() || undefined,
+            communityHint: community || undefined,
             language: analysisLang,
             files: entries.map((entry) => ({
               path: entry.path,
@@ -830,7 +842,7 @@ export function UploadFlow({
             // deleted is a field they decided the record does not have.
             contributorFields: (draft?.fields ?? [])
               .filter((f) => f.value.trim().length > 0)
-              .map((f) => ({ key: f.key, value: f.value.trim() })),
+              .map((f) => ({ key: f.key, value: f.value.trim(), source: f.source === 'contributor' ? 'contributor' : undefined, note: f.source === 'contributor' ? f.note : undefined })),
             files: payload.entries.map((entry) => ({
               path: entry.path,
               grant: entry.grant,
@@ -845,6 +857,7 @@ export function UploadFlow({
               analysis: entry.analysis,
               analysisError: entry.analysisError,
               corrected: correctionOf(entry.analysis, drafts[entry.id]?.reading),
+              contributorText: drafts[entry.id]?.contributorText,
             })),
           }),
         });
@@ -984,6 +997,14 @@ export function UploadFlow({
       {screen === 1 && (
         <section className="animate-rise">
           {heading(t('flow.s1.title'), t('flow.s1.hint'))}
+          <label className="mt-4 block max-w-md">
+            <span className="mb-1.5 block font-medium">{t('flow.community')}</span>
+            <select value={community} onChange={(e) => setCommunity(e.target.value)} disabled={busy}
+              className="h-11 w-full rounded-lg border border-rule bg-paper px-3 focus:border-accent-strong focus:outline-none">
+              <option value="">{t('flow.communityUnknown')}</option>
+              {COMMUNITY_ORDER.map((value) => <option key={value} value={value}>{t(communityKey(value))}</option>)}
+            </select>
+          </label>
 
           {/*
             A file, or an address — beside each other rather than stacked.
@@ -997,6 +1018,7 @@ export function UploadFlow({
               <div className="space-y-4">
                 {/* Ordinary files here, scanned pages in the scanner below;
                     both live in one list, told apart by `doc`. */}
+                <p className="text-sm text-muted">{t('flow.batchHint')}</p>
                 <FilePicker
                   files={files.filter((f) => !f.doc)}
                   onChange={(loose) => setFiles([...loose, ...files.filter((f) => f.doc)])}
@@ -1227,7 +1249,7 @@ export function UploadFlow({
             </button>
             <button
               type="button"
-              onClick={runAnalysis}
+              onClick={() => runAnalysis()}
               disabled={!canAnalyse}
               className={cn(
                 buttonClass('accent', 'h-11 flex-1 px-8 text-lg sm:flex-none'),
@@ -1240,6 +1262,13 @@ export function UploadFlow({
               <Sparkles size={17} />
               {t('flow.analyse')}
             </button>
+            <div className="w-full sm:w-auto sm:max-w-sm">
+              <button type="button" onClick={() => runAnalysis(true)} disabled={!canAnalyse}
+                className={buttonClass('quiet', 'min-h-11 h-auto py-2 w-full')}>
+                {t('flow.sendWithoutWaiting')}
+              </button>
+              <p className="mt-2 text-sm text-muted">{t('flow.sendWithoutWaitingHint')}</p>
+            </div>
             {!canAnalyse && !busy && (
               <span className="text-sm text-muted">
                 {!emailOk ? t('flow.emailMissing') : !agreed ? t('flow.needConsent') : ''}

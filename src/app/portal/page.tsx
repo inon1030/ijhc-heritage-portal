@@ -1,3 +1,5 @@
+import Link from 'next/link';
+import { buttonClass } from '@/components/primitives';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { ItemCard, ItemRow } from '@/components/item-card';
@@ -112,6 +114,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
         panels is a single bar, so the grid begins near the top of the screen
         and the page opens on pictures.
       */}
+      <Link href="/upload" className={buttonClass('primary', 'mb-4')}>{t('nav.contribute')}</Link>
       <header className="mb-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <h1 className="font-display text-[1.75rem] leading-none sm:text-[2.25rem]">
           {t('portal.headline1')} <span className="text-accent-strong">{t('portal.headline2')}</span>

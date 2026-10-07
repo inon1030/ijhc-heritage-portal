@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { ArrowRight, Upload } from 'lucide-react';
+import { buttonClass } from '@/components/primitives';
 import { Logo } from '@/components/logo';
 import { TimePassage } from '@/components/time-passage';
 import { COMMUNITY_ORDER } from '@/lib/communities';
@@ -151,13 +152,6 @@ export default async function Home() {
           </span>
         </h1>
 
-        <p
-          className="animate-rise mx-auto mt-7 max-w-2xl leading-relaxed text-ink-2 sm:text-lg"
-          style={{ '--reveal-delay': '260ms' } as React.CSSProperties}
-        >
-          {t('home.standfirst')}
-        </p>
-
         {/* The two doors. Filled is the one the Center wants taken. */}
         <div
           className="animate-rise mt-9 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-center"
@@ -177,12 +171,21 @@ export default async function Home() {
 
           <Link
             href="/upload"
-            className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full border-2 border-[var(--color-brand-saffron)] bg-paper px-8 text-lg font-medium text-ink transition-colors duration-200 hover:bg-[var(--color-brand-saffron)]/12"
+            className={buttonClass('primary', 'h-14 px-8 text-lg')}
           >
             <Upload size={19} aria-hidden />
-            {t('home.contribute')}
+            {t('nav.contribute')}
           </Link>
         </div>
+
+        <p
+          className="animate-rise mx-auto mt-7 max-w-2xl leading-relaxed text-ink-2 sm:text-lg"
+          style={{ '--reveal-delay': '260ms' } as React.CSSProperties}
+        >
+          {t('home.standfirst')}
+        </p>
+
+
 
         {total > 0 && counts && (
           <p

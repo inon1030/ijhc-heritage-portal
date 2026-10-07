@@ -38,6 +38,7 @@ export interface PendingReading {
   itemId: string;
   title: string;
   known?: string;
+  communityHint?: string;
   language?: string;
   files: PendingFile[];
 }
@@ -85,6 +86,7 @@ export async function readInBackground(job: PendingReading, startedAt = Date.now
         fileName: file.fileName,
         title: job.title,
         known: job.known,
+        communityHint: job.communityHint,
         language: job.language,
         vocabulary,
         deadline,

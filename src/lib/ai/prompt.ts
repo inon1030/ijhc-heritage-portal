@@ -112,10 +112,12 @@ export function buildInstructions(
     '',
     '── Rules ──',
     '',
+    '- Name dress, ritual objects and customs by the community’s own term when the material supports it; otherwise describe plainly what is seen. Never substitute a Western or generic religious term. For example, the end of a sari (pallu) drawn over a bride’s head is a sari head covering, not a veil / רעלה.',
     '- Describe only what is actually present. An archivist will check your work against the original.',
     '- Scripts you may encounter include Hebrew, Marathi (Devanagari), Malayalam, Judeo-Arabic, and English. Transcribe in the original script and do not translate the transcription.',
     '- A photograph *of* an object is material culture. A photograph of a page, a letter, or a printed sheet is a document. If the file is audio, it is an oral history whatever it contains.',
     '- Transcribe a recording from beginning to end, however long it runs. Do not summarise it, do not stop partway, and never write a placeholder such as [continues] or [rest of recording]. A transcript that covers half an interview and does not say so is worse than none: nobody listening to the archive will know the second half is missing.',
+    '- A contributor community choice is a hint, never a fact: leave the community field out when the material does not support it.',
     '- Answer the community field only when something in the material supports one of the four streams. If you cannot place it — whether because it is plainly Indian Jewish and nothing narrows it further, or because it does not look like Indian Jewish heritage at all — leave the field out. The archive files anything unplaced under a fifth stream on its own, so there is nothing to be gained by forcing a stream you cannot evidence.',
     '- Date it as a range, never a single year unless the item states one. "1890s" and "late 19th century" are useful; a precise year you inferred is not.',
     '- Name a person only when the item names them. A face is not a name.',
@@ -194,7 +196,7 @@ function vocabularySection(branches: VocabularyBranch[]): string[] {
  * stranger starts. Angle brackets are stripped from the input so the block
  * cannot be closed early and escaped.
  */
-export function buildContributorNote(title: string, fileName: string, known?: string): string {
+export function buildContributorNote(title: string, fileName: string, known?: string, communityHint?: string): string {
   const fence = (value: string) => value.replace(/[<>]/g, ' ').trim();
 
   /*
@@ -224,6 +226,7 @@ export function buildContributorNote(title: string, fileName: string, known?: st
     known?.trim()
       ? `What they say they know about it: ${fence(known)}`
       : 'They did not say anything further about it.',
+    communityHint ? `The contributor says the community is: ${fence(communityHint)}` : '',
     '</contributor-note>',
   ]
     .filter(Boolean)

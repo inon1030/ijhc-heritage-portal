@@ -25,6 +25,24 @@
  */
 
 export const en = {
+  'replace.tooLong': 'This replacement would exceed a field’s length limit. Use a shorter word.',
+  'flow.sendWithoutWaiting': "Send without waiting",
+  'flow.sendWithoutWaitingHint': "You will not see or correct the suggestions; a knowledge expert will review them.",
+  'flow.community': "Community (optional)",
+  'flow.communityUnknown': "I don’t know",
+  'flow.batchHint': "You can choose several files at once.",
+  'fields.added': "Added field: {field}",
+  'replace.heading': "Correct a word throughout this screen",
+  'replace.find': "Word to find",
+  'replace.with': "Replace with",
+  'replace.scope': "Replaces whole words in all items on this screen, including the summary and field notes. Your corrections are kept as your own text.",
+  'replace.count': "{count} text sections will change.",
+  'replace.applied': "Changed {count} text sections.",
+  'replace.action': "Replace this word everywhere on this screen",
+  'replace.confirm': "Confirm replacement in {count} text sections",
+  'replace.cancel': "Cancel",
+  'replace.contributorText': "Text corrected by the contributor",
+  'prereview.notMeasured': "not measured",
   // ── the shell every page carries ──────────────────────────────────────────
   'site.name': 'Indian Jewish Heritage Center',
   'site.short': 'IJHC',
@@ -50,7 +68,7 @@ export const en = {
   'nav.openMenu': 'Open the menu',
   'nav.closeMenu': 'Close the menu',
   'nav.portal': 'Explore',
-  'nav.contribute': "Upload",
+  'nav.contribute': 'Contribute Now',
   'nav.review': 'Review',
   'nav.manage': 'Manage',
   'nav.signIn': 'Sign in',

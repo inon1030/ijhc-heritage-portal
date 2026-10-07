@@ -74,6 +74,12 @@ beforeEach(() => {
 });
 
 describe('reading an item that was sent on unread', () => {
+  it('passes the optional contributor community hint to the background reader', async () => {
+    analyze.mockResolvedValue(reading);
+    await readInBackground({ ...job, communityHint: 'cochin' });
+    expect(analyze).toHaveBeenCalledWith(expect.objectContaining({ communityHint: 'cochin' }));
+    expect(calls.some((call) => call.table === 'items')).toBe(false);
+  });
   it('finishes the pending row as succeeded, for that file of that item', async () => {
     analyze.mockResolvedValue(reading);
     await readInBackground(job);
