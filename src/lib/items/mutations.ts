@@ -7,7 +7,42 @@ import { mergeSuggestions } from '@/lib/fields/suggestions';
 import { registerContributor } from '@/lib/contributors';
 import { recordCandidates } from '@/lib/vocabulary/mutations';
 import { canTransition } from './status';
+import { verifyReceipt } from './receipt';
+import { ContributorEdit } from './contributor-edit';
 import type { AccessLevel, Community, Item, ItemCategory, ItemStatus } from '@/lib/types';
+
+/** Inon's 08.10.2026 decision: one signed receipt may edit only a live pending item. */
+export async function editContributorItem(itemId: string, token: unknown, input: unknown) {
+  // Before even creating the privileged client, including for direct callers.
+  if (!verifyReceipt(itemId, token)) return { ok: false, code: 'forbidden' } as const;
+  const parsed = ContributorEdit.safeParse(input);
+  if (!parsed.success) return { ok: false, code: 'invalid_request' } as const;
+  const admin = createAdminSupabase();
+  const changes = {
+    title: parsed.data.title,
+    contributor_description: parsed.data.contributorDescription || null,
+  };
+  // The predicate is in the UPDATE: a review/bin committed since the route's
+  // read prevents the write, including after waiting for the review's row lock.
+  const { data, error } = await admin.from('items').update(changes)
+    .eq('id', itemId).eq('status', 'pending').is('deleted_at', null)
+    .select('id').maybeSingle();
+  if (error) throw error;
+  if (!data) return { ok: false, code: 'edit_closed' } as const;
+
+  // Reuse the existing edited action and JSON changes; no new schema value.
+  // As with reviewItem, this audit append follows the committed item update.
+  try {
+    const { error: auditError } = await admin.from('item_events').insert({
+      item_id: itemId, actor_id: null, action: 'edited',
+      changes: { ...changes, edited_by: 'contributor' },
+    });
+    if (auditError) console.error('[items] contributor edit audit failed', auditError);
+  } catch (auditError) {
+    console.error('[items] contributor edit audit failed', auditError);
+  }
+  return { ok: true } as const;
+}
 
 export interface CreateFileInput {
   storagePath: string;

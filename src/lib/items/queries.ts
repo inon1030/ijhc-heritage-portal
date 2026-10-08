@@ -5,6 +5,7 @@ import { getContributor } from '@/lib/contributors';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { REVIEW_QUEUE_STATUSES } from './status';
+import { verifyReceipt } from './receipt';
 import { inTreeOrder } from '@/lib/fields/registry';
 import type {
   AiAnalysis,
@@ -36,6 +37,16 @@ export interface PortalFilters {
 }
 
 type FileRow = ItemFile;
+
+/** Receipt-only projection: no identity, consent or contact columns. */
+export async function getReceiptItem(id: string, token: unknown) {
+  if (!verifyReceipt(id, token)) return null;
+  const { data, error } = await createAdminSupabase().from('items')
+    .select('title, contributor_description, status, access, created_at, deleted_at, item_files(*)')
+    .eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data as (Pick<Item, 'title' | 'contributor_description' | 'status' | 'access' | 'created_at' | 'deleted_at'> & { item_files: ItemFile[] }) | null;
+}
 
 /** Page order, with the primary first whatever its position says. */
 function orderedFiles(files: FileRow[] | null | undefined): ItemFile[] {

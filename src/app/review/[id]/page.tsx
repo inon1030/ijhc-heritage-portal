@@ -50,7 +50,8 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
           <ol className="space-y-1.5">
             {events.map((event) => (
               <li key={event.id} className="machine text-muted">
-                {formatDate(event.created_at)} · {event.action}
+                {formatDate(event.created_at)} · {event.action === 'edited' && event.changes?.edited_by === 'contributor'
+                  ? t('receipt.editedByContributor') : event.action}
                 {event.from_status && event.to_status
                   ? ` · ${event.from_status} to ${event.to_status}`
                   : event.to_status

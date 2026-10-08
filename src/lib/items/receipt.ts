@@ -22,8 +22,11 @@ import { serviceRoleKey } from '@/lib/env';
  *
  * A signed capability over one record id. It reveals exactly what its holder
  * already knows, because its holder is the person who typed it: the title,
- * the files, and where the record has got to. It is not an account and grants
- * no editing.
+ * the files, and where the record has got to. It is not an account. Inon decided
+ * on 08.10.2026 that its holder may edit the title and their own description
+ * while the record is pending and not binned. This pending-only boundary lets
+ * the expert's review end the capability to edit; published catalogue decisions
+ * must never be changed through a receipt. The token derivation stays unchanged.
  *
  * **Unguessable, not secret.** 192 bits of HMAC is not brute-forceable, but a
  * link pasted into a group chat is a link anybody in that chat can open. That
