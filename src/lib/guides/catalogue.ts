@@ -67,10 +67,10 @@ export const GUIDE_FILES: GuideFile[] = [
   { path: 'pdf/expert-en-quick.pdf', audience: 'expert', kind: 'pdf', language: 'en', megabytes: 1.3, depth: 'quick' },
   { path: 'pdf/admin-he-quick.pdf', audience: 'admin', kind: 'pdf', language: 'he', megabytes: 0.4, depth: 'quick' },
   { path: 'pdf/admin-en-quick.pdf', audience: 'admin', kind: 'pdf', language: 'en', megabytes: 0.5, depth: 'quick' },
-  { path: 'video/contributor-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 9.4, duration: '7:06', title: 'מדריך לתורמים', depth: 'deep' },
-  { path: 'video/contributor-he-short.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 4.5, duration: '2:55', title: 'מדריך לתורמים, בקצרה', depth: 'quick' },
-  { path: 'video/contributor-en.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 7.1, duration: '4:39', title: 'Contributor guide', depth: 'deep' },
-  { path: 'video/contributor-en-short.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 3.5, duration: '1:47', title: 'Contributor guide, in short', depth: 'quick' },
+  { path: 'video/contributor-he.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 9.1, duration: '4:34', title: 'מדריך לתורמים', depth: 'deep' },
+  { path: 'video/contributor-he-short.mp4', audience: 'contributor', kind: 'video', language: 'he', megabytes: 5.3, duration: '2:49', title: 'מדריך לתורמים, בקצרה', depth: 'quick' },
+  { path: 'video/contributor-en.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 11.7, duration: '5:19', title: 'Contributor guide', depth: 'deep' },
+  { path: 'video/contributor-en-short.mp4', audience: 'contributor', kind: 'video', language: 'en', megabytes: 7.0, duration: '3:18', title: 'Contributor guide, in short', depth: 'quick' },
   /*
    * A phone recording by Avigdor Sharon of scanning a page with Google Drive's
    * scanner, 16.09.2026. Hosted here rather than embedded from his Drive, so it
@@ -87,10 +87,12 @@ export const GUIDE_FILES: GuideFile[] = [
     title: 'לסרוק ולשמור בעזרת הטלפון',
     credit: '© Avigdor Sharon',
   },
-  { path: 'video/expert-he.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 12.7, duration: '9:50', title: 'מדריך למומחי ידע', depth: 'deep' },
-  { path: 'video/expert-he-short.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 4.8, duration: '3:04', title: 'מדריך למומחי ידע, בקצרה', depth: 'quick' },
-  { path: 'video/expert-en.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 9.9, duration: '7:07', title: 'Knowledge expert guide', depth: 'deep' },
-  { path: 'video/expert-en-short.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 3.1, duration: '1:45', title: 'Knowledge expert guide, in short', depth: 'quick' },
+  { path: 'video/expert-he.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 7.5, duration: '2:58', title: 'מדריך למומחי ידע', depth: 'deep' },
+  { path: 'video/expert-he-short.mp4', audience: 'expert', kind: 'video', language: 'he', megabytes: 3.1, duration: '1:18', title: 'מדריך למומחי ידע, בקצרה', depth: 'quick' },
+  { path: 'video/expert-en.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 9.4, duration: '3:29', title: 'Knowledge expert guide', depth: 'deep' },
+  { path: 'video/expert-en-short.mp4', audience: 'expert', kind: 'video', language: 'en', megabytes: 3.9, duration: '1:30', title: 'Knowledge expert guide, in short', depth: 'quick' },
+  { path: 'video/admin-he.mp4', audience: 'admin', kind: 'video', language: 'he', megabytes: 2.6, duration: '1:20', title: 'מדריך למנהלי מערכת', depth: 'deep' },
+  { path: 'video/admin-en.mp4', audience: 'admin', kind: 'video', language: 'en', megabytes: 3.2, duration: '1:30', title: 'Administrator guide', depth: 'deep' },
 ];
 
 /** Walkthrough screenshots: `steps/<audience>/<language>/<name>.png`. */

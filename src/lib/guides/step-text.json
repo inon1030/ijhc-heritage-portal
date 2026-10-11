@@ -211,6 +211,17 @@
         "en": "Save this link: it is your receipt and shows when the item is published.",
         "he": "שומרים את הקישור: זו הקבלה, והיא מראה מתי הפריט פורסם."
       }
+    },
+    {
+      "id": "home-recent",
+      "title": {
+        "en": "See what is new in the archive",
+        "he": "רואים מה חדש בארכיון"
+      },
+      "body": {
+        "en": "Once a knowledge expert approves it, the item appears in the public archive. The home page shows the items that were added most recently, and on the Explore page you can search and filter by community and kind of item.",
+        "he": "אחרי שמומחה ידע מאשר, הפריט מופיע בארכיון הציבורי. בדף הבית יש רצועה של הפריטים שנוספו לאחרונה, ובדף עיון אפשר לחפש ולסנן לפי קהילה וסוג פריט."
+      }
     }
   ],
   "expert": [
@@ -253,6 +264,17 @@
       "quick": {
         "en": "Compare everything with the original file on the left.",
         "he": "משווים הכל לקובץ המקורי שבצד."
+      }
+    },
+    {
+      "id": "user-said",
+      "title": {
+        "en": "What the user said",
+        "he": "מה שהמשתמש כתב"
+      },
+      "body": {
+        "en": "What the user told the archive. The screen says whether the description is the AI's text as it was, the AI's text edited by the user, or the user's own words, and marks the words the user added. The user's rating of the AI's reading is shown here, and a reading they corrected appears beside the machine's own.",
+        "he": "מה שהמשתמש מסר לארכיון. המערכת מציינת אם התיאור הוא הטקסט של ה-AI כמו שהוא, טקסט של ה-AI שהמשתמש ערך, או מילים של המשתמש בלבד, ומסמנת את המילים שהמשתמש הוסיף. כאן מופיע גם הדירוג שהמשתמש נתן לקריאה של ה-AI, וקריאה שהוא תיקן מופיעה לצד הקריאה של המכונה."
       }
     },
     {
@@ -370,6 +392,17 @@
       "quick": {
         "en": "Restore a record from the bin, or delete it for good. Deleting cannot be undone.",
         "he": "משחזרים רשומה מסל המחזור, או מוחקים לצמיתות. מחיקה אי אפשר לבטל."
+      }
+    },
+    {
+      "id": "problems",
+      "title": {
+        "en": "Problems",
+        "he": "תקלות"
+      },
+      "body": {
+        "en": "When a user runs into a fault they are shown a fault code, and the fault is recorded here under the same code. When someone reports that something did not work, search for the code to see exactly what happened and when. Rows are kept for ninety days.",
+        "he": "כשמשתמש נתקל בתקלה הוא רואה קוד תקלה, והתקלה נרשמת כאן עם אותו קוד. כשמישהו מדווח שמשהו לא עבד, מחפשים את הקוד ורואים בדיוק מה קרה ומתי. השורות נשמרות תשעים יום."
       }
     }
   ]

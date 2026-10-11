@@ -34,16 +34,19 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 
 // The Center's video files keep their own names in DOCS; this is the map.
 const VIDEOS = {
-  // The NotebookLM videos with the site's screenshots put in (DOCS/_build/build_videos.py).
-  'IJHC מדריך לתורמים - עברית - עם צילומי מסך.mp4': 'video/contributor-he.mp4',
-  'IJHC Contributor Guide - English - with screens.mp4': 'video/contributor-en.mp4',
-  'IJHC מדריך למומחי ידע - עברית - עם צילומי מסך.mp4': 'video/expert-he.mp4',
-  'IJHC Knowledge Expert Guide - English - with screens.mp4': 'video/expert-en.mp4',
-  // The short versions for quick learning (DOCS/_build/build_short_videos.py).
-  'IJHC מדריך לתורמים - עברית - מקוצר.mp4': 'video/contributor-he-short.mp4',
-  'IJHC Contributor Guide - English - short.mp4': 'video/contributor-en-short.mp4',
-  'IJHC מדריך למומחי ידע - עברית - מקוצר.mp4': 'video/expert-he-short.mp4',
-  'IJHC Knowledge Expert Guide - English - short.mp4': 'video/expert-en-short.mp4',
+  // Made here from the site's own screenshots and a spoken script
+  // (DOCS/_build/build_own_videos.py, 11.10.2026). They replace the NotebookLM
+  // videos, whose files stay in DOCS/videos under their old names.
+  'IJHC מדריך לתורמים - עברית - סרטון מלא.mp4': 'video/contributor-he.mp4',
+  'IJHC Contributor Guide - English - full video.mp4': 'video/contributor-en.mp4',
+  'IJHC מדריך למומחי ידע - עברית - סרטון מלא.mp4': 'video/expert-he.mp4',
+  'IJHC Knowledge Expert Guide - English - full video.mp4': 'video/expert-en.mp4',
+  'IJHC מדריך לתורמים - עברית - סרטון קצר.mp4': 'video/contributor-he-short.mp4',
+  'IJHC Contributor Guide - English - short video.mp4': 'video/contributor-en-short.mp4',
+  'IJHC מדריך למומחי ידע - עברית - סרטון קצר.mp4': 'video/expert-he-short.mp4',
+  'IJHC Knowledge Expert Guide - English - short video.mp4': 'video/expert-en-short.mp4',
+  'IJHC מדריך למנהלי מערכת - עברית - סרטון מלא.mp4': 'video/admin-he.mp4',
+  'IJHC Administrator Guide - English - full video.mp4': 'video/admin-en.mp4',
   // Avigdor Sharon's recording, re-encoded with his address blurred and a credit.
   'לסרוק ולשמור בעזרת הטלפון - גרסת האתר.mp4': 'video/scanning-he.mp4',
 };

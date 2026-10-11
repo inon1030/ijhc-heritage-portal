@@ -248,6 +248,16 @@ const contributor = [
     },
     spots: [(p) => p.locator('a[href*="/receipt/"]').first()],
   },
+  {
+    // For the guide videos: what a contributor sees once the item is public.
+    id: 'home-recent',
+    go: async (c) => {
+      await goto(c, '/');
+      await c.page.locator('#recent-heading').scrollIntoViewIfNeeded();
+      await c.page.evaluate(() => window.scrollBy(0, 420));
+    },
+    spots: [(p) => p.locator('#recent-heading').locator('xpath=..')],
+  },
 ];
 
 // ── knowledge expert and administrator: a real session, and nothing written ──
@@ -288,6 +298,8 @@ const expert = [
     spots: [(p) => p.locator('main a[href^="/review/"]').first()],
   },
   { id: 'original', go: openFirstRecord, spots: [around('wb.original', 2)] },
+  // For the guide videos: whose words are whose, the rating and a corrected reading.
+  { id: 'user-said', go: scrollTo('wb.contributorSaid'), spots: [around('wb.contributorSaid', 2)] },
   { id: 'record', go: scrollTo('wb.description'), spots: [around('wb.description', 2)] },
   { id: 'fields', go: scrollTo('wb.keywords'), spots: [around('wb.keywords', 2)] },
   { id: 'translations', go: scrollTo('review.languagesHeading'), spots: [around('review.languagesHeading', 2)] },
@@ -329,6 +341,12 @@ const admin = [
     id: 'bin',
     go: async (c) => goto(c, '/manage/bin'),
     spots: [(p) => p.locator('main li').first()],
+  },
+  {
+    // For the guide videos: the fault log, by code.
+    id: 'problems',
+    go: async (c) => goto(c, '/manage/problems'),
+    spots: [(p) => p.locator('main input').first().locator('xpath=..'), (p) => p.locator('main details').first()],
   },
 ];
 
