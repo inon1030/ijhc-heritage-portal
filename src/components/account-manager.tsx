@@ -75,7 +75,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
 
       <section>
         <h2 className="font-display text-xl">
-          Waiting for a decision
+          {t('accounts.waiting')}
           {waiting.length > 0 && (
             <span className="ms-2 rounded-full bg-accent px-2.5 py-0.5 font-mono text-sm text-ink">
               {waiting.length}
@@ -94,7 +94,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                 <span className="min-w-[14rem] flex-1">
                   <span className="block font-medium">{profile.full_name ?? t('accounts.noName')}</span>
                   <span className="machine block text-muted">{profile.email}</span>
-                  <span className="text-xs text-muted">Asked {formatDate(profile.created_at)}</span>
+                  <span className="text-xs text-muted">{t('accounts.asked', { date: formatDate(profile.created_at) })}</span>
                 </span>
 
                 <button
@@ -108,7 +108,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                   ) : (
                     <UserCheck size={16} />
                   )}
-                  Approve as knowledge expert
+                  {t('accounts.approveExpert')}
                 </button>
 
                 <button
@@ -169,7 +169,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                 <span className="min-w-[14rem] flex-1">
                   <span className="block font-medium">
                     {profile.full_name ?? profile.email}
-                    {isSelf && <span className="ms-2 text-xs text-muted">you</span>}
+                    {isSelf && <span className="ms-2 text-xs text-muted">{t('accounts.you')}</span>}
                   </span>
                   <span className="machine block text-muted">{profile.email}</span>
                 </span>
@@ -181,7 +181,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                       : 'rounded-full border border-rule bg-paper-2 px-3 py-1 font-mono text-xs text-muted'
                   }
                 >
-                  {ROLE_LABELS[profile.role]}
+                  {profile.role === 'admin' ? t('accounts.administrator') : profile.role === 'volunteer' ? t('accounts.volunteer') : ROLE_LABELS[profile.role]}
                 </span>
 
                 {!isSelf && !lastAdmin && (
@@ -189,7 +189,7 @@ export function AccountManager({ accounts, currentId }: { accounts: Profile[]; c
                     value={profile.role}
                     onChange={(e) => setRole(profile, e.target.value as UserRole)}
                     disabled={busyId === profile.id}
-                    aria-label={`Role for ${profile.email}`}
+                    aria-label={t('accounts.roleFor', { email: profile.email })}
                     className="h-11 rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none disabled:opacity-50"
                   >
                     <option value="volunteer">{t('accounts.volunteer')}</option>

@@ -486,6 +486,13 @@ export const en = {
 
   'accounts.nobodyWaiting': 'Nobody is waiting. Requests arrive from the sign-in page.',
   'accounts.asAdministrator': 'As administrator',
+  'accounts.waiting': 'Waiting for a decision',
+  'accounts.asked': 'Asked {date}',
+  'accounts.approveExpert': 'Approve as knowledge expert',
+  'accounts.you': 'you',
+  'accounts.roleFor': 'Role for {email}',
+  'manage.intro': 'The words and names the catalogue is allowed to use, and who is allowed to use them.',
+  'manage.introVolunteer': 'Adding is open to you; removing is an administrator action.',
   'accounts.approve': 'Approve',
   'accounts.decline': 'Decline',
 

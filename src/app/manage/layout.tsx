@@ -36,12 +36,12 @@ export default async function ManageLayout({ children }: { children: React.React
           className="animate-rise mt-4 max-w-2xl leading-relaxed text-muted sm:text-lg"
           style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
         >
-          The words and names the catalogue is allowed to use, and who is allowed to use them.
-          {!isAdmin && ' Adding is open to you; removing is an administrator action.'}
+          {t('manage.intro')}
+          {!isAdmin && ` ${t('manage.introVolunteer')}`}
         </p>
       </header>
 
-      <nav className="mb-10 flex flex-wrap gap-2.5" aria-label="Manage">
+      <nav className="mb-10 flex flex-wrap gap-2.5" aria-label={t('manage.title')}>
         <Tab href="/manage/vocabulary" icon={<BookMarked size={17} />} label={t('manage.vocabulary')} />
         <Tab href="/manage/families" icon={<Users size={17} />} label={t('manage.families')} />
         {isAdmin && <Tab href="/manage/accounts" icon={<ShieldCheck size={17} />} label={t('manage.accounts')} />}
