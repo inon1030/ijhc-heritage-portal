@@ -193,7 +193,7 @@ export function FilePicker({
                   className="absolute top-1.5 end-1.5 rounded-full bg-ink/85 p-1.5 text-paper opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 disabled:hidden"
                 >
                   <X size={14} />
-                  <span className="sr-only">Remove {picked.file.name}</span>
+                  <span className="sr-only">{t('prereview.removeTag', { term: picked.file.name })}</span>
                 </button>
               </li>
             ))}

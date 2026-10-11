@@ -113,7 +113,7 @@ export interface FieldDef {
 }
 
 export const FIELD_GROUPS: Record<FieldGroupKey, { label: string; blurb: string }> = {
-  record: { label: 'Record basics', blurb: 'What the portal files and colours the record by.' },
+  record: { label: 'Record basics', blurb: 'What the archive files and colours the record by.' },
   item_detail: { label: 'The item itself', blurb: 'What an archivist writes down looking at it.' },
   lifestyle: { label: 'Lifestyle and Customs', blurb: 'Content Domains' },
   religious_art: { label: 'Religious and Art', blurb: 'Content Domains' },
@@ -201,7 +201,7 @@ export const FIELDS: readonly FieldDef[] = [
     path: '',
     column: 'category',
     options: enumOptions<ItemCategory>(CATEGORY_LABELS),
-    hint: 'The three kinds the portal filters by. The media-type branches below are finer.',
+    hint: 'The three kinds the Explore page filters by. The media-type branches below are finer.',
     lookFor: 'Whether this is a physical object, a document or page, or a recording.',
     maxLength: 40,
   },

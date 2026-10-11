@@ -558,7 +558,7 @@ export const en = {
   'wb.notIdentified': 'Not identified',
   'wb.publish': 'Publish',
   'wb.shadowGallery': 'Hold in Shadow Gallery',
-  'upload.done.body': 'A knowledge expert checks the description and the suggestions against the original. It appears in the public portal once it is approved.',
+  'upload.done.body': 'A knowledge expert checks the description and the suggestions against the original. It appears in the public archive once it is approved.',
   'upload.done.checkSpam':
     'We sent you an email with a link to follow the item. If it has not arrived within a few minutes, check the spam folder.',
   'flow.slow.title': "The reading is taking longer than usual",
@@ -931,7 +931,7 @@ export const en = {
   // these are what is drawn on a screen. A test pins the two together.
 
   'group.record.label': 'Record basics',
-  'group.record.blurb': 'What the portal files and colours the record by.',
+  'group.record.blurb': 'What the archive files and colours the record by.',
   'group.item_detail.label': 'The item itself',
   'group.item_detail.blurb': 'What an archivist writes down looking at it.',
   'group.lifestyle.label': 'Lifestyle and Customs',
@@ -956,7 +956,7 @@ export const en = {
   'fields.filedUnder': 'Filed under {path}.',
 
   'field.category.label': 'Kind of item',
-  'field.category.hint': 'The three kinds the portal filters by. The media-type branches below are finer.',
+  'field.category.hint': 'The three kinds the Explore page filters by. The media-type branches below are finer.',
   'field.community.label': 'Community',
   'field.community.hint': 'One of the four streams. Anything that cannot be placed in one is proposed as General India, the fifth.',
   'field.period.label': 'Period',

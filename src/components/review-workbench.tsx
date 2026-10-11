@@ -1027,7 +1027,7 @@ function VocabularyPicker({
             {keyword}
             <button
               onClick={() => onChange(keywords.filter((k) => k !== keyword))}
-              aria-label={`Remove ${keyword}`}
+              aria-label={t('prereview.removeTag', { term: keyword })}
               className="opacity-60 hover:opacity-100"
             >
               <X size={12} />
