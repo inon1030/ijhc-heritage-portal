@@ -5,7 +5,9 @@ import { buttonClass } from '@/components/primitives';
 import { Logo } from '@/components/logo';
 import { TimePassage } from '@/components/time-passage';
 import { COMMUNITY_ORDER } from '@/lib/communities';
-import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
+import { ItemCard } from '@/components/item-card';
+import { countPublishedItems, getCommunityCounts, listPublishedItems, listRecentlyPublished } from '@/lib/items/queries';
+import { presentMany } from '@/lib/translate/render';
 import { frontDoor, WALL } from '@/lib/items/front-door';
 import { getMessages } from '@/lib/i18n';
 import { communityKey } from '@/lib/i18n/labels';
@@ -40,8 +42,11 @@ export async function generateMetadata(): Promise<Metadata> {
  * visitor can do here; everything else — signing in, reviewing, the vocabulary,
  * approving an account — lives in the bar at the top, one hover away.
  */
+/** Two rows of four at the widest; one glance, not a second archive page. */
+const RECENT = 8;
+
 export default async function Home() {
-  const [items, counts, total, { t }] = await Promise.all([
+  const [items, counts, total, { t }, newest] = await Promise.all([
     /*
      * Enough to fill the wall with a hundred images, asked for once.
      *
@@ -58,7 +63,11 @@ export default async function Home() {
     getCommunityCounts().catch(() => null),
     countPublishedItems().catch(() => 0),
     getMessages(),
+    listRecentlyPublished(RECENT).catch(() => []),
   ]);
+
+  // The cards speak the reader's language, as they do on the Explore page.
+  const { items: recent } = await presentMany(newest);
 
   // The wall and the corridor, from one query. See `front-door.ts` for why the
   // corridor is fourteen of the hundred rather than all of them, and why the
@@ -208,6 +217,32 @@ export default async function Home() {
           </p>
         )}
       </div>
+
+      {/*
+        What arrived lately (Michal, 24.09).
+
+        Below the headline and its two doors, never between them: the page
+        still opens on what a visitor can do. This is for the visitor who came
+        back — the reason to come back is that something is here that was not
+        here last time. Hidden while the shelf is empty.
+      */}
+      {recent.length > 0 && (
+        <section aria-labelledby="recent-heading" className="mx-auto max-w-7xl px-6 pb-16">
+          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 id="recent-heading" className="font-display text-2xl sm:text-[1.75rem]">
+              {t('home.recent')}
+            </h2>
+            <Link href="/portal" className="text-sm text-accent-strong underline-offset-4 hover:underline">
+              {t('home.recentAll')}
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+            {recent.map((item) => (
+              <ItemCard key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/*
         The poster's blue foot used to sit here, at the end of the home page,

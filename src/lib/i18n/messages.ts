@@ -161,6 +161,8 @@ export const en = {
   'home.standfirst':
     'The Bene Israel, Cochin, Baghdadi and Bnei Menashe communities of India, kept together in one place. Everything here was checked by a person before it was published.',
   'home.explore': 'Explore the archive',
+  'home.recent': 'Recently added',
+  'home.recentAll': 'See the whole archive',
   'home.contribute': 'Add something you kept',
   'home.recordsPublished': '{count} records published',
   'home.recordPublished': '{count} record published',

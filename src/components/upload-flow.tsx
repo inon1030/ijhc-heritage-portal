@@ -331,10 +331,17 @@ export function UploadFlow({
     setTitle('');
     setCommunity('');
     setSource('');
-    setEmail('');
-    // The next item may be someone else's, and a box that opens already
-    // filled in reads as an answer rather than as a question (Rafi, 24.09).
-    setFullName('');
+    /*
+     * Who is contributing stays; what they are contributing is cleared.
+     *
+     * Both were cleared, after a box that opened already filled in read as an
+     * answer rather than a question (Rafi, 24.09). That was right for the
+     * item's own boxes and wrong for these two: somebody sending ten
+     * photographs typed their name and address ten times (Ilanit, 03.10).
+     * `email` and `fullName` are therefore left alone here. Both remain
+     * ordinary editable boxes for a volunteer entering the next person's item,
+     * and the consent below is still asked again for every item.
+     */
     setKnown('');
     setDontKnow({});
     setGrouping('one');

@@ -205,6 +205,33 @@ export async function listPublishedItems(filters: PortalFilters = {}): Promise<(
   }));
 }
 
+/**
+ * The newest arrivals on the public shelf, for the front page.
+ *
+ * Ordered by when a Knowledge Expert published the record, not by when it was
+ * uploaded: an item that waited three weeks in review is new to a visitor the
+ * day it appears. Same visibility rules as `listPublishedItems`.
+ */
+export async function listRecentlyPublished(limit = 8): Promise<(Item & { file: ItemFile | null })[]> {
+  const supabase = await createServerSupabase();
+
+  const { data, error } = await supabase
+    .from('items')
+    .select('*, item_files(*)')
+    .eq('status', 'accepted')
+    .eq('access', 'public')
+    .is('deleted_at', null)
+    .order('reviewed_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+
+  return (data ?? []).map(({ item_files, ...item }) => ({
+    ...(item as Item),
+    file: primaryFile(item_files as FileRow[]),
+  }));
+}
+
 /** One published record. Returns null for anything not public, by way of RLS. */
 export async function getPublishedItem(
   id: string,
