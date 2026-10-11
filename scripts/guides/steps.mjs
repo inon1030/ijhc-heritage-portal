@@ -25,6 +25,10 @@ const en = Object.fromEntries(
 const he = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/lib/i18n/locales/he.json'), 'utf8'));
 export const T = (lang, key) => (lang === 'he' ? he[key] ?? en[key] : en[key]);
 
+// A second picture for the step about several items at once: a seed image the
+// archive already publishes.
+const SECOND = path.join(ROOT, 'scripts', 'seed-assets', 'ketuba-detail.jpg');
+
 // ── the example: the Gubbay note, as the archive actually read it ───────────
 const ANALYSIS = {
   provider: 'gemini',
@@ -38,6 +42,9 @@ const ANALYSIS = {
   ocrText:
     'GOVERNMENT OF INDIA  CC 78  No 379247\nPromise to pay the Bearer on demand at any Office of Issue the sum of Rupees 5\nFIVE\n6 JANUARY 1920\nFOR THE GOVERNMENT OF INDIA  MMS Gubbay',
   transcript: null,
+  // The web background is not part of the guide's example.
+  background: null,
+  backgroundSources: [],
   suggestedCategory: 'documents',
   suggestedCommunity: 'baghdadi',
   offTopic: false,
@@ -87,6 +94,10 @@ async function fakeTheNetwork(page, lang) {
       }),
     ),
   );
+  // Neither of these may reach the real archive from a capture run: the first
+  // would spend the day's translation allowance, the second files a fault.
+  await page.route('**/api/analyze/translate', (route) => route.fulfill(json({ ok: false, error: { message: 'guide capture' } })));
+  await page.route('**/api/problems', (route) => route.fulfill(json({ ok: true, data: null })));
   await page.route('**/api/items', (route) =>
     route.request().method() === 'POST'
       ? route.fulfill(json({ ok: true, data: { id: '00000000-0000-4000-8000-000000000000', receipt: 'guide-example-receipt' } }))
@@ -118,11 +129,31 @@ const contributor = [
     go: async () => {},
     spots: [(p) => p.locator('input[type=url]').locator('xpath=..'), (p, l) => p.getByRole('button', { name: T(l, 'upload.action.readPage') })],
   },
+  {
+    // Two files chosen, so the screen asks the question the step is about:
+    // one item, or several (Rafi, 04.10).
+    id: 'batch',
+    go: async ({ page, fixture }) => {
+      await page.locator('input[type=file]').first().setInputFiles([fixture, SECOND]);
+      await page.waitForTimeout(700);
+      await page.getByText(T('en', 'upload.step.grouping')).or(page.getByText(T('he', 'upload.step.grouping'))).first().scrollIntoViewIfNeeded().catch(() => {});
+      // The question sits under the picker; bring its two answers up with it.
+      await page.evaluate(() => window.scrollBy(0, 320));
+    },
+    spots: [(p, l) => p.getByText(T(l, 'upload.step.grouping'), { exact: true }).first().locator('xpath=..')],
+  },
   // The `scan` step is not captured here: the scanner exists only on a phone.
   // See smart-scan-e2e.mjs and DOCS/_build/scan_step.py.
   {
     id: 'next',
     go: async ({ page, fixture }) => {
+      // The batch step left two files in the picker; the rest of the guide
+      // follows one item, so they are taken out before the example goes in.
+      for (;;) {
+        const remove = page.locator('button:has(span.sr-only)').filter({ hasText: /\.(jpe?g|png)/i }).first();
+        if (!(await remove.count())) break;
+        await remove.click();
+      }
       await page.locator('input[type=file]').first().setInputFiles(fixture);
       await page.waitForTimeout(600);
     },
@@ -168,7 +199,7 @@ const contributor = [
     id: 'description',
     go: async ({ page, lang }) => {
       await page.getByRole('button', { name: T(lang, 'flow.analyse') }).click();
-      await page.getByRole('button', { name: T(lang, 'prereview.submit') }).waitFor({ timeout: 15000 });
+      await page.getByRole('button', { name: T(lang, 'prereview.submit') }).first().waitFor({ timeout: 15000 });
       await page.locator('textarea').first().scrollIntoViewIfNeeded();
       await page.evaluate(() => window.scrollBy(0, -120));
     },
@@ -201,15 +232,17 @@ const contributor = [
   {
     id: 'submit',
     go: async ({ page, lang }) => {
-      await page.getByRole('button', { name: T(lang, 'prereview.submit') }).scrollIntoViewIfNeeded();
+      await page.getByRole('button', { name: T(lang, 'prereview.submit') }).last().scrollIntoViewIfNeeded();
       await page.evaluate(() => window.scrollBy(0, -260));
     },
-    spots: [(p, l) => p.getByRole('button', { name: T(l, 'prereview.submit') })],
+    // The button is at the top of the findings as well since 04.10; the guide
+    // points at the one a reader reaches after checking them.
+    spots: [(p, l) => p.getByRole('button', { name: T(l, 'prereview.submit') }).last()],
   },
   {
     id: 'receipt',
     go: async ({ page, lang }) => {
-      await page.getByRole('button', { name: T(lang, 'prereview.submit') }).click();
+      await page.getByRole('button', { name: T(lang, 'prereview.submit') }).last().click();
       await page.getByText(T(lang, 'upload.done.one')).waitFor({ timeout: 15000 });
       await page.evaluate(() => window.scrollTo(0, 0));
     },

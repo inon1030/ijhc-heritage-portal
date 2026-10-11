@@ -21,8 +21,7 @@ type Shots = Record<string, Record<string, Partial<Record<GuideLanguage, { width
 export function walkthrough(audience: Audience, language: GuideLanguage, depth: Depth = 'deep'): WalkStep[] {
   const measured = (shots as Shots)[audience] ?? {};
   return STEP_TEXT[audience].flatMap((step) => {
-    // The batch step explains the existing picker; reuse its measured image.
-    const imageId = audience === 'contributor' && step.id === 'batch' ? 'add-files' : step.id;
+    const imageId = step.id;
     const shot = measured[imageId]?.[language];
     if (!shot) return [];
     if (depth === 'quick' && !step.quick) return [];

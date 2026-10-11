@@ -72,7 +72,7 @@ it('shows the batch guide near the beginning in both languages and depths', () =
     const steps = walkthrough('contributor', lang, depth);
     const batch = steps.find((step) => step.id === 'batch');
     expect(steps.findIndex((step) => step.id === 'batch')).toBe(2);
-    expect(batch?.image).toContain('/add-files.png');
+    expect(batch?.image).toContain('/batch.png');
     expect(batch?.body).toContain(lang === 'he' ? 'פעם אחת' : 'once');
   }
 });
