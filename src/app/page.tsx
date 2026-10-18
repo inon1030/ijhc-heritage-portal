@@ -236,7 +236,7 @@ export default async function Home() {
               {t('home.recentAll')}
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 4xl:grid-cols-7">
             {recent.map((item) => (
               <ItemCard key={item.id} item={item} />
             ))}

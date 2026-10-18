@@ -76,8 +76,17 @@ export default async function RecordPage({
       <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
           <div className="card animate-rise overflow-hidden rounded-2xl bg-paper-2 p-2">
+            {/* Never larger than the file itself. Stretched to fill the column,
+                a 567px scan stood 1269px wide on a 2560px screen and went soft
+                (Eden, 16.10). Below its own size it still fills the column. */}
             <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-2xl">
-              <FilePreview file={file} alt={item.title} fit="contain" />
+              <FilePreview
+                file={file}
+                alt={item.title}
+                fit="contain"
+                eager
+                className="h-auto max-h-[80vh] w-auto max-w-full"
+              />
             </div>
           </div>
 

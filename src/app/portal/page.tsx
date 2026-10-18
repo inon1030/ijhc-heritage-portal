@@ -148,14 +148,19 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
         </div>
       ) : view === 'grid' ? (
         /*
-          Four across at the widest, and dense.
+          Four across on a laptop, and dense.
 
           Three columns of 4:3 cards with five lines of caption made a page you
           read. Four columns of square plates makes a wall you look at, which is
           what the holdings are. The gap is tight for the same reason: a wall,
           not a slideshow.
+
+          The page fills the browser (21.09), so a wider screen gets more
+          columns rather than bigger cards: a tile is a 640px thumbnail, and at
+          four across a 2560px screen each stood 612px and went soft (Eden,
+          16.10). Up to seven across keeps every card near 350px.
         */
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 4xl:grid-cols-7">
           {items.map((item, index) => (
             <Reveal key={item.id} delay={Math.min(index, 11) * 45}>
               <ItemCard item={item} />

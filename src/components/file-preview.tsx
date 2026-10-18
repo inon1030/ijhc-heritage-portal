@@ -14,6 +14,7 @@ export function FilePreview({
   className,
   fit = 'cover',
   still = false,
+  eager = false,
 }: {
   file: ItemFile | null;
   alt: string;
@@ -29,6 +30,12 @@ export function FilePreview({
    * the wall; it does not deserve to be playable from it.
    */
   still?: boolean;
+  /**
+   * Load now, not when scrolled to. For the one photograph a page is about.
+   * A lazy image sized by its own file starts at 0×0, and the browser never
+   * fetches a 0×0 lazy image, so the record page's photograph stayed empty.
+   */
+  eager?: boolean;
 }) {
   const t = useMessages();
   if (!file) {
@@ -47,7 +54,8 @@ export function FilePreview({
       <img
         src={still ? thumbUrl(file) : viewableUrl(file)}
         alt={alt}
-        loading="lazy"
+        loading={eager ? 'eager' : 'lazy'}
+        fetchPriority={eager ? 'high' : undefined}
         className={cn('h-full w-full bg-paper-2', fit === 'cover' ? 'object-cover' : 'object-contain', className)}
       />
     );

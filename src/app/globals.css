@@ -125,6 +125,15 @@
   --container-6xl: 100%;
   --container-7xl: 100%;
 
+  /*
+   * Two widths past 2xl, for the photograph grids only. Filling a 2560px
+   * screen with four columns blew 640px thumbnails up to 612px (Eden, 16.10).
+   * Named rather than written as `min-[1920px]:`, because an arbitrary width
+   * is emitted before `2xl` and loses to it.
+   */
+  --breakpoint-3xl: 120rem;
+  --breakpoint-4xl: 150rem;
+
   /* The surface a card sits on: warm grey on near-white, no border to speak of. */
   --color-surface:     #f4f1ea;
   --color-surface-2:   #ece7dd;
