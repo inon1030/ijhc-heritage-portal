@@ -32,13 +32,12 @@ import { createPortal } from 'react-dom';
  * it *is* that wall. The crossfade at the end is the same pictures settling out
  * of motion into ground.
  *
- * **It plays once a visit.** From 04.09 it played on every arrival at the
- * front door, so that returning to it was returning to the passage. Eden asked
- * on 16.10 for it to stop repeating whenever a visitor comes back to the home
- * page, so it is gated to the browser session again: the first arrival plays
- * it, a return in the same tab does not, and a new visit plays it afresh.
+ * **It plays on every arrival at the front door,** which is the Center's
+ * decision and not an oversight. It was gated to once a session; the archive
+ * wants the passage to be what the front door *is*, so returning to it is
+ * returning to the passage.
  *
- * It is short, and leaving it is free. Four
+ * That only works because it is short and because leaving it is free. Four
  * seconds, door to door, however slow the connection — and it goes on a click,
  * a key, a scroll or a touch, every gesture that means "I want to get on with
  * it". There is no Skip control: a button offering to save you four seconds is
@@ -210,7 +209,6 @@ export function TimePassage({
   useIsomorphicLayoutEffect(() => {
     if (frames.length === 0) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (seenThisVisit()) return;
     setPhase('holding');
   }, [frames.length]);
 
@@ -493,25 +491,6 @@ export function TimePassage({
 const SHAPES = ['portrait', 'landscape', 'square', 'landscape', 'portrait', 'square'] as const;
 /** Hung by hand, near enough to straight. */
 const TILTS = [-2.4, 1.8, -1.1, 2.6, -1.9, 1.2, -2.8, 0.9] as const;
-
-const SEEN_KEY = 'ijhc.passage.seen';
-
-/**
- * Whether this visit has already been through the passage, and marks it so.
- *
- * Session storage, so a new visit plays it again. Where storage is blocked —
- * a private window, a locked-down browser — it throws, and the passage plays
- * as it did before, which is the harmless failure.
- */
-function seenThisVisit(): boolean {
-  try {
-    if (window.sessionStorage.getItem(SEEN_KEY)) return true;
-    window.sessionStorage.setItem(SEEN_KEY, '1');
-  } catch {
-    // Nothing to remember with; play it.
-  }
-  return false;
-}
 
 /**
  * `useLayoutEffect` warns when run during server rendering, where there is no
