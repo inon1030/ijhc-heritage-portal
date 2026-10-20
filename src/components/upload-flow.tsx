@@ -1,5 +1,7 @@
 'use client';
 
+import { CollectorFields } from '@/components/collector-fields';
+import { uploadSignBody } from '@/lib/files/hash';
 import { COMMUNITY_ORDER } from '@/lib/communities';
 import { communityKey } from '@/lib/i18n/labels';
 import { withContributorCommunity } from '@/lib/upload/community';
@@ -22,7 +24,7 @@ import { lockLanguage } from '@/lib/i18n/language-lock';
 import { en, format, type MessageKey } from '@/lib/i18n/messages';
 import { mergeSuggestions } from '@/lib/fields/suggestions';
 import { measureDuration } from '@/lib/files/measure';
-import { createBrowserSupabase } from '@/lib/supabase/browser';
+import { uploadSignedFile } from '@/lib/files/upload';
 import type { AnalysisResult } from '@/lib/ai/types';
 import { cn } from '@/lib/utils';
 import { materialLanguage } from '@/lib/i18n/material';
@@ -118,6 +120,8 @@ export function UploadFlow({
   const [title, setTitle] = useState('');
   const [community, setCommunity] = useState('');
   const [source, setSource] = useState('');
+  const [collectorName, setCollectorName] = useState('');
+  const [collectorCreditRequired, setCollectorCreditRequired] = useState(false);
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -337,7 +341,7 @@ export function UploadFlow({
    * caught when nobody replies.
    */
   const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
-  const canAnalyse = hasSomething && agreed && emailOk && !busy;
+  const canAnalyse = hasSomething && agreed && emailOk && (!collectorCreditRequired || Boolean(collectorName.trim())) && !busy;
 
   function reset() {
     setFiles([]);
@@ -345,6 +349,8 @@ export function UploadFlow({
     setTitle('');
     setCommunity('');
     setSource('');
+    setCollectorName('');
+    setCollectorCreditRequired(false);
     /*
      * Who is contributing stays; what they are contributing is cleared.
      *
@@ -488,16 +494,13 @@ export function UploadFlow({
     const signRes = await fetch('/api/uploads/sign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName: file.name, mimeType: file.type, byteSize: file.size }),
+      body: JSON.stringify(await uploadSignBody(file)),
     });
     const signed = await signRes.json().catch(() => null);
     if (!signed) throw new Error(t('error.didNotGoThrough'));
     if (!signed.ok) throw new Error(signed.error.message);
 
-    const supabase = createBrowserSupabase();
-    const { error: uploadError } = await supabase.storage
-      .from('heritage')
-      .uploadToSignedUrl(signed.data.path, signed.data.token, file);
+    const { error: uploadError } = await uploadSignedFile(signed.data.path, signed.data.token, file);
 
     if (uploadError) {
       // Say what actually went wrong. Replacing this with "check your
@@ -727,6 +730,9 @@ export function UploadFlow({
           body: JSON.stringify({
             title: (oneRecord ? title.trim() || captured?.title : null) || stemOf(entries[0].fileName),
             source: source.trim() || null,
+            collectorName: collectorName.trim() || null,
+            collectorCreditRequired,
+            contributorLanguage: siteLanguage,
             sourceUrl: captured?.sourceUrl ?? null,
             contributorEmail: email.trim() || null,
             contributorFullName: fullName.trim() || null,
@@ -859,6 +865,9 @@ export function UploadFlow({
           body: JSON.stringify({
             title: payload.title,
             source: source.trim() || null,
+            collectorName: collectorName.trim() || null,
+            collectorCreditRequired,
+            contributorLanguage: siteLanguage,
             // Written by the ingest route, never typed. It is the difference
             // between "I found this online" and a checkable address.
             sourceUrl: captured?.sourceUrl ?? null,
@@ -867,7 +876,8 @@ export function UploadFlow({
             consentVersion: CONSENT_VERSION,
             contributorDescription: draft?.description?.trim() || null,
             aiRating: simulated ? null : aiRating,
-            contributorKeywords: draft?.keywords ?? [],
+            contributorKeywords: (draft?.keywords ?? []).filter(word => vocabulary.some(term => term.term === word)),
+            suggestedKeywords: (draft?.keywords ?? []).filter(word => !vocabulary.some(term => term.term === word)),
             // The whole set as they left it, not a change list. A field they
             // deleted is a field they decided the record does not have.
             contributorFields: (draft?.fields ?? [])
@@ -1005,7 +1015,7 @@ export function UploadFlow({
       <nav aria-label={t('flow.steps')} className="mb-6 flex flex-wrap gap-2">
         {([1, 2, 3] as const).map(step => <button key={step} type="button"
           aria-current={step === screen ? 'step' : undefined}
-          disabled={busy || step === screen || (step === 2 && !hasSomething) || (step === 3 && !canResumeDrafts)}
+          disabled={busy || step === screen || (step > 1 && collectorCreditRequired && !collectorName.trim()) || (step === 2 && !hasSomething) || (step === 3 && !canResumeDrafts)}
           onClick={() => setScreen(step)}
           className={buttonClass('quiet', cn('min-h-11 h-auto whitespace-normal px-4 py-2 focus-visible:outline-2', step === screen && 'border-accent-strong bg-accent-wash text-ink disabled:opacity-100'))}>
           {step}. {t(step === 1 ? 'flow.navFiles' : step === 2 ? 'flow.navDetails' : 'flow.navReview')}
@@ -1036,6 +1046,7 @@ export function UploadFlow({
       {screen === 1 && (
         <section className="animate-rise">
           {heading(t('flow.s1.title'), t('flow.s1.hint'))}
+          <CollectorFields name={collectorName} required={collectorCreditRequired} onName={setCollectorName} onRequired={setCollectorCreditRequired} disabled={busy} />
           <label className="mt-4 block max-w-md">
             <span className="mb-1.5 block font-medium">{t('flow.community')}</span>
             <select value={community} onChange={(e) => setCommunity(e.target.value)} disabled={busy}
@@ -1106,7 +1117,7 @@ export function UploadFlow({
             <button
               type="button"
               onClick={() => setScreen(2)}
-              disabled={!hasSomething}
+              disabled={!hasSomething || (collectorCreditRequired && !collectorName.trim())}
               className={cn(
                 buttonClass('primary', 'h-11 px-8'),
                 !hasSomething && 'pointer-events-none bg-paper-3 text-muted shadow-none',

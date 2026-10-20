@@ -31,6 +31,8 @@ afterEach(() => vi.unstubAllGlobals());
 it('sends without a foreground analysis, retains the community claim and requests the existing background reading', async () => {
   const { container } = render(<UploadFlow vocabulary={[]} mark={null} languages={[]} siteLanguage="en" />);
   fireEvent.change(screen.getByLabelText('Community (optional)'), { target: { value: 'cochin' } });
+  fireEvent.click(screen.getByLabelText('Credit required for the collector'));
+  fireEvent.change(screen.getByLabelText('Collector name'), { target: { value: 'Family collection' } });
   fireEvent.click(screen.getByText('Pick fixture'));
   fireEvent.click(screen.getByRole('button', { name: /Next/ }));
   expect(screen.getByRole('button', { name: 'Send without waiting' })).toBeDisabled();
@@ -41,6 +43,9 @@ it('sends without a foreground analysis, retains the community claim and request
   expect(upload).toHaveBeenCalledTimes(1);
   expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['/api/uploads/sign', '/api/items']);
   const payload = JSON.parse(fetchMock.mock.calls.find(([url]) => url === '/api/items')![1].body);
+  const signPayload = JSON.parse(fetchMock.mock.calls.find(([url]) => url === '/api/uploads/sign')![1].body);
+  expect(signPayload.checksum).toMatch(/^[a-f0-9]{64}$/);
+  expect(payload).toMatchObject({ collectorName: 'Family collection', collectorCreditRequired: true, contributorLanguage: 'en' });
   expect(payload).toMatchObject({ communityHint: 'cochin', contributorFields: [{ key: 'community', value: 'cochin', source: 'contributor' }] });
   expect(payload.files[0]).toMatchObject({ analysis: null, analysisPending: true });
 });

@@ -218,6 +218,7 @@ export async function recordCandidates(
       const { data: seen } = await admin
         .from('keyword_candidates')
         .select('id, seen_count')
+        .eq('source', 'ai')
         .ilike('term', term)
         .maybeSingle();
 
@@ -235,6 +236,17 @@ export async function recordCandidates(
   } catch (error) {
     console.error('[vocabulary] could not record candidates', error);
   }
+}
+
+/** A contributor suggestion is tied to this submission, never an approved tag. */
+export async function recordContributorCandidates(terms: string[], itemId: string): Promise<void> {
+  const fresh = [...new Map(terms.map(term => [term.trim().toLowerCase(), term.trim()])).values()]
+    .filter(term => term.length >= 2 && term.length <= 60).slice(0, 20);
+  if (!fresh.length) return;
+  const { error } = await createAdminSupabase().from('keyword_candidates').insert(
+    fresh.map(term => ({ term, source: 'contributor', item_id: itemId, first_item_id: itemId })),
+  );
+  if (error) throw error;
 }
 
 export async function addFamily(name: string, community: Community, notes: string | null) {

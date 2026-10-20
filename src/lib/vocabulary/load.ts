@@ -27,3 +27,29 @@ export async function readVocabulary(): Promise<VocabularyTerm[]> {
   if (error) throw error;
   return buildVocabulary((data ?? []) as Keyword[]);
 }
+
+/** Upload searches every community, language and variant, without PostgREST's row cap. */
+export async function readUploadVocabulary(): Promise<VocabularyTerm[]> {
+  const supabase = await createServerSupabase();
+  const rows: Keyword[] = [];
+  const translations: { keyword_id: string; label: string }[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from('keywords').select('*').order('id').range(offset, offset + 499);
+    if (error) throw error;
+    rows.push(...(data ?? []) as Keyword[]);
+    if ((data?.length ?? 0) < 500) break;
+  }
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from('keyword_translations').select('keyword_id,label').order('keyword_id').order('lang').range(offset, offset + 499);
+    if (error) throw error;
+    translations.push(...(data ?? []) as { keyword_id: string; label: string }[]);
+    if ((data?.length ?? 0) < 500) break;
+  }
+  const terms = buildVocabulary(rows);
+  for (const translation of translations) {
+    const row = rows.find(row => row.id === translation.keyword_id);
+    const term = terms.find(term => term.id === (row?.preferred_id ?? row?.id));
+    if (term && !term.variants.includes(translation.label)) term.variants.push(translation.label);
+  }
+  return terms;
+}

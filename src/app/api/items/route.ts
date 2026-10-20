@@ -70,6 +70,10 @@ const Analysis = z.object({
 });
 
 const Body = z.object({
+  contributorLanguage: z.enum(['en','he','hi','mr','ml']).nullable().optional(),
+  collectorName: z.string().trim().max(200).nullable().optional(),
+  collectorCreditRequired: z.boolean().default(false),
+  suggestedKeywords: z.array(z.string().trim().min(2).max(60)).max(20).default([]),
   title: z.string().trim().min(1).max(200),
   source: z.string().trim().max(200).nullable().optional(),
   /** Written by the client from what /api/links/ingest returned, never typed. */
@@ -177,6 +181,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return invalid(parsed.error);
 
     const body = parsed.data;
+    if (body.collectorCreditRequired && !body.collectorName) return fail(400, 'invalid_request', t('public.collectorRequired')); 
 
     /*
      * Every file must be one this caller was given.
@@ -192,6 +197,10 @@ export async function POST(request: NextRequest) {
     const uploader = await getCurrentVolunteer();
     const item = await createItem({
       uploadedBy: uploader?.id ?? null,
+      contributorLanguage: body.contributorLanguage ?? null,
+      collectorName: body.collectorName || null,
+      collectorCreditRequired: body.collectorCreditRequired,
+      suggestedKeywords: body.suggestedKeywords,
       title: body.title,
       source: body.source?.trim() || null,
       sourceUrl: body.sourceUrl?.trim() || null,

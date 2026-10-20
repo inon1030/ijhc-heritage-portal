@@ -90,7 +90,7 @@
       },
       "body": {
         "en": "This is the only required field. It is never published. The content expert uses it only if they have a question about what you sent.",
-        "he": "זה השדה היחיד שחובה למלא. הכתובת לא מתפרסמת לעולם, ומומחה הידע משתמש בה רק אם יש לו שאלה על מה ששלחתם."
+        "he": "זה השדה היחיד שחובה למלא. הכתובת לא מתפרסמת לעולם, ומומחה התוכן משתמש בה רק אם יש לו שאלה על מה ששלחתם."
       },
       "quick": {
         "en": "Give your email. It is the only required field and is never published.",
@@ -142,7 +142,7 @@
       },
       "body": {
         "en": "What you see now is a suggestion. The description is pre-filled with the AI’s reading; change anything you know better. The X at the top closes this panel, and nothing is lost: the content expert still sees all of it.",
-        "he": "מה שמופיע עכשיו הוא הצעה. התיאור מולא מראש לפי מה שה-AI קרא, ואפשר לשנות כל מה שאתם יודעים טוב יותר. ה-X למעלה סוגר את החלונית, ושום דבר לא הולך לאיבוד: מומחה הידע עדיין רואה הכל."
+        "he": "מה שמופיע עכשיו הוא הצעה. התיאור מולא מראש לפי מה שה-AI קרא, ואפשר לשנות כל מה שאתם יודעים טוב יותר. ה-X למעלה סוגר את החלונית, ושום דבר לא הולך לאיבוד: מומחה התוכן עדיין רואה הכל."
       },
       "quick": {
         "en": "Check what the AI wrote and correct anything you know better.",

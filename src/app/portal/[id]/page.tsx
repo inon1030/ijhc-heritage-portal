@@ -1,4 +1,10 @@
 import Link from 'next/link';
+import { RecordEditLink } from '@/components/record-edit-link';
+import { RecordFeedback } from '@/components/record-feedback';
+import { getCurrentVolunteer } from '@/lib/supabase/server';
+import { publicToken } from '@/lib/items/public-tokens';
+import { correctionFields } from '@/lib/items/correction-fields';
+import { readRecordComments, readRecordCorrections, readApproverName } from '@/lib/items/queries';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
@@ -50,6 +56,9 @@ export default async function RecordPage({
   const item = await getPublishedItem(id);
   if (!item) notFound();
 
+  const expert = await getCurrentVolunteer();
+  const [comments, corrections, approver] = await Promise.all([readRecordComments(id, Boolean(expert)), expert ? readRecordCorrections(id) : Promise.resolve([]), readApproverName(id)]);
+  const formToken = publicToken('form', id);
   const file = item.file;
   const [families, related] = await Promise.all([listItemFamilies(id), getRelatedValueCounts(id)]);
 
@@ -64,7 +73,7 @@ export default async function RecordPage({
    */
   const { original } = await searchParams;
   const reading = await present(item, { original: original === '1' });
-  const { t } = await getMessages();
+  const { t, language } = await getMessages();
   const shown = reading.item;
   const keywordLabels = original === '1' ? {} : await getKeywordLabels(item.keywords, reading.language.code);
   function linked(key: Facet, value: string | null, children: React.ReactNode, accessibleValue = value ?? '') {
@@ -100,6 +109,11 @@ export default async function RecordPage({
             </div>
           </div>
 
+          <div className="mt-4 space-y-1 text-sm leading-relaxed text-muted" dir="auto">
+            {item.collector_name && <p>{t('public.collection', { collector: item.collector_name })}</p>}
+            <p>{t('public.credit', { source: item.source || t('public.unknownSource') })}</p>
+          </div>
+
           {/* A record can be a document scanned page by page. Every page is
               part of the record, so every page is on the page. */}
           {item.files.length > 1 && (
@@ -124,6 +138,7 @@ export default async function RecordPage({
           >
             {shown.title}
           </h1>
+          <RecordEditLink itemId={id} />
 
           <div
             className="animate-rise mt-4"
@@ -320,6 +335,9 @@ export default async function RecordPage({
           </p>
         </div>
       </div>
+      {approver && item.reviewed_at && <p className="mt-8 text-sm text-muted">{t('public.approved', { name: approver, date: new Date(item.reviewed_at).toLocaleDateString(language.code, { timeZone: 'UTC' }) })}</p>}
+      {expert && <Link href="/review/corrections" className="mt-5 inline-flex min-h-11 items-center rounded-full border border-rule px-5">{t(corrections.length ? 'public.pending' : 'public.review')}</Link>}
+      <RecordFeedback itemId={id} token={formToken} fields={correctionFields(item, t)} comments={comments} expert={Boolean(expert)} locale={language.code} />
     </article>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { CollectorCreditEditor } from '@/components/collector-credit-editor';
 
 import { ReviewReadingDraft } from '@/components/review-draft-scope';
 import { ReviewDraftControls } from '@/components/review-draft-controls';
@@ -186,6 +187,7 @@ export function ReviewWorkbench({
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <ReviewServerActions itemId={item.id} />
+      <CollectorCreditEditor itemId={item.id} initialName={item.collector_name} initialRequired={item.collector_credit_required} />
       {/* The original */}
       <div className="lg:sticky lg:top-6 lg:self-start">
         <div className="mb-3 flex items-center justify-between">

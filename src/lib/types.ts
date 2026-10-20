@@ -19,6 +19,9 @@ export interface Profile {
 }
 
 export interface Item {
+  contributor_language?: string | null;
+  collector_name?: string | null;
+  collector_credit_required?: boolean;
   id: string;
   title: string;
   description: string | null;
@@ -298,6 +301,8 @@ export interface Keyword {
 
 /** A term the model proposed that the vocabulary does not hold yet. */
 export interface KeywordCandidate {
+  source?: 'ai' | 'contributor';
+  item_id?: string | null;
   id: string;
   term: string;
   community: Community | null;
