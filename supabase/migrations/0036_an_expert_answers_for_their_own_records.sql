@@ -123,7 +123,7 @@ create trigger clear_decided_review_draft after update on public.items
 -- pg_trgm is enabled by 0001. Names and translations compete for each term.
 create function public.similar_review_terms(proposed text)
 returns table(id uuid, term text, score real)
-language sql stable security invoker set search_path = public as $$
+language sql stable security invoker set search_path = public, extensions as $$
   select k.id, k.term, max(similarity(lower(btrim(proposed)), lower(btrim(n.name)))) as score
   from keywords k
   cross join lateral (
