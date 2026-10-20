@@ -1,4 +1,5 @@
 import 'server-only';
+import type { CorrectionChanges } from './public-input';
 import { cache } from 'react';
 import { facetOptions, hasPortalFilters, matchesFacets, searchWords, intersectIds, type FacetFilters, type FacetRow } from './portal-facets';
 import { reviewOrder } from './review-order';
@@ -22,6 +23,72 @@ import type {
   ItemField,
   ItemFile,
 } from '@/lib/types';
+
+export interface PublicComment {
+  id: string; author_name: string | null; anonymous: boolean; body: string; created_at: string; hidden_at?: string | null;
+}
+export interface RecordCorrection {
+  id: string; item_id: string; changes: CorrectionChanges; note: string | null;
+  record_title: string | null;
+  proposer_name: string | null; anonymous: boolean; created_at: string;
+  objection_at: string | null; objection_note: string | null; status: string;
+}
+export async function readRecordComments(itemId: string, expert = false): Promise<PublicComment[]> {
+  const supabase = await createServerSupabase();
+  const allowed = expert && Boolean(await getCurrentVolunteer());
+  const comments: PublicComment[] = [];
+  for (let offset = 0; ; offset += 200) {
+    const { data, error } = await supabase.from(allowed ? 'record_comments' : 'public_record_comments')
+      .select(`id,author_name,anonymous,body,created_at${allowed ? ',hidden_at' : ''}`)
+      .eq('item_id', itemId).order('created_at').order('id').range(offset, offset + 199);
+    if (error) throw error;
+    comments.push(...(data ?? []) as unknown as PublicComment[]);
+    if ((data?.length ?? 0) < 200) return comments;
+  }
+}
+/** This is the only public projection of the approver: never email or a profile row. */
+export async function readApproverName(itemId: string): Promise<string | null> {
+  const item = await getPublishedItem(itemId);
+  if (!item?.reviewed_by) return null;
+  const { data, error } = await createAdminSupabase().from('profiles').select('full_name').eq('id', item.reviewed_by).maybeSingle();
+  if (error) throw error;
+  return data?.full_name?.trim() || null;
+}
+export async function readRecordCorrections(itemId?: string): Promise<RecordCorrection[]> {
+  if (!await getCurrentVolunteer()) return [];
+  let query = (await createServerSupabase()).from('record_corrections')
+    .select('id,item_id,changes,note,proposer_name,anonymous,created_at,objection_at,objection_note,status,record:items(title)')
+    .eq('status', 'pending').order('created_at');
+  if (itemId) query = query.eq('item_id', itemId);
+  const { data, error } = await query.limit(200);
+  if (error) throw error;
+  return (data ?? []).map(row => {
+    const { record, ...correction } = row;
+    const linked = record as unknown as { title: string } | null;
+    return { ...correction, record_title: linked?.title ?? null } as RecordCorrection;
+  });
+}
+
+/** Server-only mail projection. No route or component serializes these addresses. */
+export async function readFeedbackRecipients(item: Item): Promise<{ email: string; language: string | null; uploader: boolean }[]> {
+  const admin = createAdminSupabase();
+  const result: { email: string; language: string | null; uploader: boolean }[] = [];
+  if (item.contributor_id) {
+    const { data, error } = await admin.from('contributors').select('email').eq('id', item.contributor_id).maybeSingle();
+    if (error) throw error;
+    if (data?.email) result.push({ email: data.email, language: item.contributor_language ?? null, uploader: true });
+  }
+  if (item.reviewed_by) {
+    const { data, error } = await admin.from('profiles').select('email,notify_publications').eq('id', item.reviewed_by).maybeSingle();
+    if (error) throw error;
+    if (data?.email && data.notify_publications !== false && !result.some(r => r.email.trim().toLowerCase() === data.email.trim().toLowerCase())) {
+      const { data: user } = await admin.auth.admin.getUserById(item.reviewed_by);
+      const language = user.user?.user_metadata?.language;
+      result.push({ email: data.email, language: typeof language === 'string' ? language : null, uploader: false });
+    }
+  }
+  return result;
+}
 
 /**
  * Every read in the app goes through this module.

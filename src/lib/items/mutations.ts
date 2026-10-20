@@ -1,4 +1,7 @@
 import 'server-only';
+import { getCurrentVolunteer } from '@/lib/supabase/server';
+import { CollectorInput, type CorrectionChanges } from './public-input';
+import { tokenHash, verifyPublicToken } from './public-tokens';
 import { storedChecksum } from '@/lib/files/server-hash';
 import { retryOneReading } from './retry-reading';
 import { createAdminSupabase } from '@/lib/supabase/admin';
@@ -7,11 +10,66 @@ import type { AnalysisResult } from '@/lib/ai';
 import { fieldDef, isValidValue } from '@/lib/fields/registry';
 import { mergeSuggestions } from '@/lib/fields/suggestions';
 import { registerContributor } from '@/lib/contributors';
-import { recordCandidates } from '@/lib/vocabulary/mutations';
+import { recordCandidates, recordContributorCandidates } from '@/lib/vocabulary/mutations';
 import { canTransition } from './status';
 import { verifyReceipt } from './receipt';
 import { ContributorEdit } from './contributor-edit';
 import type { AccessLevel, Community, Item, ItemCategory, ItemStatus } from '@/lib/types';
+
+export async function saveCollector(itemId: string, input: unknown): Promise<boolean> {
+  if (!await getCurrentVolunteer()) return false;
+  const parsed = CollectorInput.safeParse(input);
+  if (!parsed.success) return false;
+  const { data, error } = await (await createServerSupabase()).from('items')
+    .update({ collector_name: parsed.data.collectorName || null, collector_credit_required: parsed.data.collectorCreditRequired })
+    .eq('id', itemId).is('deleted_at', null).select('id').maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+export async function createPublicFeedback(input: {
+  id: string; itemId: string; kind: 'comment' | 'correction'; anonymous: boolean;
+  name: string; email: string; body: string; changes?: CorrectionChanges; objectionToken?: string;
+}) {
+  const admin = createAdminSupabase();
+  const { data: visible, error: readError } = await admin.from('items').select('id')
+    .eq('id', input.itemId).eq('status', 'accepted').eq('access', 'public').not('category', 'is', null).is('deleted_at', null).maybeSingle();
+  if (readError) throw readError;
+  if (!visible) return false;
+  const identity = { anonymous: input.anonymous };
+  const { error } = input.kind === 'comment'
+    ? await admin.from('record_comments').insert({ ...identity, id: input.id, item_id: input.itemId,
+      author_name: input.anonymous ? null : input.name, author_email: input.anonymous ? null : input.email, body: input.body })
+    : await admin.from('record_corrections').insert({ ...identity, id: input.id, item_id: input.itemId,
+      proposer_name: input.anonymous ? null : input.name, proposer_email: input.anonymous ? null : input.email,
+      note: input.body || null, changes: input.changes, objection_token_hash: tokenHash(input.objectionToken!) });
+  if (error) throw error;
+  return true;
+}
+export async function moderateRecordComment(itemId: string, id: string, hidden: boolean) {
+  const actor = await getCurrentVolunteer();
+  if (!actor) return false;
+  const { data, error } = await (await createServerSupabase()).from('record_comments')
+    .update({ hidden_at: hidden ? new Date().toISOString() : null, hidden_by: hidden ? actor.id : null })
+    .eq('id', id).eq('item_id', itemId).select('id').maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+export async function decideRecordCorrection(id: string, accept: boolean, objectionAt: string | null) {
+  if (!await getCurrentVolunteer()) return false;
+  const { data, error } = await (await createServerSupabase()).rpc('decide_record_correction',
+    { p_id: id, p_accept: accept, p_objection_at: objectionAt });
+  if (error) throw error;
+  return data === true;
+}
+export async function objectToCorrection(id: string, token: string, note: string) {
+  if (!verifyPublicToken('objection', id, token) || note.length > 2000) return false;
+  const { data, error } = await createAdminSupabase().from('record_corrections')
+    .update({ objection_at: new Date().toISOString(), objection_note: note.trim() || null })
+    .eq('id', id).eq('objection_token_hash', tokenHash(token)).eq('status', 'pending')
+    .is('objection_at', null).select('id').maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
 
 /** Inon's 08.10.2026 decision: one signed receipt may edit only a live pending item. */
 export async function editContributorItem(itemId: string, token: unknown, input: unknown) {
@@ -73,6 +131,10 @@ export interface CreateFileInput {
 }
 
 export interface CreateItemInput {
+  contributorLanguage?: string | null;
+  collectorName?: string | null;
+  collectorCreditRequired?: boolean;
+  suggestedKeywords?: string[];
   title: string;
   source: string | null;
   /** Set only by link ingestion. A contributor never types this. */
@@ -144,6 +206,9 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
   const { data: item, error: itemError } = await admin
     .from('items')
     .insert({
+      contributor_language: input.contributorLanguage ?? null,
+      collector_name: input.collectorName ?? null,
+      collector_credit_required: input.collectorCreditRequired ?? false,
       title: input.title,
       // Deliberately not set: the reviewer catalogues it, with the model's
       // suggestion one click away in the workbench.
@@ -243,14 +308,10 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
    * subdivides — which is what keeps a closed vocabulary from slowly making
    * the archive blind to whatever nobody has thought of yet.
    *
-   * The contributor's own tags are deliberately not queued. They are a
-   * stranger's words with no branch, and they are not lost by staying out of
-   * the vocabulary: they are on the record in `contributor_keywords` and the
-   * review screen shows them under "What the contributor said", where a
-   * volunteer can adopt one properly if it deserves to be a term.
-   *
-   * Nothing is queued at all from material the model judged off-topic.
+   * Contributor proposals are stored separately with source=contributor and
+   * item_id. The off-topic gate below applies only to machine proposals.
    */
+  if (input.suggestedKeywords?.length) await recordContributorCandidates(input.suggestedKeywords, item.id);
   const proposals = input.files.flatMap((f) => f.analysis?.newTerms ?? []);
   await recordCandidates(
     proposals,

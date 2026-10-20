@@ -2,7 +2,7 @@
 
 import { replacementFits, replaceReviewText, type ContributorText } from '@/lib/ai/replace-text';
 import { buttonClass } from '@/components/primitives';
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Eye, Languages, Loader2, Plus, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import { AiRating } from '@/components/ai-rating';
@@ -119,7 +119,7 @@ export function PreReview({
   submitting: boolean;
   /** The terms have not been agreed to yet. */
   blocked: boolean;
-  /** The archive's own tag list. Contributors may pick from it, not add to it. */
+  /** The complete vocabulary. New terms remain suggestions for expert review. */
   vocabulary: OfferedTerm[];
   /**
    * The languages the archive publishes in, for the switch under the scanned
@@ -520,29 +520,8 @@ function Suggested({
   );
 }
 
-/**
- * Tags, from the archive's own list and nowhere else.
- *
- * A contributor used to type whatever they liked here. That is generous and it
- * is how a catalogue stops being one: "Bombay", "bombay", "Mumbai" and "Bombay
- * (Mumbai)" become four different things nobody can search across, and the
- * knowledge manager spends their time merging spellings instead of reading
- * material.
- *
- * So this offers what already exists — the same list the review workbench binds
- * to, managed at /manage/vocabulary — and nothing else. The list is public to
- * read, so an anonymous contributor sees every term a volunteer would.
- *
- * **What is not here is not lost.** A term the archive has never used is a real
- * thing somebody knows and the vocabulary does not, so the note points at the
- * description: written there, it reaches a person who can add the term properly
- * rather than being filed under a spelling only this record will ever use.
- *
- * Variants are matched but never stored. Somebody typing "Bombay" finds the
- * term whose preferred spelling the archive settled on, and the record carries
- * the preferred one — which is the whole point of a thesaurus.
- */
-function TagPicker({
+/** Search all vocabulary labels; new terms remain contributor suggestions. */
+export function TagPicker({
   chosen,
   offered,
   suggested,
@@ -558,7 +537,7 @@ function TagPicker({
   const [open, setOpen] = useState(false);
 
   const add = (term: string) => {
-    if (!chosen.includes(term)) onChange([...chosen, term]);
+    if (chosen.length < 20 && !chosen.includes(term)) onChange([...chosen, term]);
     setQuery('');
   };
 
@@ -567,7 +546,9 @@ function TagPicker({
    * Matched on the preferred spelling *and* on every variant, so the person who
    * knows it as Bombay finds it without knowing what the archive calls it.
    */
+  const searchId = useId();
   const needle = query.trim().toLowerCase();
+  const canSuggest = needle.length >= 2 && chosen.length < 20 && !chosen.some(v => v.toLowerCase() === needle) && !offered.some(term => [term.term, ...term.variants].some(v => v.toLowerCase() === needle));
   const matches = offered
     .filter((term) => !chosen.includes(term.term))
     .filter(
@@ -589,30 +570,31 @@ function TagPicker({
         {chosen.map((term) => (
           <li
             key={term}
-            className="flex items-center gap-1 rounded-full border border-rule bg-paper py-1.5 pe-1.5 ps-3.5 text-sm"
+            className="flex max-w-full flex-wrap items-center gap-1 break-all rounded-full border border-rule bg-paper py-1.5 pe-1.5 ps-3.5 text-sm"
           >
             {term}
             <button
               type="button"
               onClick={() => onChange(chosen.filter((k) => k !== term))}
-              className="rounded-full p-1 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
+              aria-label={t('prereview.removeTag', { term })}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full px-2 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
             >
               <X size={13} />
-              <span className="sr-only">{t('prereview.removeTag', { term })}</span>
+              <span>{t('public.removeTag')}</span>
             </button>
           </li>
         ))}
       </ul>
 
-      <div className="relative mt-2">
-        <input
+      <div className="relative mt-2" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
+        <label htmlFor={searchId} className="mb-2 block">{t('prereview.addTag')}</label>
+        <input id={searchId}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          onBlur={() => window.setTimeout(() => setOpen(false), 150)}
           placeholder={t('prereview.addTag')}
           maxLength={60}
           className="h-11 w-full rounded-lg border border-rule bg-paper px-3.5 text-sm focus:border-accent-strong focus:outline-none"
@@ -620,6 +602,7 @@ function TagPicker({
 
         {open && (
           <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-rule bg-paper shadow-lift">
+            {canSuggest && <button type="button" className={buttonClass('quiet', 'min-h-11 h-auto w-full whitespace-normal py-2 text-start')} onClick={() => add(query.trim())}>{t('public.suggestTag', { text: query.trim() })}</button>}
             {matches.length === 0 ? (
               <p className="px-3.5 py-3 text-sm text-muted">{t('prereview.tagsNoMatch')}</p>
             ) : (
@@ -630,7 +613,7 @@ function TagPicker({
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => add(term.term)}
-                      className="flex w-full items-baseline gap-2 px-3.5 py-2 text-start text-sm transition-colors hover:bg-paper-2"
+                      className="flex min-h-11 w-full items-baseline gap-2 px-3.5 py-2 text-start text-sm transition-colors hover:bg-paper-2"
                     >
                       <span>{term.term}</span>
                       {needle &&
@@ -658,7 +641,7 @@ function TagPicker({
                 <button
                   type="button"
                   onClick={() => add(term)}
-                  className="flex items-center gap-1 rounded-full border border-dashed border-rule-strong px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent-strong hover:bg-accent-wash hover:text-ink"
+                  className="flex min-h-11 items-center gap-1 rounded-full border border-dashed border-rule-strong px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent-strong hover:bg-accent-wash hover:text-ink"
                 >
                   <Plus size={13} />
                   {term}
@@ -669,7 +652,7 @@ function TagPicker({
         </div>
       )}
 
-      <p className="mt-2 text-sm leading-relaxed text-muted">{t('prereview.tagsFromList')}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{t('public.tagsHint')}</p>
     </div>
   );
 }

@@ -16,7 +16,7 @@ vi.mock('@/lib/supabase/admin', () => ({ createAdminSupabase: () => ({ rpc: vi.f
 }) }) }));
 vi.mock('@/lib/supabase/server', () => ({ createServerSupabase: vi.fn() }));
 vi.mock('@/lib/contributors', () => ({ registerContributor: vi.fn() }));
-vi.mock('@/lib/vocabulary/mutations', () => ({ recordCandidates: vi.fn() }));
+vi.mock('@/lib/vocabulary/mutations', () => ({ recordCandidates: vi.fn(), recordContributorCandidates: vi.fn() }));
 import { createItem } from '@/lib/items/mutations';
 
 it('keeps corrected text beside the AI original and an agreeing community as a contributor row', async () => {

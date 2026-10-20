@@ -1,0 +1,986 @@
+[
+  {
+    "locale": "he",
+    "viewport": 375,
+    "scrollWidth": 375,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "נדרש קרדיט לאספן",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "שמירת קרדיט האספן",
+        "height": 44,
+        "width": 190.25
+      },
+      {
+        "text": "הסתרת תגובה",
+        "height": 44,
+        "width": 144.59375
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 327
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "הצעת תיקון",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 293
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 293
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "קראתי את התנגדות מעלה הפריט.",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "אישור התיקון",
+        "height": 44,
+        "width": 131.546875
+      },
+      {
+        "text": "דחיית התיקון",
+        "height": 44,
+        "width": 132.046875
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 327
+      },
+      {
+        "text": "בקשה שלא לבצע את השינוי",
+        "height": 48,
+        "width": 236.265625
+      },
+      {
+        "text": "הסרת תגית",
+        "height": 44,
+        "width": 107.875
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 327
+      }
+    ]
+  },
+  {
+    "locale": "he",
+    "viewport": 390,
+    "scrollWidth": 390,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "נדרש קרדיט לאספן",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "שמירת קרדיט האספן",
+        "height": 44,
+        "width": 190.25
+      },
+      {
+        "text": "הסתרת תגובה",
+        "height": 44,
+        "width": 144.59375
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 342
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "הצעת תיקון",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 308
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 308
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "קראתי את התנגדות מעלה הפריט.",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "אישור התיקון",
+        "height": 44,
+        "width": 131.546875
+      },
+      {
+        "text": "דחיית התיקון",
+        "height": 44,
+        "width": 132.046875
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 342
+      },
+      {
+        "text": "בקשה שלא לבצע את השינוי",
+        "height": 48,
+        "width": 236.265625
+      },
+      {
+        "text": "הסרת תגית",
+        "height": 44,
+        "width": 107.875
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 342
+      }
+    ]
+  },
+  {
+    "locale": "he",
+    "viewport": 768,
+    "scrollWidth": 768,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "נדרש קרדיט לאספן",
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": "שמירת קרדיט האספן",
+        "height": 44,
+        "width": 190.25
+      },
+      {
+        "text": "הסתרת תגובה",
+        "height": 44,
+        "width": 144.59375
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 720
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 352
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 352
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 720
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "הצעת תיקון",
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 686
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 335
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 335
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 686
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "קראתי את התנגדות מעלה הפריט.",
+        "height": 44,
+        "width": 720
+      },
+      {
+        "text": "אישור התיקון",
+        "height": 44,
+        "width": 131.546875
+      },
+      {
+        "text": "דחיית התיקון",
+        "height": 44,
+        "width": 132.046875
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 720
+      },
+      {
+        "text": "בקשה שלא לבצע את השינוי",
+        "height": 48,
+        "width": 236.265625
+      },
+      {
+        "text": "הסרת תגית",
+        "height": 44,
+        "width": 107.875
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 720
+      }
+    ]
+  },
+  {
+    "locale": "he",
+    "viewport": 1440,
+    "scrollWidth": 1440,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "נדרש קרדיט לאספן",
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": "שמירת קרדיט האספן",
+        "height": 44,
+        "width": 190.25
+      },
+      {
+        "text": "הסתרת תגובה",
+        "height": 44,
+        "width": 144.59375
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 848
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 416
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 416
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 848
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "הצעת תיקון",
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 814
+      },
+      {
+        "text": "בעילום שם",
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 399
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 399
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 814
+      },
+      {
+        "text": "שליחה",
+        "height": 44,
+        "width": 87.703125
+      },
+      {
+        "text": "קראתי את התנגדות מעלה הפריט.",
+        "height": 44,
+        "width": 848
+      },
+      {
+        "text": "אישור התיקון",
+        "height": 44,
+        "width": 131.546875
+      },
+      {
+        "text": "דחיית התיקון",
+        "height": 44,
+        "width": 132.046875
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 848
+      },
+      {
+        "text": "בקשה שלא לבצע את השינוי",
+        "height": 48,
+        "width": 236.265625
+      },
+      {
+        "text": "הסרת תגית",
+        "height": 44,
+        "width": 107.875
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 848
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "viewport": 375,
+    "scrollWidth": 375,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "Credit required for the collector",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "Save collector credit",
+        "height": 44,
+        "width": 188.390625
+      },
+      {
+        "text": "Hide comment",
+        "height": 44,
+        "width": 149.53125
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 327
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "Suggest a correction",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 293
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 293
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 293
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "I have read the uploader’s objection.",
+        "height": 44,
+        "width": 327
+      },
+      {
+        "text": "Accept correction",
+        "height": 44,
+        "width": 167.765625
+      },
+      {
+        "text": "Decline correction",
+        "height": 44,
+        "width": 173.75
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 327
+      },
+      {
+        "text": "Ask that this change not be made",
+        "height": 48,
+        "width": 283.96875
+      },
+      {
+        "text": "Remove tag",
+        "height": 44,
+        "width": 110.53125
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 327
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "viewport": 390,
+    "scrollWidth": 390,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "Credit required for the collector",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "Save collector credit",
+        "height": 44,
+        "width": 188.390625
+      },
+      {
+        "text": "Hide comment",
+        "height": 44,
+        "width": 149.53125
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 342
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "Suggest a correction",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 308
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 308
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 308
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "I have read the uploader’s objection.",
+        "height": 44,
+        "width": 342
+      },
+      {
+        "text": "Accept correction",
+        "height": 44,
+        "width": 167.765625
+      },
+      {
+        "text": "Decline correction",
+        "height": 44,
+        "width": 173.75
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 342
+      },
+      {
+        "text": "Ask that this change not be made",
+        "height": 48,
+        "width": 283.96875
+      },
+      {
+        "text": "Remove tag",
+        "height": 44,
+        "width": 110.53125
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 342
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "viewport": 768,
+    "scrollWidth": 768,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "Credit required for the collector",
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": "Save collector credit",
+        "height": 44,
+        "width": 188.390625
+      },
+      {
+        "text": "Hide comment",
+        "height": 44,
+        "width": 149.53125
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 720
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 352
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 352
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 720
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "Suggest a correction",
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 686
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 686
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 335
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 335
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 686
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "I have read the uploader’s objection.",
+        "height": 44,
+        "width": 720
+      },
+      {
+        "text": "Accept correction",
+        "height": 44,
+        "width": 167.765625
+      },
+      {
+        "text": "Decline correction",
+        "height": 44,
+        "width": 173.75
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 720
+      },
+      {
+        "text": "Ask that this change not be made",
+        "height": 48,
+        "width": 283.96875
+      },
+      {
+        "text": "Remove tag",
+        "height": 44,
+        "width": 110.53125
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 720
+      }
+    ]
+  },
+  {
+    "locale": "en",
+    "viewport": 1440,
+    "scrollWidth": 1440,
+    "focusOutline": "solid",
+    "controls": [
+      {
+        "text": "Credit required for the collector",
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": "Save collector credit",
+        "height": 44,
+        "width": 188.390625
+      },
+      {
+        "text": "Hide comment",
+        "height": 44,
+        "width": 149.53125
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 848
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 416
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 416
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 848
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "Suggest a correction",
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": "Mumbai",
+        "height": 69.1875,
+        "width": 814
+      },
+      {
+        "text": "Anonymous",
+        "height": 44,
+        "width": 814
+      },
+      {
+        "text": "name",
+        "height": 44,
+        "width": 399
+      },
+      {
+        "text": "email",
+        "height": 44,
+        "width": 399
+      },
+      {
+        "text": "body",
+        "height": 120.375,
+        "width": 814
+      },
+      {
+        "text": "Submit",
+        "height": 44,
+        "width": 91.828125
+      },
+      {
+        "text": "I have read the uploader’s objection.",
+        "height": 44,
+        "width": 848
+      },
+      {
+        "text": "Accept correction",
+        "height": 44,
+        "width": 167.765625
+      },
+      {
+        "text": "Decline correction",
+        "height": 44,
+        "width": 173.75
+      },
+      {
+        "text": "note",
+        "height": 153.96875,
+        "width": 848
+      },
+      {
+        "text": "Ask that this change not be made",
+        "height": 48,
+        "width": 283.96875
+      },
+      {
+        "text": "Remove tag",
+        "height": 44,
+        "width": 110.53125
+      },
+      {
+        "text": null,
+        "height": 44,
+        "width": 848
+      }
+    ]
+  }
+]

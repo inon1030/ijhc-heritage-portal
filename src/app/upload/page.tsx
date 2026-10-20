@@ -3,7 +3,7 @@ import { UploadFlow } from '@/components/upload-flow';
 import { Logo } from '@/components/logo';
 import { getMessages } from '@/lib/i18n';
 import { listLanguages, requestedLanguage } from '@/lib/translate/languages';
-import { readVocabulary } from '@/lib/vocabulary/load';
+import { readUploadVocabulary } from '@/lib/vocabulary/load';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getMessages();
@@ -18,7 +18,7 @@ export default async function UploadPage() {
    * volunteer would — which is the point: a tag they pick is a tag the archive
    * already uses, not a fifth spelling of Bombay for somebody to merge later.
    */
-  const vocabulary = (await readVocabulary().catch(() => [])).map((term) => ({
+  const vocabulary = (await readUploadVocabulary()).map((term) => ({
     term: term.term,
     variants: term.variants,
   }));
