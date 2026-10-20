@@ -11,7 +11,7 @@ import {
   LogOut,
   ShieldCheck,
   Trash2,
-  Upload,
+  FolderPlus,
   UserPlus,
   Users,
 } from 'lucide-react';
@@ -50,7 +50,7 @@ type Layout = 'bar' | 'panel';
 
 const PRIMARY = [
   { href: '/portal', key: 'nav.portal', icon: Globe },
-  { href: '/upload', key: 'nav.contribute', icon: Upload },
+  { href: '/upload', key: 'nav.contribute', icon: FolderPlus },
   { href: '/guides', key: 'nav.guides', icon: BookOpen },
 ] as const;
 

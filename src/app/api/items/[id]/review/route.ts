@@ -18,6 +18,9 @@ import { readVocabulary } from '@/lib/vocabulary/load';
 import { resolveTerms } from '@/lib/vocabulary/thesaurus';
 import { CATEGORIES, COMMUNITIES } from '@/lib/types';
 
+import { getMessages } from '@/lib/i18n';
+import { needsCategory } from '@/lib/items/review-order';
+
 const STATUSES = ['pending', 'accepted', 'rejected', 'shadow_gallery'] as const;
 
 const Body = z.object({
@@ -63,6 +66,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     if (!parsed.success) return invalid(parsed.error);
 
     const body = parsed.data;
+    if (needsCategory(body.status, body.category)) {
+      const { t } = await getMessages();
+      return fail(400, 'category_required', t('wb.categoryRequired'));
+    }
     const result = await reviewItem({
       itemId: id,
       status: body.status,

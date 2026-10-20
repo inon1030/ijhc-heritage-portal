@@ -251,6 +251,20 @@ export function UploadFlow({
   const [analysed, setAnalysed] = useState<Analysed[]>([]);
   const [simulated, setSimulated] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [readingInput, setReadingInput] = useState<string | null>(null);
+  const originalDrafts = useRef('');
+  const [draftFiles, setDraftFiles] = useState<string | null>(null);
+  const fileSignature = JSON.stringify({ files: files.map(f => [f.id, f.doc, f.file.name, f.file.size, f.file.lastModified]), captured: captured?.files.map(f => f.path), grouping });
+  const inputSignature = JSON.stringify({ files: fileSignature, known, analysisLang, community, title });
+  const canResumeDrafts = draftFiles === fileSignature && analysed.length > 0;
+  const reusable = readingInput === inputSignature && analysed.length > 0;
+  const unsent = phase !== 'done' && Boolean(files.length || captured || known || title || source || Object.keys(drafts).length);
+  useEffect(() => {
+    if (!unsent) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [unsent]);
   const [showPreReview, setShowPreReview] = useState(true);
   /** "How accurate was the AI's reading?" - optional, one per submission. */
   const [aiRating, setAiRating] = useState<number | null>(null);
@@ -349,6 +363,9 @@ export function UploadFlow({
     setAgreed(false);
     setAnalysed([]);
     setDrafts({});
+    setReadingInput(null);
+    setDraftFiles(null);
+    originalDrafts.current = '';
     setShowPreReview(true);
     setAiRating(null);
     setCreated([]);
@@ -515,6 +532,9 @@ export function UploadFlow({
 
   async function runAnalysis(withoutWaiting = false) {
     if (!canAnalyse) return;
+    if (reusable && !withoutWaiting) { setPhase('reviewing'); setScreen(3); return; }
+    if (Object.keys(drafts).length && JSON.stringify(drafts) !== originalDrafts.current &&
+        !window.confirm(t('flow.replaceDrafts'))) return;
     setError(null);
     setPhase('analysing');
     setSlow(false);
@@ -612,8 +632,7 @@ export function UploadFlow({
       });
       const isScan = (entry: Analysed) => files.find((f) => f.id === entry.id)?.doc;
 
-      setDrafts(
-        Object.fromEntries(
+      const seeded = Object.fromEntries(
           results.map((entry) => {
             const record = recordOf.get(entry.id);
             const members = record?.members ?? [entry];
@@ -647,8 +666,12 @@ export function UploadFlow({
               },
             ];
           }),
-        ),
-      );
+        );
+      setDrafts(seeded);
+      originalDrafts.current = JSON.stringify(seeded);
+      setReadingInput(inputSignature);
+      setDraftFiles(fileSignature);
+      setReadings({});
       setShowPreReview(true);
       setPhase('reviewing');
       setScreen(3);
@@ -979,6 +1002,15 @@ export function UploadFlow({
 
   return (
     <div>
+      <nav aria-label={t('flow.steps')} className="mb-6 flex flex-wrap gap-2">
+        {([1, 2, 3] as const).map(step => <button key={step} type="button"
+          aria-current={step === screen ? 'step' : undefined}
+          disabled={busy || step === screen || (step === 2 && !hasSomething) || (step === 3 && !canResumeDrafts)}
+          onClick={() => setScreen(step)}
+          className={buttonClass('quiet', cn('min-h-11 h-auto whitespace-normal px-4 py-2 focus-visible:outline-2', step === screen && 'border-accent-strong bg-accent-wash text-ink disabled:opacity-100'))}>
+          {step}. {t(step === 1 ? 'flow.navFiles' : step === 2 ? 'flow.navDetails' : 'flow.navReview')}
+        </button>)}
+      </nav>
       {/*
         One screen at a time.
 
@@ -1267,8 +1299,13 @@ export function UploadFlow({
                   replaced by `Thinking`, so this button is never on screen in
                   that state. TypeScript said so before I noticed. */}
               <Sparkles size={17} />
-              {t('flow.analyse')}
+              {t(reusable ? 'flow.resume' : 'flow.analyse')}
             </button>
+            {canResumeDrafts && !reusable && <button type="button" disabled={busy}
+              onClick={() => { setPhase('reviewing'); setScreen(3); }}
+              className={buttonClass('quiet', 'min-h-11')}>
+              {t('flow.resume')}
+            </button>}
             <div className="w-full sm:w-auto sm:max-w-sm">
               <button type="button" onClick={() => runAnalysis(true)} disabled={!canAnalyse}
                 className={buttonClass('quiet', 'min-h-11 h-auto py-2 w-full')}>

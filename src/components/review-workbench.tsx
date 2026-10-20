@@ -15,6 +15,7 @@ import { TranslationDeck } from '@/components/translation-deck';
 import { ACCESS_OPTIONS, accessOption } from '@/lib/access';
 import { COMMUNITY_COLORS } from '@/lib/communities';
 import { fieldDef, type FieldColumn, type FieldValue } from '@/lib/fields/registry';
+import { needsCategory } from '@/lib/items/review-order';
 import { allowedTransitions } from '@/lib/items/status';
 import {
   type AccessLevel,
@@ -123,6 +124,7 @@ export function ReviewWorkbench({
   const offeredFamilies = community ? families.filter((f) => f.community === community) : [];
 
   async function decide(status: ItemStatus) {
+    if (needsCategory(status, category)) { setError(t('wb.categoryRequired')); return; }
     setBusy(status);
     setError(null);
 
@@ -618,15 +620,16 @@ export function ReviewWorkbench({
         </div>
 
         <div className="mt-8 flex flex-wrap gap-3 border-t border-rule pt-6">
-          {transitions.includes('accepted') && (
+          {!category && <p className="w-full text-caution" role="status">{t('wb.categoryRequired')}</p>}
+          {(transitions.includes('accepted') || item.status === 'accepted') && (
             <Decision
               onClick={() => decide('accepted')}
               busy={busy === 'accepted'}
-              disabled={busy !== null || !title.trim()}
+              disabled={busy !== null || !title.trim() || !category}
               tone="accept"
               icon={<Check size={15} />}
             >
-              {t('wb.publish')}
+              {t(item.status === 'accepted' ? 'wb.saveCatalogue' : 'wb.publish')}
             </Decision>
           )}
           {transitions.includes('shadow_gallery') && (

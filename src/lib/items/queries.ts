@@ -1,4 +1,7 @@
 import 'server-only';
+import { cache } from 'react';
+import { facetOptions, hasPortalFilters, matchesFacets, searchWords, intersectIds, type FacetFilters, type FacetRow } from './portal-facets';
+import { reviewOrder } from './review-order';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getContributor } from '@/lib/contributors';
@@ -26,13 +29,14 @@ import type {
  * filter combined with RLS is still not a leak.
  */
 
-export interface PortalFilters {
+export interface PortalFilters extends FacetFilters {
+  offset?: number;
   query?: string;
   category?: ItemCategory;
   community?: Community;
   /** Everything one person sent. See `listItemsByContributor`. */
   contributorEmail?: string;
-  /** Caps the rows fetched. The portal wants all of them; the front page does not. */
+  /** Page size; absent means every match (for example, the sitemap). */
   limit?: number;
 }
 
@@ -134,6 +138,7 @@ export function likeTerm(query: string): string {
  */
 export async function listItemsByContributor(
   email: string,
+  filters: PortalFilters = {},
 ): Promise<(Item & { file: ItemFile | null })[]> {
   const address = email.trim().toLowerCase();
   if (!address) return [];
@@ -154,7 +159,7 @@ export async function listItemsByContributor(
   const supabase = await createServerSupabase();
   let q = supabase
     .from('items')
-    .select('*, item_files(*)')
+    .select('*, item_files(*), item_fields(field_key,value), item_families(families(id,name))')
     .eq('contributor_id', contributor.id)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
@@ -164,12 +169,14 @@ export async function listItemsByContributor(
   // here as well is the archive's rule about enforcing permission in more than
   // one place.
   if (!volunteer) {
-    q = q.eq('status', 'accepted').eq('access', 'public');
+    q = q.eq('status', 'accepted').eq('access', 'public').not('category', 'is', null);
   }
 
-  const { data, error } = await q;
-  if (error) throw error;
-  return (data ?? []).map(({ item_files, ...item }) => ({
+  const data = await readPages((from, to) => q.range(from, to));
+  const ids = await searchItemIds(filters.query ?? '');
+  const matching = ids === null ? null : new Set(ids);
+  return (data ?? []).filter(row => (!matching || matching.has(row.id)) && matchesFacets(row as unknown as FacetRow, filters))
+    .map(({ item_files, ...item }) => ({
     ...(item as Item),
     file: primaryFile(item_files as FileRow[]),
   }));
@@ -177,32 +184,31 @@ export async function listItemsByContributor(
 
 /** Published items for the public portal. */
 export async function listPublishedItems(filters: PortalFilters = {}): Promise<(Item & { file: ItemFile | null })[]> {
-  const supabase = await createServerSupabase();
-
-  let q = supabase
-    .from('items')
-    .select('*, item_files(*)')
-    .eq('status', 'accepted')
-    .eq('access', 'public')
-    // Redundant for everyone but an administrator, whose `items_admin_bin_select`
-    // policy ORs the bin back in. RLS excludes it for every other role.
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (filters.limit) q = q.limit(filters.limit);
-  if (filters.category) q = q.eq('category', filters.category);
-  if (filters.community) q = q.eq('community', filters.community);
-  if (filters.query?.trim()) {
-    q = q.ilike('search_text', `%${likeTerm(filters.query)}%`);
+  if (!hasPortalFilters(filters)) {
+    const db = await createServerSupabase();
+    const offset = filters.offset ?? 0;
+    const load = (from: number, to: number) => db.from('items').select('*, item_files(*)')
+      .eq('status', 'accepted').eq('access', 'public').not('category', 'is', null).is('deleted_at', null)
+      .order('created_at', { ascending: false }).order('id').range(offset + from, offset + to);
+    const data = await readPages((from, to) => filters.limit && from >= filters.limit
+      ? Promise.resolve({ data: [], error: null })
+      : load(from, filters.limit ? Math.min(to, filters.limit - 1) : to));
+    return data.map(({ item_files, ...item }) => ({ ...(item as Item), file: primaryFile(item_files as FileRow[]) }));
   }
-
-  const { data, error } = await q;
-  if (error) throw error;
-
-  return (data ?? []).map(({ item_files, ...item }) => ({
-    ...(item as Item),
-    file: primaryFile(item_files as FileRow[]),
-  }));
+  const rows = await matchingPublicRows(JSON.stringify(filters));
+  const ids = rows.slice(filters.offset ?? 0, filters.limit ? (filters.offset ?? 0) + filters.limit : undefined).map(row => row.id);
+  const supabase = await createServerSupabase();
+  const result: (Item & { file: ItemFile | null })[] = [];
+  // Small IN batches avoid exceeding proxy URL limits on large archives/sitemaps.
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const { data, error } = await supabase.from('items').select('*, item_files(*)')
+      .in('id', ids.slice(offset, offset + 100)).eq('status', 'accepted').eq('access', 'public')
+      .not('category', 'is', null).is('deleted_at', null);
+    if (error) throw error;
+    result.push(...(data ?? []).map(({ item_files, ...item }) => ({ ...(item as Item), file: primaryFile(item_files as FileRow[]) })));
+  }
+  const byId = new Map(result.map(row => [row.id, row]));
+  return ids.flatMap(id => byId.has(id) ? [byId.get(id)!] : []);
 }
 
 /**
@@ -219,7 +225,7 @@ export async function listRecentlyPublished(limit = 8): Promise<(Item & { file: 
     .from('items')
     .select('*, item_files(*)')
     .eq('status', 'accepted')
-    .eq('access', 'public')
+    .eq('access', 'public').not('category', 'is', null)
     .is('deleted_at', null)
     .order('reviewed_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
@@ -249,6 +255,7 @@ export async function getPublishedItem(
 
   if (error) throw error;
   if (!data) return null;
+  if (data.category === null && !(await getCurrentVolunteer())) return null;
 
   const { item_files, item_fields, ...item } = data;
   const files = orderedFiles(item_files as FileRow[]);
@@ -264,59 +271,27 @@ export async function getPublishedItem(
 export async function getCommunityCounts(): Promise<Record<Community, number>> {
   const supabase = await createServerSupabase();
 
-  // Counted in the database. This used to fetch every published row and count
-  // them in JavaScript — invisible at eight records, a full table transfer on
-  // every page load at eight hundred. RLS still governs what the function can
-  // see, because it is `security invoker`.
-  const { data, error } = await supabase.rpc('community_counts');
-  if (error) throw error;
-
   const counts = emptyCommunityCounts();
-  for (const row of (data ?? []) as { community: Community; n: number }[]) {
-    if (row.community) counts[row.community] = Number(row.n);
-  }
+  await Promise.all(Object.keys(counts).map(async (community) => {
+    const { count, error } = await supabase.from('items').select('id', { count: 'exact', head: true })
+      .eq('status', 'accepted').eq('access', 'public').not('category', 'is', null)
+      .is('deleted_at', null).eq('community', community);
+    if (error) throw error;
+    counts[community as Community] = count ?? 0;
+  }));
   return counts;
 }
 
-/**
- * How many records are published, counting every one of them — and, given
- * filters, how many match.
- *
- * **This is the number a page should show, never the length of a list.**
- * PostgREST caps a response at a thousand rows and returns `error: null` when
- * it does: measured on this project, a 2500-row table came back as exactly a
- * thousand while `count: 'exact'` reported 2500. A page that prints
- * `items.length` will one day say "1000 records published" about an archive
- * holding four thousand, and nothing anywhere will look wrong.
- *
- * The front page used to derive this by summing the community counts, which
- * silently excludes a published record whose community is null — and a null
- * community is *deliberate*: the archive's rule is that no stream is better
- * than a guessed one (decision 11). Measured with one such record present, the
- * page rendered ten and said nine.
- *
- * Counted in the database rather than from `listPublishedItems`, because that
- * call is capped for the wall and its length is not the archive's size.
- */
+/** The exact same uncapped matching set as the list, before pagination. */
 export async function countPublishedItems(filters: PortalFilters = {}): Promise<number> {
-  const supabase = await createServerSupabase();
-  let q = supabase
-    .from('items')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'accepted')
-    .eq('access', 'public')
-    .is('deleted_at', null);
-
-  // The same predicates as `listPublishedItems`, so the two can be compared.
-  if (filters.category) q = q.eq('category', filters.category);
-  if (filters.community) q = q.eq('community', filters.community);
-  if (filters.query?.trim()) {
-    q = q.ilike('search_text', `%${likeTerm(filters.query)}%`);
+  if (!hasPortalFilters(filters)) {
+    const db = await createServerSupabase();
+    const { count, error } = await db.from('items').select('id', { count: 'exact', head: true })
+      .eq('status', 'accepted').eq('access', 'public').not('category', 'is', null).is('deleted_at', null);
+    if (error) throw error;
+    return count ?? 0;
   }
-
-  const { count, error } = await q;
-  if (error) throw error;
-  return count ?? 0;
+  return (await matchingPublicRows(JSON.stringify(filters))).length;
 }
 
 /** The review queue. RLS returns nothing at all without a volunteer session. */
@@ -326,25 +301,24 @@ export async function listReviewQueue(): Promise<(Item & { file: ItemFile | null
   // Named columns, not `*`. The queue renders cards that use four fields, and
   // `ai_analyses(*)` was dragging `raw` — the entire model response — plus the
   // OCR of every manuscript in the queue into a list page.
-  const { data, error } = await supabase
+  const data = await readPages((from, to) => supabase
     .from('items')
     .select(
       '*, item_files(*), ai_analyses(id, file_id, provider, model, status, summary, off_topic, off_topic_reason, created_at)',
     )
     .in('status', REVIEW_QUEUE_STATUSES)
     .is('deleted_at', null)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: true }).order('id').range(from, to));
 
-  if (error) throw error;
 
-  return (data ?? []).map(({ item_files, ai_analyses, ...item }) => {
+  return reviewOrder((data ?? []).map(({ item_files, ai_analyses, ...item }) => {
     const file = primaryFile(item_files as FileRow[]);
     return {
       ...(item as Item),
       file,
       analysis: analysisFor((ai_analyses as AiAnalysis[]) ?? [], file),
     };
-  });
+  }));
 }
 
 /** Full detail for the review workbench. */
@@ -455,4 +429,110 @@ export async function listProblems(code?: string): Promise<ProblemEntry[]> {
   const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as ProblemEntry[];
+}
+
+/** Repair shelf for existing experts; no row is modified. */
+export async function listUncataloguedPublished() {
+  const supabase = await createServerSupabase();
+  const data = await readPages((from, to) => supabase.from('items').select('*, item_files(*)')
+    .eq('status', 'accepted').is('category', null).is('deleted_at', null)
+    .order('created_at', { ascending: true }).order('id').range(from, to));
+  return (data ?? []).map(({ item_files, ...item }) => ({
+    ...(item as Item), file: primaryFile(item_files as FileRow[]), analysis: null,
+  }));
+}
+
+/** Read all pages: PostgREST's implicit row cap must never hide matches. */
+export async function readPages<T>(load: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += 500) {
+    const { data, error } = await load(from, from + 499);
+    if (error) throw error;
+    rows.push(...(data ?? []));
+    if (!data || data.length < 500) return rows;
+  }
+}
+
+/** Request-local cache only; never share one visitor's RLS results with another. */
+const publicFacetRows = cache(async (): Promise<FacetRow[]> => {
+  const db = await createServerSupabase();
+  return await readPages((from, to) => db.from('items')
+    .select('id, created_at, reviewed_at, category, community, keywords, period, origin_place, language, item_fields(field_key,value), item_files(mime_type), item_families(families(id,name))')
+    .eq('status', 'accepted').eq('access', 'public').not('category', 'is', null).is('deleted_at', null)
+    .order('created_at', { ascending: false }).order('id').range(from, to)) as unknown as FacetRow[];
+});
+
+/** Six source scans per word plus vocabulary resolution, never a query per item.
+ * OCR/transcript remain private BY DESIGN under existing RLS, including translations.
+ * Adding public search over them requires a separately approved permission change.
+ */
+const searchItemIds = cache(async (query: string): Promise<string[] | null> => {
+  const words = searchWords(query);
+  if (!words.length) return null;
+  const db = await createServerSupabase();
+  const vocabulary = await readPages((from, to) => db.from('keywords').select('id,term,preferred_id').order('id').range(from, to));
+  const byId = new Map(vocabulary.map(k => [k.id, k]));
+  const groups: string[][] = [];
+  for (const word of words) {
+    const term = '%' + likeTerm(word) + '%';
+    // Quoting is for PostgREST's OR grammar; likeTerm separately escapes SQL wildcards.
+    const quoted = JSON.stringify(term);
+    const [items, fields, translated, families, keywords, labels] = await Promise.all([
+      readPages((f,t) => db.from('items').select('id').or(['title','description','provenance','source','period','origin_place','search_text'].map(key => key + '.ilike.' + quoted).join(',')).order('id').range(f,t)),
+      readPages((f,t) => db.from('item_fields').select('item_id,id').ilike('value',term).order('id').range(f,t)),
+      readPages((f,t) => db.from('item_translations').select('item_id,lang,field').neq('field','transcript').ilike('value',term).order('item_id').order('lang').order('field').range(f,t)),
+      readPages((f,t) => db.from('item_families').select('item_id,family_id,families!inner(name)').ilike('families.name',term).order('item_id').order('family_id').range(f,t)),
+      readPages((f,t) => db.from('keywords').select('id').ilike('term',term).order('id').range(f,t)),
+      readPages((f,t) => db.from('keyword_translations').select('keyword_id,lang').ilike('label',term).order('keyword_id').order('lang').range(f,t)),
+    ]);
+    const termIds = [...keywords.map(k => k.id), ...labels.map(k => k.keyword_id)];
+    const names = new Set<string>();
+    for (const id of termIds) {
+      const entry = byId.get(id);
+      if (!entry) continue;
+      const preferred = entry.preferred_id ?? entry.id;
+      for (const candidate of vocabulary) if (candidate.id === preferred || candidate.preferred_id === preferred) names.add(candidate.term);
+    }
+    // Keywords live as text[] on items. Match variants to the preferred stored spelling.
+    const keywordItems: string[] = [];
+    const allNames = [...names];
+    for (let i = 0; i < allNames.length; i += 50) {
+      keywordItems.push(...(await readPages((f,t) => db.from('items').select('id').overlaps('keywords',allNames.slice(i,i+50)).order('id').range(f,t))).map(row => row.id));
+    }
+    groups.push([...items.map(r => r.id), ...fields.map(r => r.item_id), ...translated.map(r => r.item_id), ...families.map(r => r.item_id), ...keywordItems]);
+  }
+  return intersectIds(groups);
+});
+
+const matchingPublicRows = cache(async (serialized: string) => {
+  const filters: PortalFilters = JSON.parse(serialized);
+  const [rows, ids] = await Promise.all([publicFacetRows(), searchItemIds(filters.query ?? '')]);
+  const matching = ids === null ? null : new Set(ids);
+  return rows.filter(row => (!matching || matching.has(row.id)) && matchesFacets(row, filters));
+});
+
+export async function getPortalFacetOptions(filters: PortalFilters = {}, scopeIds?: string[]) {
+  const [rows, ids] = await Promise.all([publicFacetRows(), searchItemIds(filters.query ?? '')]);
+  const matching = ids === null ? null : new Set(ids);
+  const scope = scopeIds ? new Set(scopeIds) : null;
+  return facetOptions(rows.filter(row => (!matching || matching.has(row.id)) && (!scope || scope.has(row.id))), filters);
+}
+
+/** One batched projection for every discrete link on the record, excluding itself. */
+export async function getRelatedValueCounts(itemId: string) {
+  return facetOptions((await publicFacetRows()).filter(row => row.id !== itemId));
+}
+
+export async function getKeywordLabels(terms: string[], lang: string): Promise<Record<string, string>> {
+  if (!terms.length) return {};
+  const db = await createServerSupabase();
+  const { data, error } = await db.from('keywords').select('term, keyword_translations(lang,label)').in('term', terms);
+  if (error) throw error;
+  const labels: Record<string, string> = {};
+  for (const row of data ?? []) {
+    const translated = row.keyword_translations.find((entry: { lang: string; label: string }) => entry.lang === lang);
+    // BY DESIGN: without a translation row the keyword keeps its original name.
+    if (translated) labels[row.term] = translated.label;
+  }
+  return labels;
 }

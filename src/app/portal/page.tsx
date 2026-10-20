@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { FolderPlus } from 'lucide-react';
+import { FACETS, validDay, pagination } from '@/lib/items/portal-facets';
 import { buttonClass } from '@/components/primitives';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
@@ -6,8 +8,7 @@ import { ItemCard, ItemRow } from '@/components/item-card';
 import { PortalFilters } from '@/components/portal-filters';
 import { EmptyState } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
-import { countPublishedItems, getCommunityCounts, listPublishedItems } from '@/lib/items/queries';
-import { emptyCommunityCounts } from '@/lib/communities';
+import { countPublishedItems, getPortalFacetOptions, listPublishedItems } from '@/lib/items/queries';
 import { CATEGORIES, COMMUNITIES, type Community, type ItemCategory } from '@/lib/types';
 import { getMessages } from '@/lib/i18n';
 import { presentMany } from '@/lib/translate/render';
@@ -40,62 +41,26 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
     ? (communityParam as Community)
     : undefined;
 
-  /*
-   * The list, and — separately — how many there actually are.
-   *
-   * Deliberately not `items.length`. The portal asks for every matching record
-   * with no limit of its own, but PostgREST caps a response at a thousand rows
-   * and says nothing when it does: measured on this project, a 2500-row table
-   * came back as exactly a thousand with `error: null`. Printing the length of
-   * the list would one day tell a visitor the archive holds a thousand records
-   * when it holds four thousand, and nothing would look wrong.
-   *
-   * So the number on the page is counted in the database, and if the list is
-   * shorter than the count the page says so rather than quietly showing less.
-   */
-  const [base, counts, archiveTotal, { t }] = await Promise.all([
-    /*
-     * The contributor address is a filter like any other on this page, and the
-     * only one that cannot be a `where` clause on `items`: it resolves through
-     * `contributors`, which is volunteer-only, and it is the one filter whose
-     * scope changes with who is asking. `listItemsByContributor` draws that
-     * line — a visitor gets the person's published records, a volunteer gets
-     * what is still in review as well.
-     */
-    contributor
-      ? listItemsByContributor(contributor)
-      : listPublishedItems({ query, category, community }),
-    getCommunityCounts().catch(emptyCommunityCounts),
-    countPublishedItems(),
-    getMessages(),
+  const filters = {
+    ...Object.fromEntries(FACETS.filter(key => key !== 'category' && key !== 'community').map(key => [key, one(params[key])])),
+    query, category, community, from: validDay(one(params.from)), to: validDay(one(params.to)),
+  };
+  const perPage = 48;
+  const [contributions, archiveTotal, { t }] = await Promise.all([
+    contributor ? listItemsByContributor(contributor, filters) : Promise.resolve(null),
+    countPublishedItems(filters), getMessages(),
   ]);
-
-  /*
-   * The remaining filters, applied here when a contributor is in play.
-   *
-   * One person's contributions are a handful of rows, so narrowing them in
-   * memory costs nothing and keeps the security decision in one place: the
-   * database query that decides *whose* records these are is the one that
-   * knows about volunteers, and stacking three more predicates onto it would
-   * spread that decision across four call sites.
-   */
-  const found = contributor
-    ? base.filter(
-        (item) =>
-          (!category || item.category === category) &&
-          (!community || item.community === community) &&
-          (!query ||
-            `${item.title} ${item.description ?? ''} ${item.origin_place ?? ''}`
-              .toLowerCase()
-              .includes(query.toLowerCase())),
-      )
-    : base;
-
-  // The cards carry the reader's language too. One query for the whole page —
-  // see `presentMany`, and why it does not ask for what is missing.
+  const options = await getPortalFacetOptions(filters, contributions?.map(item => item.id));
+  const total = contributions?.length ?? archiveTotal;
+  const { page, pages, offset } = pagination(total, one(params.page), perPage);
+  const found = contributions ? contributions.slice(offset, offset + perPage) : await listPublishedItems({ ...filters, offset, limit: perPage });
   const { items } = await presentMany(found);
-
-  const truncated = !contributor && items.length < archiveTotal && !query && !category && !community;
+  function pageHref(n: number) {
+    const next = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) { const v = one(value); if (v) next.set(key, v); }
+    next.set('page', String(n));
+    return '/portal?' + next.toString();
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-6 pt-5 pb-14 sm:pt-7 sm:pb-16">
@@ -114,7 +79,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
         panels is a single bar, so the grid begins near the top of the screen
         and the page opens on pictures.
       */}
-      <Link href="/upload" className={buttonClass('primary', 'mb-4')}>{t('nav.contribute')}</Link>
+      <Link href="/upload" className={buttonClass('primary', 'mb-4')}><FolderPlus size={19} aria-hidden />{t('nav.contribute')}</Link>
       <header className="mb-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <h1 className="font-display text-[1.75rem] leading-none sm:text-[2.25rem]">
           {t('portal.headline1')} <span className="text-accent-strong">{t('portal.headline2')}</span>
@@ -125,18 +90,11 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
       <Suspense fallback={<div className="h-28" />}>
         <PortalFilters
           view={view}
-          counts={{ communities: counts, categories: {} }}
+          options={options}
           shown={items.length}
-          total={archiveTotal}
+          total={total}
         />
       </Suspense>
-
-      {/* A ceiling the platform imposes, not the archive. */}
-      {truncated && (
-        <p className="machine mt-4 text-sm text-caution">
-          {t('portal.truncated', { count: items.length })}
-        </p>
-      )}
 
       {items.length === 0 ? (
         <div className="mt-8">
@@ -176,6 +134,11 @@ export default async function PortalPage({ searchParams }: { searchParams: Searc
           ))}
         </div>
       )}
+      {pages > 1 && <nav aria-label={t('filters.page', { page, pages })} className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        {page > 1 && <Link href={pageHref(page - 1)} className={buttonClass('quiet', 'min-h-11')}>{t('filters.previous')}</Link>}
+        <span>{t('filters.page', { page, pages })}</span>
+        {page < pages && <Link href={pageHref(page + 1)} className={buttonClass('quiet', 'min-h-11')}>{t('filters.next')}</Link>}
+      </nav>}
     </div>
   );
 }

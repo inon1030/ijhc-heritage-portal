@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { ArrowRight, Upload } from 'lucide-react';
+import { ArrowRight, FolderPlus } from 'lucide-react';
 import { buttonClass } from '@/components/primitives';
 import { Logo } from '@/components/logo';
 import { TimePassage } from '@/components/time-passage';
@@ -182,7 +182,7 @@ export default async function Home() {
             href="/upload"
             className={buttonClass('primary', 'h-14 px-8 text-lg')}
           >
-            <Upload size={19} aria-hidden />
+            <FolderPlus size={19} aria-hidden />
             {t('nav.contribute')}
           </Link>
         </div>

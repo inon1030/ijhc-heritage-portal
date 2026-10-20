@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import type { PickedFile } from '@/components/file-picker';
@@ -42,4 +43,73 @@ it('sends without a foreground analysis, retains the community claim and request
   const payload = JSON.parse(fetchMock.mock.calls.find(([url]) => url === '/api/items')![1].body);
   expect(payload).toMatchObject({ communityHint: 'cochin', contributorFields: [{ key: 'community', value: 'cochin', source: 'contributor' }] });
   expect(payload.files[0]).toMatchObject({ analysis: null, analysisPending: true });
+});
+async function reachReading() {
+  fetchMock.mockImplementation(async (url: string) => {
+    if (url === '/api/uploads/sign') return { json: async () => ({ ok: true, data: { path: 'uploads/one.png', token: 'x', grant: 'proof', expiresAt: 9999999999 } }) };
+    if (url === '/api/analyze') return { json: async () => ({ ok: true, data: { metadata: { mimeType: 'image/png', byteSize: 5 }, analysis: { summary: 'Machine description', keywords: [], fields: [], backgroundSources: [], ocrText: null, transcript: null } } }) };
+    throw new Error(`Unexpected request: ${url}`);
+  });
+  const rendered = render(<UploadFlow vocabulary={[]} mark={null} languages={[]} siteLanguage="en" />);
+  fireEvent.click(screen.getByText('Pick fixture'));
+  fireEvent.click(screen.getByRole('button', { name: /Next/ }));
+  fireEvent.change(rendered.container.querySelector('input[type="email"]')!, { target: { value: 'person@example.org' } });
+  fireEvent.click(screen.getByText('Agree fixture'));
+  fireEvent.click(screen.getByRole('button', { name: 'Read it with AI' }));
+  await screen.findByLabelText('Your description');
+  if(process.env.PHASE1_FIXTURES==='1') fs.writeFileSync('.guide-tmp/phase1-2010/upload.html',`<!doctype html><html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="fixture.css"><body><main class="mx-auto max-w-6xl px-6 py-6">${rendered.container.innerHTML}</main></body></html>`);
+  return rendered;
+}
+
+it('returns through steps one and two without rereading or losing corrections', async () => {
+  await reachReading();
+  fireEvent.change(screen.getByLabelText('Your description'), { target: { value: 'My correction' } });
+  fireEvent.click(screen.getByRole('button', { name: '1. Files' }));
+  fireEvent.click(screen.getByRole('button', { name: /Next/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Return to your corrections' }));
+  expect(screen.getByLabelText('Your description')).toHaveValue('My correction');
+  expect(fetchMock.mock.calls.filter(([url]) => url === '/api/analyze')).toHaveLength(1);
+});
+
+it('asks once before replacing edited drafts, and cancellation preserves them', async () => {
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  await reachReading();
+  fireEvent.change(screen.getByLabelText('Your description'), { target: { value: 'My correction' } });
+  fireEvent.click(screen.getByRole('button', { name: '2. Details' }));
+  fireEvent.change(screen.getByRole('textbox', { name: /What do you know/ }), { target: { value: 'New facts' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Read it with AI' }));
+  expect(confirm).toHaveBeenCalledTimes(1);
+  expect(fetchMock.mock.calls.filter(([url]) => url === '/api/analyze')).toHaveLength(1);
+  fireEvent.click(screen.getByRole('button', { name: '3. Review' }));
+  expect(screen.getByLabelText('Your description')).toHaveValue('My correction');
+  fireEvent.click(screen.getByRole('button', { name: '2. Details' }));
+  confirm.mockReturnValue(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Read it with AI' }));
+  await waitFor(() => expect(screen.getByLabelText('Your description')).toHaveValue('Machine description'));
+  expect(confirm).toHaveBeenCalledTimes(2);
+  expect(fetchMock.mock.calls.filter(([url]) => url === '/api/analyze')).toHaveLength(2);
+  confirm.mockRestore();
+});
+
+it('guards reload only while unsent material exists and removes the listener on unmount', () => {
+  const { unmount } = render(<UploadFlow vocabulary={[]} mark={null} languages={[]} siteLanguage="en" />);
+  const clean = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(clean);
+  expect(clean.defaultPrevented).toBe(false);
+  fireEvent.click(screen.getByText('Pick fixture'));
+  const dirty = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(dirty);
+  expect(dirty.defaultPrevented).toBe(true);
+  unmount();
+  const after = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(after);
+  expect(after.defaultPrevented).toBe(false);
+});
+import { MessagesProvider } from '@/lib/i18n/provider';
+import he from '@/lib/i18n/locales/he.json';
+it('labels all three upload steps in Hebrew and keeps uncompleted steps disabled', () => {
+  const { container } = render(<MessagesProvider catalogue={he}><div dir="rtl"><UploadFlow vocabulary={[]} mark={null} languages={[]} siteLanguage="he" /></div></MessagesProvider>);
+  expect(screen.getByRole('button', {name:`3. ${he['flow.navReview']}`})).toBeDisabled();
+  expect(screen.getByRole('navigation', {name:he['flow.steps']})).toBeInTheDocument();
+  if(process.env.PHASE1_FIXTURES==='1') fs.writeFileSync('.guide-tmp/phase1-2010/upload-rtl.html',`<!doctype html><html dir="rtl" lang="he"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="fixture.css"><body><main class="mx-auto max-w-6xl px-6 py-6">${container.innerHTML}</main></body></html>`);
 });

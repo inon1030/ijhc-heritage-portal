@@ -4,16 +4,18 @@ import { FilePreview } from '@/components/file-preview';
 import { EmptyState, StatusPill } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
 import { AwaitingApproval } from '@/components/awaiting-approval';
-import { listReviewQueue } from '@/lib/items/queries';
+import { readingState, waitingDays } from '@/lib/items/review-order';
+import { listReviewQueue, listUncataloguedPublished } from '@/lib/items/queries';
 import { getCurrentProfile, getCurrentVolunteer } from '@/lib/supabase/server';
 import { type AiAnalysis, type Item, type ItemFile } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { getMessages } from '@/lib/i18n';
 import { categoryKey } from '@/lib/i18n/labels';
 
-export const metadata: Metadata = {
-  title: 'Review queue',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getMessages();
+  return { title: t('queue.title') };
+}
 
 // The queue changes as reviewers work through it, so never serve it from cache.
 export const dynamic = 'force-dynamic';
@@ -33,22 +35,10 @@ export default async function ReviewPage() {
     if (profile) return <AwaitingApproval email={profile.email} />;
   }
 
-  const items = await listReviewQueue();
+  const [items, uncatalogued] = await Promise.all([listReviewQueue(), volunteer ? listUncataloguedPublished() : []]);
 
-  /*
-   * Two groups, not one list.
-   *
-   * Most of what arrives is the archive's material. Some is a holiday
-   * photograph or a screenshot, and a volunteer working down a single list
-   * reads each of those as carefully as a ketubah before discovering it is not
-   * one. Separating them costs the model one boolean and saves the reading.
-   *
-   * It is a suggestion and nothing more: both groups are the same queue, both
-   * open the same workbench, and nothing is rejected without a person. The
-   * grouping is the only thing the flag does.
-   */
-  const archive = items.filter((item) => !item.analysis?.off_topic);
-  const unrelated = items.filter((item) => item.analysis?.off_topic);
+  const archive = items.filter((item) => readingState(item) === 'ready');
+  const unread = items.filter((item) => readingState(item) !== 'ready');
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-8 pb-14 sm:pt-12 sm:pb-16">
@@ -61,15 +51,14 @@ export default async function ReviewPage() {
           className="animate-rise mt-4 leading-relaxed text-muted sm:text-lg"
           style={{ '--reveal-delay': '90ms' } as React.CSSProperties}
         >
-          Machine suggestions are a starting point, not a record. Check each item against the
-          original before it is published.
+          {t('queue.intro')}
         </p>
       </header>
 
       {items.length === 0 ? (
         <EmptyState
           title={t('queue.clear')}
-          body="Every submission has been reviewed. New contributions appear here as soon as they arrive."
+          body={t('queue.emptyBody')}
           action={{ href: '/portal', label: t('queue.openPortal') }}
         />
       ) : (
@@ -77,30 +66,22 @@ export default async function ReviewPage() {
           {archive.length > 0 && (
             <section className="mb-12">
               <p className="eyebrow mb-4">
-                {archive.length} awaiting {archive.length === 1 ? 'a decision' : 'decisions'}
+                {t('queue.ready')} · {archive.length}
               </p>
               <QueueGrid items={archive} />
             </section>
           )}
 
-          {unrelated.length > 0 && (
-            <section>
-              <div className="mb-4 border-t border-rule pt-6">
-                <p className="eyebrow">
-                  {unrelated.length} that may not belong here
-                </p>
-                <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
-                  The archive read these as something other than Indian Jewish heritage. That is a
-                  suggestion and it is often wrong about a faded or cropped item, so they are set
-                  aside rather than refused — open one and reject it, or catalogue it like any
-                  other.
-                </p>
-              </div>
-              <QueueGrid items={unrelated} />
-            </section>
-          )}
+          {unread.length > 0 && <section className="mb-12">
+            <h2 className="eyebrow mb-4">{t('queue.unread')} · {unread.length}</h2>
+            <QueueGrid items={unread} />
+          </section>}
         </>
       )}
+      {uncatalogued.length > 0 && <section className="mt-10 border-t border-rule pt-6">
+        <h2 className="mb-4 font-display text-2xl">{t('queue.uncatalogued')}</h2>
+        <QueueGrid items={uncatalogued} />
+      </section>}
     </div>
   );
 }
@@ -130,6 +111,9 @@ async function QueueGrid({ items }: { items: QueueItem[] }) {
               <h2 className="font-display text-xl leading-snug transition-colors group-hover:text-accent">
                 {item.title}
               </h2>
+              {readingState(item) !== 'ready' && <p className="text-caution">
+                {t(readingState(item) === 'failed' ? 'queue.failed' : readingState(item) === 'pending' ? 'queue.pending' : 'queue.missing')}
+              </p>}
               {item.analysis?.summary && (
                 <p className="machine line-clamp-2 text-muted">{item.analysis.summary}</p>
               )}
@@ -139,8 +123,8 @@ async function QueueGrid({ items }: { items: QueueItem[] }) {
                 <p className="machine text-caution">{item.analysis.off_topic_reason}</p>
               )}
               <p className="machine text-muted">
-                {formatDate(item.created_at)}
-                {item.analysis?.provider === 'mock' && ' · simulated analysis'}
+                {formatDate(item.created_at)} · {t('queue.waitingDays', { count: waitingDays(item.created_at) })}
+                {item.analysis?.provider === 'mock' && ` · ${t('queue.simulated')}`}
               </p>
             </div>
           </Link>

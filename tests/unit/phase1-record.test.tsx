@@ -1,0 +1,38 @@
+import { expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import fs from 'node:fs';
+import { renderToStaticMarkup } from 'react-dom/server';
+import type { ReactNode } from 'react';
+import { en, format, type MessageKey } from '@/lib/i18n/messages';
+import he from '@/lib/i18n/locales/he.json';
+import { facetOptions } from '@/lib/items/portal-facets';
+import RecordPage from '@/app/portal/[id]/page';
+const related=facetOptions([]);
+related.period=[{value:'Early twentieth century',label:'Early twentieth century',count:1}];
+related.keyword=[{value:'Wedding',label:'Wedding',count:1}];
+const item={id:'a',title:'Original title',description:'Original description',category:'documents',community:null,source:'Original source',period:'Early twentieth century',origin_place:'Bombay',language:'Hebrew',created_at:'2026-01-01',file:null,files:[],keywords:['Wedding','Untranslated'],fields:[{id:'one',field_key:'material',value:'Original silver'},{id:'two',field_key:'domain.life.marriage',value:'Marriage'}]};
+vi.mock('@/lib/items/queries',()=>({getPublishedItem:async()=>item,getRelatedValueCounts:async()=>related,getKeywordLabels:async()=>({Wedding:'חתונה'})}));
+vi.mock('@/lib/vocabulary/queries',()=>({listItemFamilies:async()=>[{id:'f',name:'Original family'}]}));
+vi.mock('@/lib/translate/render',()=>({present:async()=>({item:{...item,title:'כותרת מתורגמת',description:'תיאור מתורגם',period:'ראשית המאה העשרים',origin_place:'מומבאי'},language:{code:'he',label_native:'עברית'},translated:false,wanted:false})}));
+vi.mock('@/lib/i18n',()=>({getMessages:async()=>({t:(key:MessageKey,vars?:Record<string,string|number>)=>format((he as Record<string,string>)[key]??en[key],vars)})}));
+vi.mock('@/components/reveal',()=>({Reveal:({children,className}:{children:ReactNode;className?:string})=><div className={className}>{children}</div>}));
+vi.mock('@/components/community-mark',()=>({CommunityMark:()=>null}));
+vi.mock('@/components/file-preview',()=>({FilePreview:()=>null}));
+it('renders translated period, origin and field headings, preserving original values by design',async()=>{
+  const page=await RecordPage({params:Promise.resolve({id:'a'}),searchParams:Promise.resolve({})});
+  render(page);
+  expect(screen.getByText('ראשית המאה העשרים')).toBeInTheDocument();
+  expect(screen.getByText('מומבאי')).toBeInTheDocument();
+  expect(screen.getByText(he['field.material.label'])).toBeInTheDocument();
+  expect(screen.getByText(he['group.item_detail.label'])).toBeInTheDocument();
+  for(const value of ['Original silver','Original source','Original family','Untranslated']) expect(screen.getByText(value)).toBeInTheDocument();
+  expect(screen.getByText('חתונה').closest('a')).toHaveAttribute('href','/portal?keyword=Wedding');
+  expect(screen.getByText('ראשית המאה העשרים').closest('a')?.getAttribute('href')).toContain('period=Early+twentieth+century');
+  expect(screen.getByText('Original silver').closest('a')).toBeNull();
+  if(process.env.PHASE1_FIXTURES==='1') fs.writeFileSync('.guide-tmp/phase1-2010/record.html',`<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="fixture.css"><body>${renderToStaticMarkup(page)}</body></html>`);
+});
+it('does not relabel keywords when the original reading is requested',async()=>{
+  render(await RecordPage({params:Promise.resolve({id:'a'}),searchParams:Promise.resolve({original:'1'})}));
+  expect(screen.getByText('Wedding')).toBeInTheDocument();
+  expect(screen.queryByText('חתונה')).toBeNull();
+});

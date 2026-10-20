@@ -135,3 +135,11 @@ describe('the record of what each translation was made from', () => {
     expect(orphaned).toEqual([]);
   });
 });
+
+it('falls back to the new English copy in hi/mr/ml without machine translations', () => {
+  for (const locale of ['hi','mr','ml']) {
+    expect(resolve(locale)['nav.contribute']).toBe(en['nav.contribute']);
+    expect(resolve(locale)['filters.advanced']).toBe(en['filters.advanced']);
+    expect(resolve(locale)['filters.text']).toBe(en['filters.text']);
+  }
+});

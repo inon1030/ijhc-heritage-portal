@@ -7,12 +7,15 @@ import { TranslationRequest } from '@/components/translation-request';
 import { CommunityMark } from '@/components/community-mark';
 import { Field } from '@/components/primitives';
 import { Reveal } from '@/components/reveal';
-import { FIELD_GROUPS, GROUP_ORDER, fieldDef } from '@/lib/fields/registry';
-import { getPublishedItem } from '@/lib/items/queries';
+import { GROUP_ORDER, fieldDef } from '@/lib/fields/registry';
+import { fieldLabel, groupLabelKey } from '@/lib/fields/labels';
+import { RelatedValue } from '@/components/related-value';
+import { discreteField, fieldValue, type Facet } from '@/lib/items/portal-facets';
+import { getPublishedItem, getRelatedValueCounts, getKeywordLabels } from '@/lib/items/queries';
 import { present } from '@/lib/translate/render';
 import { listItemFamilies } from '@/lib/vocabulary/queries';
 import { getMessages } from '@/lib/i18n';
-import { categoryKey } from '@/lib/i18n/labels';
+import { categoryKey, communityKey } from '@/lib/i18n/labels';
 import { formatBytes, formatDate, formatDuration } from '@/lib/utils';
 
 type Params = Promise<{ id: string }>;
@@ -48,7 +51,7 @@ export default async function RecordPage({
   if (!item) notFound();
 
   const file = item.file;
-  const families = await listItemFamilies(id);
+  const [families, related] = await Promise.all([listItemFamilies(id), getRelatedValueCounts(id)]);
 
   /*
    * The record in the reader's language, if they asked for one.
@@ -63,6 +66,13 @@ export default async function RecordPage({
   const reading = await present(item, { original: original === '1' });
   const { t } = await getMessages();
   const shown = reading.item;
+  const keywordLabels = original === '1' ? {} : await getKeywordLabels(item.keywords, reading.language.code);
+  function linked(key: Facet, value: string | null, children: React.ReactNode, accessibleValue = value ?? '') {
+    return <RelatedValue filter={key} value={value} count={related[key].find(option => option.value === value)?.count ?? 0}
+      label={t('record.related', { field: t(`filters.${key}`), value: accessibleValue })}>{children}</RelatedValue>;
+  }
+  // BY DESIGN: field values, family names, source and keyword names without
+  // a translation row retain the original language; only UI labels translate.
 
   return (
     <article className="mx-auto max-w-6xl px-6 pt-6 pb-14 sm:pt-10 sm:pb-16">
@@ -106,7 +116,7 @@ export default async function RecordPage({
         </div>
 
         <div>
-          <p className="eyebrow animate-rise">{t(categoryKey(item.category))}</p>
+          <p className="eyebrow animate-rise">{linked('category', item.category, t(categoryKey(item.category)), t(categoryKey(item.category)))}</p>
           <h1
             className="animate-rise mt-3 font-display text-3xl leading-tight sm:text-4xl"
             dir="auto"
@@ -119,7 +129,7 @@ export default async function RecordPage({
             className="animate-rise mt-4"
             style={{ '--reveal-delay': '140ms' } as React.CSSProperties}
           >
-            <CommunityMark community={item.community} />
+            {linked('community', item.community, <CommunityMark community={item.community} />, item.community ? t(communityKey(item.community)) : '')}
           </div>
 
           {/*
@@ -172,7 +182,7 @@ export default async function RecordPage({
                   key={family.id}
                   className="rounded-full bg-turquoise-wash px-3.5 py-1.5 text-sm font-medium text-turquoise ring-1 ring-turquoise/20"
                 >
-                  {family.name}
+                  {linked('family', family.id, family.name, family.name)}
                 </span>
               ))}
             </p>
@@ -191,14 +201,14 @@ export default async function RecordPage({
                   key={keyword}
                   className="rounded-full border border-rule bg-paper-2 px-3.5 py-1.5 font-mono text-sm"
                 >
-                  {keyword}
+                  {linked('keyword', keyword, keywordLabels[keyword] ?? keyword, keywordLabels[keyword] ?? keyword)}
                 </li>
               ))}
             </ul>
           )}
 
           <Reveal className="mt-9">
-          <dl className="card grid grid-cols-2 gap-x-6 gap-y-6 bg-paper-2/50 p-6">
+          <dl className="card grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 bg-paper-2/50 p-6">
             <Field label={t('record.provenance')}>
               {shown.provenance ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
             </Field>
@@ -220,10 +230,10 @@ export default async function RecordPage({
               </Field>
             )}
             <Field label={t('record.period')}>
-              {item.period ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
+              {linked('period', item.period, shown.period ?? <span className="text-muted italic">{t('record.notRecorded')}</span>, shown.period ?? '')}
             </Field>
             <Field label={t('record.placeOfOrigin')}>
-              {item.origin_place ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
+              {linked('origin', item.origin_place, shown.origin_place ?? <span className="text-muted italic">{t('record.notRecorded')}</span>, shown.origin_place ?? '')}
             </Field>
             <Field label={t('record.language')}>
               {item.language ?? <span className="text-muted italic">{t('record.notRecorded')}</span>}
@@ -273,7 +283,7 @@ export default async function RecordPage({
                   return (
                     <section key={group} className="mb-6 last:mb-0">
                       <p className="eyebrow mb-2.5 border-b border-rule pb-1.5">
-                        {FIELD_GROUPS[group].label}
+                        {t(groupLabelKey(group))}
                       </p>
 
                       {filed.length > 0 && (
@@ -283,7 +293,7 @@ export default async function RecordPage({
                               key={row.id}
                               className="rounded-full border border-rule bg-paper px-3.5 py-1.5 text-sm"
                             >
-                              {row.value}
+                              {discreteField(row.field_key) ? linked('field', fieldValue(row.field_key, row.value), row.value, row.value) : row.value}
                             </li>
                           ))}
                         </ul>
@@ -292,8 +302,8 @@ export default async function RecordPage({
                       {answered.length > 0 && (
                         <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
                           {answered.map((row) => (
-                            <Field key={row.id} label={fieldDef(row.field_key)!.label}>
-                              {row.value}
+                            <Field key={row.id} label={fieldLabel(t, fieldDef(row.field_key)!)}>
+                              {discreteField(row.field_key) ? linked('field', fieldValue(row.field_key, row.value), row.value, row.value) : row.value}
                             </Field>
                           ))}
                         </dl>
