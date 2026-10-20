@@ -9,6 +9,7 @@ import { clientKey, rateLimit } from '@/lib/rate-limit';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 
 const Body = z.object({
+  checksum: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   fileName: z.string().min(1).max(255),
   mimeType: z.string().min(1).max(120),
   byteSize: z.number().int().positive().max(MAX_FILE_BYTES),

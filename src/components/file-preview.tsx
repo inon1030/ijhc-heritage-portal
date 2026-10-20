@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText, Music, Play, Video } from 'lucide-react';
+import { usePublicMedia } from '@/components/public-media';
 import { PlayableVideo } from '@/components/playable-video';
 import { fileKind } from '@/lib/files/validate';
 import { useMessages } from '@/lib/i18n/provider';
@@ -38,6 +39,7 @@ export function FilePreview({
   eager?: boolean;
 }) {
   const t = useMessages();
+  const media = usePublicMedia();
   if (!file) {
     return <Placeholder icon={<FileText size={22} />} label={t('file.none')} className={className} />;
   }
@@ -52,6 +54,7 @@ export function FilePreview({
       // page open.
       // eslint-disable-next-line @next/next/no-img-element
       <img
+        {...media.props}
         src={still ? thumbUrl(file) : viewableUrl(file)}
         alt={alt}
         loading={eager ? 'eager' : 'lazy'}
@@ -65,7 +68,7 @@ export function FilePreview({
     return (
       <div className={cn('flex h-full w-full flex-col justify-center gap-3 bg-paper-2 p-6', className)}>
         <Music size={22} className="text-muted" aria-hidden />
-        <audio controls preload="none" src={src} className="w-full">
+        <audio {...media.props} controlsList={media.protectedView ? 'nodownload noremoteplayback' : undefined} controls preload="none" src={src} className="w-full">
           {t('file.cannotPlay')}
         </audio>
       </div>
@@ -93,6 +96,7 @@ export function FilePreview({
           {file.preview_path && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              {...media.props}
               src={thumbUrl(file)}
               alt=""
               loading="lazy"
@@ -159,6 +163,7 @@ function Placeholder({
   className?: string;
 }) {
   const t = useMessages();
+  const media = usePublicMedia();
   const content = (
     <>
       <span className="text-muted" aria-hidden>
@@ -175,10 +180,10 @@ function Placeholder({
   );
 
   return href ? (
-    <a href={href} target="_blank" rel="noreferrer" className={cn(classes, 'hover:bg-paper-3')}>
+    <a {...media.props} href={href} target="_blank" rel="noreferrer" className={cn(classes, 'hover:bg-paper-3')}>
       {content}
     </a>
   ) : (
-    <div className={classes}>{content}</div>
+    <div {...media.props} className={classes}>{content}</div>
   );
 }

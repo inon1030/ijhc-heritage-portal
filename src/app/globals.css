@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Viewing deterrent only: browsers cannot prevent screenshots or saving bytes. */
+@media print {
+  [data-public-media] { display: none !important; }
+}
+
 /* ==========================================================================
    Indian Jewish Heritage Center — design system
 

@@ -62,7 +62,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
      * they held every file id they had ever seen. Every other gate in the
      * system reads the role. This one now does too.
      */
-    if (!isPublished && !(await getCurrentVolunteer())) {
+    const expert = await getCurrentVolunteer();
+    if (!isPublished && !expert) {
       return fail(403, 'forbidden', t('err.fileNotPublic'));
     }
 
@@ -107,6 +108,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
         return new NextResponse(new Uint8Array(thumb) as unknown as BodyInit, {
           headers: {
             'Content-Type': 'image/jpeg',
+            'Content-Disposition': 'inline',
             'Content-Length': String(thumb.byteLength),
             'Cache-Control': isPublished
               ? 'public, max-age=31536000, immutable'
@@ -124,13 +126,38 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
 
     if (signError || !signed) return fail(502, 'storage_unavailable', t('err.fileNotOpened'));
 
+    if (isPublished && !expert) {
+      // Stream through our response so the inline disposition governs the
+      // actual bytes, not just a redirect. Range is essential for seeking.
+      const range = request.headers.get('range');
+      const upstream = await fetch(signed.signedUrl, {
+        headers: range ? { Range: range } : undefined,
+        cache: 'no-store', signal: request.signal,
+      });
+      if (![200, 206, 416].includes(upstream.status)) {
+        await upstream.body?.cancel();
+        return fail(502, 'storage_unavailable', t('err.fileNotOpened'));
+      }
+      const headers = new Headers({
+        'Content-Type': upstream.headers.get('content-type') ?? file.mime_type,
+        'Content-Disposition': 'inline',
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+        // Files must not execute in the application's origin.
+        'Content-Security-Policy': "sandbox; default-src 'none'",
+      });
+      for (const key of ['content-length', 'content-range', 'accept-ranges']) {
+        const value = upstream.headers.get(key);
+        if (value) headers.set(key, value);
+      }
+      return new NextResponse(upstream.body, { status: upstream.status, headers });
+    }
+
     return NextResponse.redirect(signed.signedUrl, {
       status: 307,
       headers: {
         // Published files may sit in a shared cache; anything else must not.
-        'Cache-Control': isPublished
-          ? `public, max-age=${SIGNED_URL_TTL_SECONDS - 60}`
-          : 'private, no-store',
+        'Cache-Control': 'private, no-store',
       },
     });
   } catch (error) {

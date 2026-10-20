@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, Loader2 } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
@@ -155,6 +156,7 @@ export function LoginForm() {
           )}
         </label>
 
+        {mode === 'sign-in' && <Link href="/login/forgot" className="inline-flex min-h-11 items-center underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{t('recovery.forgot')}</Link>}
         {error && (
           <p role="alert" className="rounded-lg border-s-[3px] border-critical bg-critical/8 px-3 py-2 text-sm text-critical">
             {error}

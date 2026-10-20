@@ -32,6 +32,9 @@ export interface PendingFile {
   fileId: string;
   storagePath: string;
   fileName: string;
+  analysisId?: string;
+  retryCount?: number;
+  lastRetryAt?: string;
 }
 
 export interface PendingReading {
@@ -94,7 +97,7 @@ export async function readInBackground(job: PendingReading, startedAt = Date.now
       const derived = mediaFacetFrom(mimeType);
       const fields = derived ? [...analysis.fields, derived] : analysis.fields;
 
-      await admin
+      let completion = admin
         .from('ai_analyses')
         .update({
           provider: analysis.provider,
@@ -115,9 +118,15 @@ export async function readInBackground(job: PendingReading, startedAt = Date.now
           off_topic: analysis.offTopic,
           off_topic_reason: analysis.offTopicReason,
           raw: analysis.raw,
-        })
+        }, { count: 'exact' })
         .eq('item_id', job.itemId)
         .eq('file_id', file.fileId);
+      if (file.analysisId) completion = completion.eq('id', file.analysisId).eq('retry_count', file.retryCount!).eq('last_retry_at', file.lastRetryAt!);
+      const { error: completionError, count: completed } = await completion;
+      if (completionError) throw completionError;
+      // A newer lease owns this reading now: do not append stale field
+      // suggestions or vocabulary proposals after our guarded update lost.
+      if (completed === 0) continue;
 
       await writeMachineFields(job.itemId, fields);
       firstCommunity ??= analysis.suggestedCommunity ?? null;
@@ -136,11 +145,14 @@ export async function readInBackground(job: PendingReading, startedAt = Date.now
         message: described.message,
         detail: described.detail,
       });
-      await admin
+      let failure = admin
         .from('ai_analyses')
         .update({ status: 'failed', error: `The background reading failed (${code}).` })
         .eq('item_id', job.itemId)
         .eq('file_id', file.fileId);
+      if (file.analysisId) failure = failure.eq('id', file.analysisId).eq('retry_count', file.retryCount!).eq('last_retry_at', file.lastRetryAt!);
+      const { error: failureError } = await failure;
+      if (failureError) throw failureError;
     }
   }
 }

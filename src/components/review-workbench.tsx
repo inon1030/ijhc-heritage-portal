@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ReviewServerActions } from '@/components/review-server-actions';
 import { useRouter } from 'next/navigation';
 import { useMessages } from '@/lib/i18n/provider';
 import { communityKey } from '@/lib/i18n/labels';
@@ -179,6 +180,7 @@ export function ReviewWorkbench({
 
   return (
     <div className="grid gap-8 lg:grid-cols-2">
+      <ReviewServerActions itemId={item.id} />
       {/* The original */}
       <div className="lg:sticky lg:top-6 lg:self-start">
         <div className="mb-3 flex items-center justify-between">

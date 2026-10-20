@@ -56,6 +56,8 @@ const TABLES = [
   'keyword_translations',
   'items',
   'item_files',
+  'item_contributors',
+  'item_duplicates',
   'item_fields',
   'item_families',
   'item_translations',
