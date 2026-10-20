@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { usePublicMedia } from '@/components/public-media';
 import { Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,7 @@ export function PlayableVideo({
   className?: string;
 }) {
   const video = useRef<HTMLVideoElement>(null);
+  const media = usePublicMedia();
   const [started, setStarted] = useState(false);
 
   function start() {
@@ -49,8 +51,11 @@ export function PlayableVideo({
   }
 
   return (
-    <div className={cn('relative h-full w-full overflow-hidden bg-surface-2', className)}>
+    <div {...media.props} className={cn('relative h-full w-full overflow-hidden bg-surface-2', className)}>
       <video
+        controlsList={media.protectedView ? 'nodownload noremoteplayback' : undefined}
+        disablePictureInPicture={media.protectedView}
+        disableRemotePlayback={media.protectedView}
         ref={video}
         src={src}
         poster={poster ?? undefined}

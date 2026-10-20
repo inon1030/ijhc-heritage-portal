@@ -1,4 +1,6 @@
 import type { Mail } from './index';
+import { en } from '@/lib/i18n/messages';
+import he from '@/lib/i18n/locales/he.json';
 
 /**
  * The two messages the archive sends a contributor.
@@ -83,7 +85,7 @@ export function publishedMail(to: string, title: string, publicUrl: string): Mai
  */
 
 /** A new submission is waiting. Sent to moderators marked to hear about uploads. */
-export function newSubmissionMail(to: string, title: string, reviewUrl: string): Mail {
+export function newSubmissionMail(to: string, title: string, reviewUrl: string, duplicate = false): Mail {
   const t = escape(title);
   return {
     to,
@@ -91,6 +93,7 @@ export function newSubmissionMail(to: string, title: string, reviewUrl: string):
     text: [
       `פריט חדש הגיע לארכיון וממתין לבדיקה: "${title}".`,
       `לבדיקה: ${reviewUrl}`,
+      ...(duplicate ? [he['duplicates.mail'], en['duplicates.mail']] : []),
       '',
       `A new item has arrived and is waiting for review: "${title}".`,
       `Review it: ${reviewUrl}`,
@@ -98,8 +101,8 @@ export function newSubmissionMail(to: string, title: string, reviewUrl: string):
       'את ההתראות האלה מנהל מערכת מדליק ומכבה בעמוד החשבונות. · An administrator turns these on and off on the accounts page.',
     ].join('\n'),
     html: shell(
-      `<p>פריט חדש הגיע לארכיון וממתין לבדיקה: <strong>${t}</strong>.</p>${button(reviewUrl, 'לבדיקת הפריט')}<p style="font-size:13px;color:#6b645a">את ההתראות האלה מנהל מערכת מדליק ומכבה בעמוד החשבונות.</p>`,
-      `<p>A new item has arrived and is waiting for review: <strong>${t}</strong>.</p>${button(reviewUrl, 'Review it')}<p style="font-size:13px;color:#6b645a">An administrator turns these on and off on the accounts page.</p>`,
+      `<p>פריט חדש הגיע לארכיון וממתין לבדיקה: <strong>${t}</strong>.</p>${duplicate ? `<p>${escape(he['duplicates.mail'])}</p>` : ''}${button(reviewUrl, 'לבדיקת הפריט')}<p style="font-size:13px;color:#6b645a">את ההתראות האלה מנהל מערכת מדליק ומכבה בעמוד החשבונות.</p>`,
+      `<p>A new item has arrived and is waiting for review: <strong>${t}</strong>.</p>${duplicate ? `<p>${escape(en['duplicates.mail'])}</p>` : ''}${button(reviewUrl, 'Review it')}<p style="font-size:13px;color:#6b645a">An administrator turns these on and off on the accounts page.</p>`,
     ),
   };
 }

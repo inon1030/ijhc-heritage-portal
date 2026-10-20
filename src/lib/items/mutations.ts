@@ -1,4 +1,6 @@
 import 'server-only';
+import { storedChecksum } from '@/lib/files/server-hash';
+import { retryOneReading } from './retry-reading';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { createServerSupabase } from '@/lib/supabase/server';
 import type { AnalysisResult } from '@/lib/ai';
@@ -121,6 +123,10 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
   const admin = createAdminSupabase();
 
   if (!input.files.length) throw new Error('A submission needs at least one file.');
+  // Sequential downloads keep the memory ceiling at one 50 MB original.
+  // Fail before creating the item if storage cannot supply authoritative bytes.
+  const checksums: string[] = [];
+  for (const file of input.files) checksums.push(await storedChecksum(file.storagePath));
 
   /*
    * Who this is from, before the record exists.
@@ -165,6 +171,7 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
         file_name: file.fileName,
         mime_type: file.mimeType,
         byte_size: file.byteSize,
+        checksum: checksums[index],
         width: file.width,
         height: file.height,
         duration_ms: file.durationMs,
@@ -259,7 +266,21 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
     to_status: 'pending',
   });
 
+  const { error: duplicateError } = await admin.rpc('flag_item_duplicates', { p_item_id: item.id });
+  if (duplicateError) throw duplicateError;
   return item as Item;
+}
+
+export async function resolveDuplicate(itemId: string, pairId: string, actorId: string, resolution: 'not_duplicate' | 'merged'): Promise<string> {
+  const { data, error } = await createAdminSupabase().rpc('resolve_item_duplicate', {
+    p_pair: pairId, p_item: itemId, p_actor: actorId, p_resolution: resolution,
+  });
+  if (error) throw error;
+  return data as string;
+}
+
+export async function retryItemReading(itemId: string, actorId: string) {
+  return retryOneReading(itemId, actorId);
 }
 
 /**

@@ -261,7 +261,11 @@ export async function POST(request: NextRequest) {
       try {
         const recipients = uploadRecipients(await readWatchers(), to ?? null);
         const reviewUrl = `${siteUrl()}/review/${item.id}`;
-        const sent = await Promise.all(recipients.map((address) => sendMail(newSubmissionMail(address, item.title, reviewUrl))));
+        const { count, error: duplicateError } = await createAdminSupabase().from('item_duplicates')
+          .select('id', { count: 'exact', head: true }).is('resolved_at', null)
+          .or(`item_id.eq.${item.id},other_item_id.eq.${item.id}`);
+        if (duplicateError) throw duplicateError;
+        const sent = await Promise.all(recipients.map((address) => sendMail(newSubmissionMail(address, item.title, reviewUrl, Boolean(count)))));
         if (recipients.length) console.info('[mail] new submission notices', item.id, `${sent.filter(Boolean).length}/${recipients.length}`);
       } catch (error) {
         console.error('[mail] new submission notices', item.id, error);

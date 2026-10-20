@@ -2,6 +2,8 @@ import 'server-only';
 import { cache } from 'react';
 import { facetOptions, hasPortalFilters, matchesFacets, searchWords, intersectIds, type FacetFilters, type FacetRow } from './portal-facets';
 import { reviewOrder } from './review-order';
+export { readDuplicates } from './duplicate-queries';
+export { readRetryState } from './retry-queries';
 import { emptyCommunityCounts } from '@/lib/communities';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { getContributor } from '@/lib/contributors';

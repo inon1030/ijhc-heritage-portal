@@ -2,7 +2,8 @@ import { expect, it, vi } from 'vitest';
 import type { AnalysisResult } from '@/lib/ai/types';
 
 const writes: { table: string; payload: unknown }[] = [];
-vi.mock('@/lib/supabase/admin', () => ({ createAdminSupabase: () => ({ from: (table: string) => ({
+vi.mock('@/lib/files/server-hash', () => ({ storedChecksum: vi.fn(async () => 'a'.repeat(64)) }));
+vi.mock('@/lib/supabase/admin', () => ({ createAdminSupabase: () => ({ rpc: vi.fn(async () => ({ error: null })), from: (table: string) => ({
   insert: (payload: unknown) => {
     writes.push({ table, payload });
     const chain = {
@@ -30,6 +31,9 @@ it('keeps corrected text beside the AI original and an agreeing community as a c
     }],
   });
   const item = writes.find((entry) => entry.table === 'items')!.payload;
+  expect(writes.find((entry) => entry.table === 'item_files')!.payload).toEqual(expect.arrayContaining([
+    expect.objectContaining({ checksum: 'a'.repeat(64) }),
+  ]));
   expect(item).not.toHaveProperty('community');
   expect(item).not.toHaveProperty('description');
   const analyses = writes.find((entry) => entry.table === 'ai_analyses')!.payload as Record<string, unknown>[];

@@ -1,6 +1,9 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+
+const configDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
@@ -12,11 +15,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(configDirectory, './src'),
       // See tests/server-only-stub.ts: the guard has no test-runner resolution,
       // so without this the server modules holding secrets are the only ones
       // that cannot be unit tested.
-      'server-only': path.resolve(__dirname, './tests/server-only-stub.ts'),
+      'server-only': path.resolve(configDirectory, './tests/server-only-stub.ts'),
     },
   },
 });
