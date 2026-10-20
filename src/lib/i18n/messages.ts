@@ -25,6 +25,60 @@
  */
 
 export const en = {
+  'review3.signIn': 'Sign in as an approved content expert.',
+  'review3.missing': 'This record is no longer available.',
+  'review3.readOnly': 'Read-only: content experts may edit published records only if they uploaded or approved them.',
+  'review3.edit': 'Edit',
+  'review3.failed': 'Could not save. Check the fields and try again.',
+  'review3.changed': 'A record or suggestion changed. Close this table and reopen it before continuing.',
+  'review3.saveDraft': 'Save as draft',
+  'review3.reloadDraft': 'Reload the draft',
+  'review3.discard': 'Discard draft',
+  'review3.discardConfirm': 'Discard the saved draft? Your current fields will stay on screen.',
+  'review3.discarded': 'Saved draft discarded. Current fields remain on screen.',
+  'review3.saved': 'Draft saved privately. The record is unchanged.',
+  'review3.restored': 'Restored your draft from {time}',
+  'review3.draftNotRestored': 'A saved draft exists. It was not restored because you have already started editing.',
+  'review3.leave': 'Your latest edits have not been saved as a draft. Leave anyway?',
+  'review3.myDrafts': 'My drafts',
+  'review3.noDrafts': 'No saved drafts yet.',
+  'review3.suggestions': 'Suggested new terms',
+  'review3.suggestionsNote': 'Creating a term adds it to the vocabulary. Save your decision to attach the selected terms to this record.',
+  'review3.contributor': 'Contributor suggestion',
+  'review3.ai': 'AI suggestion',
+  'review3.createTerm': 'Create this term',
+  'review3.useTerm': 'Use {term} instead',
+  'review3.decline': 'Decline',
+  'review3.tagLimit': 'A record can have up to 20 tags. Remove one before adding another.',
+  'review3.batchLimit': 'Select between 1 and 50 different records.',
+  'review3.batchReview': 'Review selected records',
+  'review3.batchNote': 'Review each category, audience and suggested tag. Only checked tags are attached. Records without a category stay in the queue.',
+  'review3.approveRecords': 'Approve {count} records',
+  'review3.approveSelected': 'Approve selected ({count})',
+  'review3.approved': 'Approved',
+  'review3.close': 'Close table',
+  'review3.loading': 'Loading records…',
+  'review3.title': 'Title',
+  'review3.category': 'Category',
+  'review3.tags': 'Tags',
+  'review3.access': 'Who can see this',
+  'review3.result': 'Result',
+  'review3.access.public': 'Everyone',
+  'review3.access.restricted': 'Community — experts only for now',
+  'review3.access.research': 'Research — experts only for now',
+  'review3.access.administrative': 'Archive team only',
+  'review3.newTerm': 'New term — checking it accepts the candidate on approval',
+  'review3.unavailableTerm': 'No open candidate — manage this term in Vocabulary',
+  'review3.view': 'Queue view',
+  'review3.grid': 'Grid',
+  'review3.list': 'List',
+  'review3.selectPage': 'Select all on this page',
+  'review3.select': 'Select',
+  'review3.unassigned': 'Community not assigned',
+  'review3.pages': 'Review queue pages',
+  'review3.previous': 'Previous',
+  'review3.next': 'Next',
+  'review3.page': 'Page {page} of {count}',
   'flow.navFiles': 'Files',
   'flow.navDetails': 'Details',
   'flow.navReview': 'Review',
@@ -102,7 +156,7 @@ export const en = {
   'retry.unavailable': "The reading is running, the retry limit was reached, or this record no longer needs a retry.",
   'replace.tooLong': 'This replacement would exceed a field’s length limit. Use a shorter word.',
   'flow.sendWithoutWaiting': "Send without waiting",
-  'flow.sendWithoutWaitingHint': "You will not see or correct the suggestions; a knowledge expert will review them.",
+  'flow.sendWithoutWaitingHint': "You will not see or correct the suggestions; a content expert will review them.",
   'flow.community': "Community (optional)",
   'flow.communityUnknown': "I don’t know",
   'flow.batchHint': "You can choose several files at once.",
@@ -178,9 +232,9 @@ export const en = {
   'guides.sections': "Guides by role",
   'guides.contributor.heading': "For users",
   'guides.contributor.intro': "How to send a photograph, a document, a recording or a link to the archive, check what the machine read, and keep your receipt. No account needed.",
-  'guides.expert.heading': "For knowledge experts",
+  'guides.expert.heading': "For content experts",
   'guides.expert.intro': "Reviewing an item against the original, correcting what the machine wrote, deciding, and looking after the keywords and the family list.",
-  'guides.expert.locked': "This guide is for knowledge experts. Sign in with an approved account to open it.",
+  'guides.expert.locked': "This guide is for content experts. Sign in with an approved account to open it.",
   'guides.admin.heading': "For administrators",
   'guides.admin.intro': "Approving accounts, deciding who reviews, and the bin: restoring a record or removing it for good.",
   'guides.admin.locked': "This guide is for administrators of the archive.",
@@ -258,7 +312,7 @@ export const en = {
   'portal.truncated': 'Showing the first {count}. Narrow the search to see the rest.',
   'portal.emptyTitle': 'Nothing matches that yet',
   'portal.emptyBody':
-    'Try a broader search, or clear the filters. If the archive is new, the first records appear here once the knowledge expert has reviewed them.',
+    'Try a broader search, or clear the filters. If the archive is new, the first records appear here once the content expert has reviewed them.',
   'portal.communityUnknown': 'Community not identified',
 
   'controls.search': 'Search the archive',
@@ -309,7 +363,7 @@ export const en = {
   'upload.eyebrow': 'Open to everyone — no account needed',
   'upload.headline': "Upload an item",
   'upload.standfirst':
-    'A photograph, a document, a recording. The AI reads what it can from the file and suggests a description — the knowledge expert checks it, approves it and publishes it.',
+    'A photograph, a document, a recording. The AI reads what it can from the file and suggests a description — the content expert checks it, approves it and publishes it.',
 
   'upload.step.files': 'Add your files',
   'upload.step.filesRead': 'The page the archive read',
@@ -418,7 +472,7 @@ export const en = {
   'prereview.aiSuggested': 'The AI suggested:',
   'prereview.useThis': 'use this',
   'prereview.subtitle':
-    'Suggestions, not a record. Correct anything you know better — the knowledge expert reviews it, approves it and publishes it.',
+    'Suggestions, not a record. Correct anything you know better — the content expert reviews it, approves it and publishes it.',
   'prereview.hide': 'Hide this panel',
   'prereview.titleForItem': 'Title for this item',
   'prereview.machineReading': 'The machine’s reading',
@@ -426,7 +480,7 @@ export const en = {
   'prereview.yourTags': 'Your tags',
   'prereview.addTag': 'Search the archive’s tags',
   'prereview.tagsFromList':
-    'Tags come from the archive’s own list, so the same thing is filed under the same word everywhere. If what you want is not here, say it in the description and the knowledge expert can add it.',
+    'Tags come from the archive’s own list, so the same thing is filed under the same word everywhere. If what you want is not here, say it in the description and the content expert can add it.',
   'prereview.tagsSuggested': 'Suggested for this item',
   'prereview.tagsNoMatch': 'No tag matches that.',
   'prereview.tagsAll': 'Browse all tags',
@@ -516,19 +570,19 @@ export const en = {
   'receipt.published': 'Published',
   'receipt.keptNotPublic': 'Kept, but not public',
   'receipt.notAdded': 'Not added to the archive',
-  'receipt.waiting': 'Waiting for the knowledge expert',
+  'receipt.waiting': 'Waiting for the content expert',
   'receipt.badLinkBody': "This address does not match an uploaded item. Check the link you were given, or upload something new.",
   'receipt.goneBody': 'The record this receipt pointed at is no longer held in the archive.',
-  'receipt.publishedBody': 'The knowledge expert checked it and it is in the public archive.',
+  'receipt.publishedBody': 'The content expert checked it and it is in the public archive.',
   'receipt.keptNotPublicBody':
-    'The knowledge expert catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
+    'The content expert catalogued it and marked it as not for public display. It is held in the archive and available to researchers on request.',
   'receipt.notAddedBody':
-    'The knowledge expert looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
-  'receipt.waitingBody': "It has arrived safely. The knowledge expert checks each item against the original before anything is published, so this can take a while.",
+    'The content expert looked at it and decided it falls outside what this archive collects. That is about the archive, not about the material — it is still yours.',
+  'receipt.waitingBody': "It has arrived safely. The content expert checks each item against the original before anything is published, so this can take a while.",
 
   // ── the review queue ──────────────────────────────────────────────────────
   'queue.title': 'Review queue',
-  'queue.volunteersOnly': 'Knowledge experts only',
+  'queue.volunteersOnly': 'Content experts only',
   'queue.clear': 'The queue is clear',
   'queue.openPortal': 'Open Explore',
 
@@ -543,7 +597,7 @@ export const en = {
   'manage.heading': 'Archive administration',
   'manage.title': 'Manage',
   'manage.administratorsOnly': 'Administrators only',
-  'manage.volunteerAccess': 'Knowledge expert access',
+  'manage.volunteerAccess': 'Content expert access',
 
   'vocab.newTerm': 'New term',
   'vocab.subdivides': 'Subdivides',
@@ -555,7 +609,7 @@ export const en = {
 
   'families.heading': 'Family name',
   'families.community': 'Community',
-  'families.note': 'Family names are attached to a record by a knowledge expert, never guessed.',
+  'families.note': 'Family names are attached to a record by a content expert, never guessed.',
   'families.add': 'Add a family',
   'families.notes': 'Notes',
 
@@ -563,7 +617,7 @@ export const en = {
   'accounts.asAdministrator': 'As administrator',
   'accounts.waiting': 'Waiting for a decision',
   'accounts.asked': 'Asked {date}',
-  'accounts.approveExpert': 'Approve as knowledge expert',
+  'accounts.approveExpert': 'Approve as content expert',
   'accounts.you': 'you',
   'accounts.roleFor': 'Role for {email}',
   'manage.intro': 'The words and names the catalogue is allowed to use, and who is allowed to use them.',
@@ -640,14 +694,14 @@ export const en = {
   'wb.notIdentified': 'Not identified',
   'wb.publish': 'Publish',
   'wb.shadowGallery': 'Hold in Shadow Gallery',
-  'upload.done.body': 'A knowledge expert checks the description and the suggestions against the original. It appears in the public archive once it is approved.',
+  'upload.done.body': 'A content expert checks the description and the suggestions against the original. It appears in the public archive once it is approved.',
   'upload.done.checkSpam':
     'We sent you an email with a link to follow the item. If it has not arrived within a few minutes, check the spam folder.',
   'flow.slow.title': "The reading is taking longer than usual",
-  'flow.slow.body': "You can keep waiting, or send the item now. It goes straight to a Knowledge Expert without the preview of what the AI found, and the reading finishes by itself in the background.",
+  'flow.slow.body': "You can keep waiting, or send the item now. It goes straight to a Content Expert without the preview of what the AI found, and the reading finishes by itself in the background.",
   'flow.slow.wait': "Keep waiting",
   'flow.slow.alone': "Send now, read in the background",
-  'upload.done.bodyAlone': "It went straight to a Knowledge Expert. The AI is still reading it in the background, and the expert will see the reading when it is done.",
+  'upload.done.bodyAlone': "It went straight to a Content Expert. The AI is still reading it in the background, and the expert will see the reading when it is done.",
   'upload.link.hint': 'An article, a blog post, or a YouTube video. The archive keeps a copy of the text and the picture rather than only the address, because pages disappear.',
   'wb.moveToBin': 'Move to the bin',
   'wb.moveToBinConfirm': 'Move “{title}” to the bin? An administrator can restore it from there.',
@@ -718,7 +772,7 @@ export const en = {
 
   'accounts.deleteForGood': 'Delete for good',
   'accounts.keep': 'Keep',
-  'accounts.volunteer': 'Knowledge expert',
+  'accounts.volunteer': 'Content expert',
   'accounts.administrator': 'Administrator',
   'accounts.suspend': 'Suspend',
   'accounts.onlyAdmin': 'The only administrator — promote someone else first',
@@ -728,7 +782,7 @@ export const en = {
   'common.editedByContributor': "Edited by the user",
   'families.examplePlaceholder': 'Merchant family, Bombay and Shanghai',
   'prereview.vocabularyNote':
-    'The knowledge expert matches these to the archive’s own vocabulary before publishing.',
+    'The content expert matches these to the archive’s own vocabulary before publishing.',
   'prereview.prefilled':
     'Pre-filled with the machine’s reading. Change anything you know better.',
   'common.cancel': 'Cancel',
@@ -754,7 +808,7 @@ export const en = {
 
   'consent.c1.heading': 'What happens to what you send',
   'consent.c1.p1':
-    'A knowledge expert reads it and checks it against the file before anything appears in public. Until then it is visible only to knowledge experts of the Heritage Center.',
+    'A content expert reads it and checks it against the file before anything appears in public. Until then it is visible only to content experts of the Heritage Center.',
   'consent.c1.p2':
     'If it is accepted, the material and the description are published on this site under the Center’s name, and anyone can see them. If it is not accepted, it normally stays in the archive as an unpublished record rather than being deleted, so that a decision can be revisited — but see what the Center may do without asking you, below.',
 
@@ -785,9 +839,9 @@ export const en = {
   'consent.c3.p2':
     'Neither is published as part of a record. The address is not an account and grants no access to anything — but anyone who knows it can type it into the portal and see the records you sent that are already public. It reveals nothing that is not already on the site; it groups what is. Material still in review, or not accepted, is never shown this way.',
   'consent.c3.p3':
-    'The knowledge experts who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a knowledge expert records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
+    'The content experts who catalogue the archive can see both. That is how somebody comes back to you with a question, how several contributions from you are kept together, and how a content expert records that an address belongs to a particular family — which is often what allows old material to be placed at all.',
   'consent.c3.p4':
-    'A family name recorded against your address is not published by that alone. Family names appear on a record only when a knowledge expert decides the family belongs on it.',
+    'A family name recorded against your address is not published by that alone. Family names appear on a record only when a content expert decides the family belongs on it.',
   'consent.c3.p5':
     'Neither is used for a newsletter, passed to anyone outside the Center, or sold.',
 
@@ -795,7 +849,7 @@ export const en = {
   'consent.c4.p1':
     'Family names attached to a record are published with it — that is what makes a heritage archive usable, and it means the surnames of living relatives can appear in public.',
   'consent.c4.p2':
-    'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a knowledge expert will hold it rather than publish it.',
+    'Do not send material that names or shows a living person without their agreement. If you are unsure, say so in the description; a content expert will hold it rather than publish it.',
 
   'consent.c5.heading': 'Rights in the material',
   'consent.c5.p1':
@@ -805,7 +859,7 @@ export const en = {
 
   'consent.c6.heading': 'Following what you sent',
   'consent.c6.p1':
-    'At the end of an upload you are given a link, one for each contribution. It shows you whether a knowledge expert has published it yet, and it does not expire.',
+    'At the end of an upload you are given a link, one for each contribution. It shows you whether a content expert has published it yet, and it does not expire.',
   'consent.c6.p2':
     'It needs no account and no password, so keep it somewhere you will find it — the Center cannot send you another unless it has your address.',
   'consent.c6.p3':
@@ -815,7 +869,7 @@ export const en = {
   'consent.c7.p1':
     'The Heritage Center decides what the archive holds. It may decline your contribution, take a published record out of public view, or remove material entirely, at its own discretion and without telling you first.',
   'consent.c7.p2':
-    'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Knowledge experts are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
+    'It does not need a reason it has to give you, and it does not undertake to notify you when it does. Content experts are cataloguing donated material against limited time, and a duty to write to every contributor before every decision would mean the decisions do not get made.',
   'consent.c7.p3':
     'What is kept is a note that the item existed, so the same thing is not accepted again later by mistake.',
   'consent.c7.p4':
@@ -848,7 +902,7 @@ export const en = {
   'flow.s2.title': 'Tell us what you know',
   'flow.s2.hint': 'The AI reads the file. What you know about it is what it trusts.',
   'flow.s3.title': 'Check what the AI made',
-  'flow.s3.hint': 'Correct anything before it goes to the knowledge expert.',
+  'flow.s3.hint': 'Correct anything before it goes to the content expert.',
 
   'flow.email': 'Your email address',
   'flow.emailWhy': 'Never published. We send you the link to your item here, and it is how we come back to you with a question.',
@@ -904,7 +958,7 @@ export const en = {
   'fields.someContributor':
     'Only what it could read with reasonable certainty. Correct anything you know better — you are holding the original and it is not — and add whatever it missed.',
   'fields.noneContributor':
-    'It could not read anything about this item with enough certainty to suggest it. Add whatever you know, or leave it and a knowledge expert will.',
+    'It could not read anything about this item with enough certainty to suggest it. Add whatever you know, or leave it and a content expert will.',
   'fields.someVolunteer':
     'Suggestions that cleared the archive’s threshold, plus anything added by hand. Everything the model was less sure of was discarded and is not shown.',
   'fields.noneVolunteer':
@@ -925,7 +979,7 @@ export const en = {
   'error.didNotSave': 'That did not save.',
 
   'bin.emptyBody':
-    'Records a knowledge expert removes land here rather than disappearing. Nothing has been removed yet.',
+    'Records a content expert removes land here rather than disappearing. Nothing has been removed yet.',
   'bin.goToQueue': 'Go to the review queue',
   'bin.oneInBin':
     'One record is in the bin. It is off the portal and out of the review queue, and it is still here in full — restoring it puts back the decision it already carried.',
@@ -937,8 +991,8 @@ export const en = {
   'vocab.noHomeBody':
     'These predate the tree. Until a term says which branch it subdivides, nothing can reason about it — and the model is never offered it as a proposal target.',
   'upload.done.linkExplain':
-    'It shows you whether a knowledge expert has published it yet. Save it somewhere; we have no other way to reach you.',
-  'upload.done.linksExplainMany': "They show you whether a knowledge expert has published each item yet. Save them somewhere; we have no other way to reach you.",
+    'It shows you whether a content expert has published it yet. Save it somewhere; we have no other way to reach you.',
+  'upload.done.linksExplainMany': "They show you whether a content expert has published each item yet. Save them somewhere; we have no other way to reach you.",
   'vocab.noBranch': 'No branch — from before the tree',
   'accounts.noName': 'No name given',
   'accounts.mail': 'Mail',
@@ -992,7 +1046,7 @@ export const en = {
 
   'err.unknownLanguage': 'This archive does not publish in that language.',
   'err.readingTooLong':
-    'This reading is too long to translate in one go. A knowledge expert can translate the record after it is accepted.',
+    'This reading is too long to translate in one go. A content expert can translate the record after it is accepted.',
   'err.translationFailed': 'That translation could not be made. The original is unchanged.',
   'err.translatorAllowance':
     'The translator has reached its daily allowance. The reading itself is unaffected \u2014 you can submit as you are.',

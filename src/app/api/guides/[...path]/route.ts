@@ -27,7 +27,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ pa
     if (guide.audience !== 'contributor') {
       const profile = await getCurrentProfile().catch(() => null);
       if (!canOpen(guide.audience, profile?.role)) {
-        return fail(403, 'forbidden', 'This guide is for knowledge experts and administrators of the archive.');
+        return fail(403, 'forbidden', 'This guide is for content experts and administrators of the archive.');
       }
     }
 

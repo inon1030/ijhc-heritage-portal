@@ -10,6 +10,7 @@ import { getContributor } from '@/lib/contributors';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { REVIEW_QUEUE_STATUSES } from './status';
+import type { ReviewDraftPayload } from './draft-schema';
 import { verifyReceipt } from './receipt';
 import { inTreeOrder } from '@/lib/fields/registry';
 import type {
@@ -216,7 +217,7 @@ export async function listPublishedItems(filters: PortalFilters = {}): Promise<(
 /**
  * The newest arrivals on the public shelf, for the front page.
  *
- * Ordered by when a Knowledge Expert published the record, not by when it was
+ * Ordered by when a Content Expert published the record, not by when it was
  * uploaded: an item that waited three weeks in review is new to a visitor the
  * day it appears. Same visibility rules as `listPublishedItems`.
  */
@@ -306,7 +307,7 @@ export async function listReviewQueue(): Promise<(Item & { file: ItemFile | null
   const data = await readPages((from, to) => supabase
     .from('items')
     .select(
-      '*, item_files(*), ai_analyses(id, file_id, provider, model, status, summary, off_topic, off_topic_reason, created_at)',
+      '*, item_files(*), ai_analyses(id, file_id, provider, model, status, summary, keywords, off_topic, off_topic_reason, created_at)',
     )
     .in('status', REVIEW_QUEUE_STATUSES)
     .is('deleted_at', null)
@@ -453,6 +454,49 @@ export async function readPages<T>(load: (from: number, to: number) => PromiseLi
     rows.push(...(data ?? []));
     if (!data || data.length < 500) return rows;
   }
+}
+
+export async function readReviewDraft(itemId: string) {
+  const actor = await getCurrentVolunteer();
+  if (!actor) return null;
+  const db = await createServerSupabase();
+  const { data, error } = await db.from('review_drafts').select('payload, updated_at')
+    .eq('item_id', itemId).eq('profile_id', actor.id).maybeSingle();
+  if (error) throw error;
+  return data as { payload: ReviewDraftPayload; updated_at: string } | null;
+}
+
+export async function listReviewDrafts() {
+  const actor = await getCurrentVolunteer();
+  if (!actor) return [];
+  const db = await createServerSupabase();
+  const rows = await readPages((from, to) => db.from('review_drafts')
+    .select('item_id, updated_at, items!inner(title, deleted_at)')
+    .eq('profile_id', actor.id).is('items.deleted_at', null)
+    .order('updated_at').order('item_id').range(from, to));
+  return rows as unknown as { item_id: string; updated_at: string; items: { title: string } }[];
+}
+
+export interface ReviewCandidate {
+  id: string;
+  term: string;
+  source: string;
+  similar: { id: string; term: string; score: number }[];
+}
+export async function readReviewCandidates(itemId: string): Promise<ReviewCandidate[]> {
+  if (!await getCurrentVolunteer()) return [];
+  const db = await createServerSupabase();
+  const { data, error } = await db.from('keyword_candidates')
+    .select('id, term, source, item_id, first_item_id').eq('status', 'open')
+    .or(`item_id.eq.${itemId},first_item_id.eq.${itemId}`).order('created_at').limit(50);
+  // Only a missing-column/schema-cache error is a rollout compatibility case.
+  if (error && ['42703', 'PGRST204'].includes(error.code)) return [];
+  if (error) throw error;
+  return Promise.all((data ?? []).map(async candidate => {
+    const { data: similar, error: matchError } = await db.rpc('similar_review_terms', { proposed: candidate.term });
+    if (matchError) throw matchError;
+    return { id: candidate.id, term: candidate.term, source: candidate.source ?? 'ai', similar: similar ?? [] };
+  }));
 }
 
 /** Request-local cache only; never share one visitor's RLS results with another. */

@@ -127,7 +127,7 @@ export function buildInstructions(
     '',
     '── General description ──',
     '',
-    'Separately from all of the above, write `background`: a general description of this item the way a Deep Research answer would give it — an organised briefing by a researcher who has read around the subject, for a family and a knowledge expert who want to understand what they are holding.',
+    'Separately from all of the above, write `background`: a general description of this item the way a Deep Research answer would give it — an organised briefing by a researcher who has read around the subject, for a family and a content expert who want to understand what they are holding.',
     'Put it under short headings, each on a line of its own that begins with "## ", in this order. Write each heading in the same language as the prose, translating the English names below — a Hebrew description has Hebrew headings. Leave out a heading you have nothing specific to say under:',
     '## What this is — the kind of object or document, how such things were made and used, and what its visible details (script, material, layout, imagery) usually indicate.',
     '## Period — the most likely date range and the reasoning behind it, said as a likelihood.',

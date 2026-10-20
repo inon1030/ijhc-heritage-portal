@@ -5,10 +5,10 @@ import type { UserRole } from '@/lib/types';
  *
  * Inon's rule, as he gave it:
  *
- *   a new submission   the person who sent it, and every knowledge expert or
+ *   a new submission   the person who sent it, and every content expert or
  *                      administrator whose account is marked to hear about
  *                      new submissions.
- *   a publication      the knowledge expert who published it, every
+ *   a publication      the content expert who published it, every
  *                      administrator marked to hear about publications, and
  *                      the person who sent it.
  *

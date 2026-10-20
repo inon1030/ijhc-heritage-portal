@@ -1,5 +1,8 @@
 'use client';
 
+import { ReviewReadingDraft } from '@/components/review-draft-scope';
+import { ReviewDraftControls } from '@/components/review-draft-controls';
+import { ReviewCandidates } from '@/components/review-candidates';
 import { useState } from 'react';
 import { ReviewServerActions } from '@/components/review-server-actions';
 import { useRouter } from 'next/navigation';
@@ -565,6 +568,7 @@ export function ReviewWorkbench({
             />
           </FieldRow>
 
+          <ReviewCandidates itemId={item.id} keywords={keywords} onChange={setKeywords} />
           <VocabularyPicker
             keywords={keywords}
             onChange={setKeywords}
@@ -621,6 +625,7 @@ export function ReviewWorkbench({
           <TranslationDeck itemId={item.id} siteLanguage={siteLanguage} />
         </div>
 
+        <ReviewDraftControls itemId={item.id} deciding={busy !== null} value={{ baseReviewedAt: item.reviewed_at ?? null, title, description, category, community, provenance, language, period, originPlace, keywords, familyIds, access, fields: fields.map(({ key, value }) => ({ key, value })) }} restore={draft => { setTitle(draft.title); setDescription(draft.description); setCategory(draft.category); setCommunity(draft.community); setProvenance(draft.provenance); setLanguage(draft.language); setPeriod(draft.period); setOriginPlace(draft.originPlace); setKeywords(draft.keywords); setFamilyIds(draft.familyIds); setAccess(draft.access); setFields(draft.fields); }} />
         <div className="mt-8 flex flex-wrap gap-3 border-t border-rule pt-6">
           {!category && <p className="w-full text-caution" role="status">{t('wb.categoryRequired')}</p>}
           {(transitions.includes('accepted') || item.status === 'accepted') && (
@@ -834,6 +839,7 @@ function ReadingEditor({
 
   return (
     <details className="mt-4 card bg-paper-2/50" open={Boolean(saved)}>
+      <ReviewReadingDraft analysisId={analysisId} field={field} text={text} original={saved ?? machine} restore={setText} />
       <summary className="eyebrow cursor-pointer px-4 py-3">
         {label}
         {saved && <span className="ms-2 normal-case text-positive">· {t('wb.readingCorrected')}</span>}

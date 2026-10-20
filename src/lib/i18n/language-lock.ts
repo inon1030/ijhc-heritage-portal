@@ -30,7 +30,7 @@ import { useSyncExternalStore } from 'react';
  * one safely, without the tearing a bare module variable plus `useState` would
  * produce.
  *
- * A knowledge expert is exempt. They review in the language the site is set to,
+ * A content expert is exempt. They review in the language the site is set to,
  * and changing it mid-review is the whole point of the third request — see
  * `LanguagePicker`.
  */

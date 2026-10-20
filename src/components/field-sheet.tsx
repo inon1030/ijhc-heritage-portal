@@ -345,7 +345,7 @@ function FieldRow({
         It disappears once a person has overruled the value, because it would
         then be describing something that is no longer on screen. What the
         machine read is still available — on the undo control, and in the
-        analysis a knowledge expert sees.
+        analysis a content expert sees.
       */}
       {fromMachine && <Basis basis={row.basis!} note={row.note ?? null} />}
       {row.source === 'contributor' && row.note && <p className="mt-1 text-sm text-muted">{t('replace.contributorText')}: {row.note}</p>}

@@ -11,7 +11,7 @@ import type { ArchiveLanguage } from './languages';
  * ── why this is not the record translator ───────────────────────────────────
  *
  * `translateItem` translates a *record*: a row in `items` with an id, a
- * knowledge expert's approval behind it, and a cache table keyed on it. None of
+ * content expert's approval behind it, and a cache table keyed on it. None of
  * that exists here. At pre-review there is no record — the contributor is
  * holding an analysis of a file they have not submitted yet, and the whole
  * question they are being asked is whether the machine read it correctly. A

@@ -48,7 +48,7 @@ export function LanguagePicker({
    * Whether this viewer keeps the control even while a screen has asked for it
    * to go away.
    *
-   * True for a knowledge expert, and the reason is the review screen: changing
+   * True for a content expert, and the reason is the review screen: changing
    * the site language there is how they read the record in another language,
    * so taking the control away would remove the feature rather than protect
    * anything. False for a contributor, whose page has unsaved files on it.

@@ -1,3 +1,4 @@
+import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { NextRequest, after } from 'next/server';
 import { z } from 'zod';
 import { COMMUNITY_ORDER } from '@/lib/communities';
@@ -188,7 +189,9 @@ export async function POST(request: NextRequest) {
     if (ungranted) {
       return fail(403, 'forbidden', t('err.oneUploadNotOurs'));
     }
+    const uploader = await getCurrentVolunteer();
     const item = await createItem({
+      uploadedBy: uploader?.id ?? null,
       title: body.title,
       source: body.source?.trim() || null,
       sourceUrl: body.sourceUrl?.trim() || null,
@@ -226,7 +229,7 @@ export async function POST(request: NextRequest) {
     // hold up the screen that says the item arrived.
     /*
      * Files sent on before their reading finished (Inon, 25.09.2026). The item
-     * is already in a Knowledge Expert's queue; the reading follows it there.
+     * is already in a Content Expert's queue; the reading follows it there.
      */
     const pendingPaths = new Set(body.files.filter((f) => !f.analysis && f.analysisPending).map((f) => f.path));
     if (pendingPaths.size) {

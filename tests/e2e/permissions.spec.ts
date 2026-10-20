@@ -1,5 +1,45 @@
 import { expect, test } from '@playwright/test';
 
+// Prepared local fixture accounts and published records are required when
+// running this group. No implicit skip: an unconfigured run fails explicitly.
+test.describe('published record ownership — phase 3', () => {
+  function fixture(name: string) {
+    const value = process.env[name];
+    if (!value) throw new Error(`Required isolated permission fixture: ${name}`);
+    return value;
+  }
+  for (const ownership of ['UPLOADED', 'APPROVED', 'UNRELATED'] as const) {
+    test(`expert ${ownership.toLowerCase()} record permission`, async ({ browser }) => {
+      const context = await browser.newContext({ storageState: fixture('E2E_EXPERT_STORAGE_STATE') });
+      try {
+        const id = fixture(`E2E_PUBLISHED_${ownership}_ID`);
+        const page = await context.newPage();
+        await page.goto(`/review/${id}`);
+        if (ownership === 'UNRELATED') {
+          await expect(page.getByText(/read-only: content experts/i)).toBeVisible();
+          await expect(page.getByRole('button', { name: /save catalogue changes/i })).toHaveCount(0);
+          expect((await context.request.post(`/api/items/${id}/review`, { data: {} })).status()).toBe(403);
+          expect((await context.request.delete(`/api/items/${id}/review`)).status()).toBe(403);
+        } else {
+          await expect(page.getByRole('button', { name: /save catalogue changes/i })).toBeVisible();
+          // Invalid body reaches validation only after the ownership check.
+          expect((await context.request.post(`/api/items/${id}/review`, { data: {} })).status()).toBe(400);
+        }
+      } finally { await context.close(); }
+    });
+  }
+  test('administrator may edit an unrelated published record', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: fixture('E2E_ADMIN_STORAGE_STATE') });
+    try {
+      const id = fixture('E2E_PUBLISHED_UNRELATED_ID');
+      const page = await context.newPage();
+      await page.goto(`/review/${id}`);
+      await expect(page.getByRole('button', { name: /save catalogue changes/i })).toBeVisible();
+      expect((await context.request.post(`/api/items/${id}/review`, { data: {} })).status()).toBe(400);
+    } finally { await context.close(); }
+  });
+});
+
 /**
  * The permission boundary, checked from the outside.
  *

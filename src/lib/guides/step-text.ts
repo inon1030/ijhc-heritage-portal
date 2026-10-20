@@ -11,7 +11,7 @@ import text from '@/lib/guides/step-text.json';
  *
  * Adapted from the Center's own guides in Drive (the contributor guide Rafi
  * corrected, and the moderators' guide), shortened to what fits beside one
- * screenshot, and using the site's own names for things: "knowledge expert",
+ * screenshot, and using the site's own names for things: "content expert",
  * "Read it with AI", "Submit for review". Each `id` matches a step in
  * `scripts/guides/steps.mjs`, which captures the screen and measures the ring.
  */

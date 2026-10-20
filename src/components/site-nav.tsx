@@ -32,7 +32,7 @@ import { useMessages } from '@/lib/i18n/provider';
  * - **Primary**: what anybody can do. Portal, Contribute, and the guides, with
  *   the book the Center asked for.
  * - **Account**: sign in and ask for an account, or sign out.
- * - **Archive**: what an approved knowledge expert maintains. Only rendered for
+ * - **Archive**: what an approved content expert maintains. Only rendered for
  *   an approved account; RLS and the routes enforce the same line regardless.
  */
 

@@ -15,7 +15,7 @@ import { recordCandidates } from '@/lib/vocabulary/mutations';
  * Reading an item that was sent on before its reading finished (0032).
  *
  * Inon, 25.09.2026: when the machine takes longer than fifty seconds the
- * contributor may send the item straight to a Knowledge Expert, skipping the
+ * contributor may send the item straight to a Content Expert, skipping the
  * pre-review, and let the reading go on by itself. This is "by itself". It
  * runs on the server after the item is saved, reads each file the way
  * /api/analyze does, and finishes the `ai_analyses` row the item was saved

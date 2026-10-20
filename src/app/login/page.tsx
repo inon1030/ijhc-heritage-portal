@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { LoginForm } from '@/components/login-form';
 
 export const metadata: Metadata = {
-  title: 'Knowledge expert access',
+  title: 'Content expert access',
 };
 
 export default async function LoginPage() {

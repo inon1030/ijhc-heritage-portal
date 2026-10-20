@@ -1,3 +1,4 @@
+import { reviewGuard } from '@/lib/items/review-guard';
 import { NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     const { id } = await context.params;
+    const denied = await reviewGuard(id);
+    if (denied) return denied;
     if (!z.string().uuid().safeParse(id).success) return fail(404, 'not_found', 'No such record.');
 
     const parsed = Body.safeParse(await readJson(request));
@@ -39,7 +42,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       transcript: parsed.data.transcript || null,
       actorId: volunteer.id,
     });
-    if (!saved) return fail(404, 'not_found', 'No such reading on this record.');
+    if (!saved) {
+      const deniedAfterRace = await reviewGuard(id);
+      if (deniedAfterRace) return deniedAfterRace;
+      return fail(404, 'not_found', 'No such reading on this record.');
+    }
 
     revalidatePath(`/review/${id}`);
     return ok({ saved: true });

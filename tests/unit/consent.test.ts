@@ -87,7 +87,7 @@ describe('the handling notice', () => {
     // The label changed to "knowledge expert" on 07.09; the permission behind
     // it — `contributors_volunteer_select` — did not, which is why the schema
     // still says volunteer and this sentence no longer does.
-    expect(text).toMatch(/knowledge experts who catalogue the archive can see both/i);
+    expect(text).toMatch(/content experts who catalogue the archive can see both/i);
     expect(text).toMatch(/belongs to a particular family/i);
     // And the limit on it: a family link is not itself publication.
     expect(text).toMatch(/not published by that alone/i);

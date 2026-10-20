@@ -21,7 +21,7 @@ import { AccountNav, ArchiveNav, PendingNotice, PrimaryNav } from '@/components/
  * groups as the bar (see `site-nav.tsx`), so the phone and the desktop cannot
  * offer different things.
  *
- * An approved knowledge expert gets a second, quieter row for the archive's own
+ * An approved content expert gets a second, quieter row for the archive's own
  * tools, so they never compete with the three things everyone else came for.
  * It shows for four seconds after a page opens and then folds away, and comes
  * back when the reader scrolls or pulls upward - the way the folded strip used

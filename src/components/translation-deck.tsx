@@ -77,7 +77,7 @@ export function TranslationDeck({
    * The language the site is set to, which is the language this review is in.
    *
    * The deck used to open on whichever language `archive_languages` returned
-   * first, so a knowledge expert working in Hebrew set the site to Hebrew, got
+   * first, so a content expert working in Hebrew set the site to Hebrew, got
    * a Hebrew interface, and then had to click Hebrew again on this panel. The
    * language control at the top is how they choose what they are reviewing in;
    * this is the panel obeying it.
@@ -245,7 +245,7 @@ export function TranslationDeck({
         <p className="mb-4 rounded-lg bg-critical/8 px-4 py-2.5 text-sm text-critical">{error}</p>
       )}
 
-      {/* The tabs carry their own progress, so a knowledge expert can see at a glance
+      {/* The tabs carry their own progress, so a content expert can see at a glance
           which language is short without opening each one. */}
       <div role="tablist" aria-label={t('review.languagesHeading')} className="mb-4 flex flex-wrap gap-1.5">
         {deck.languages.map((l) => {

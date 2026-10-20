@@ -1,3 +1,4 @@
+import { reviewGuard } from '@/lib/items/review-guard';
 import { z } from 'zod';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { getMessages } from '@/lib/i18n';
@@ -22,6 +23,8 @@ export async function POST(_request: Request, context: Context) {
   const { id } = await context.params;
   if (!z.string().uuid().safeParse(id).success) return fail(400, 'invalid_request', t('phase2.failed'));
   try {
+    const denied = await reviewGuard(id);
+    if (denied) return denied;
     if (!await retryItemReading(id, actor.id)) return fail(409, 'unavailable', t('retry.unavailable'));
     return ok({ attempted: true });
   } catch (error) { return unexpected(error, '/api/items/[id]/reread'); }

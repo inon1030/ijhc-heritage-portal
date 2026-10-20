@@ -1,3 +1,4 @@
+import { reviewGuard } from '@/lib/items/review-guard';
 import { z } from 'zod';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { getMessages } from '@/lib/i18n';
@@ -22,6 +23,12 @@ export async function POST(request: Request, context: Context) {
   const { id } = await context.params;
   const body = Body.safeParse(await readJson(request));
   if (!body.success || !z.string().uuid().safeParse(id).success) return fail(400, 'invalid_request', t('phase2.failed'));
+  if (body.data.resolution === 'merged') {
+    const denied = await reviewGuard(id);
+    if (denied) return denied;
+    const pair = (await readDuplicates(id)).find(p => p.id === body.data.pairId);
+    if (pair) { const otherDenied = await reviewGuard(pair.item.id); if (otherDenied) return otherDenied; }
+  }
   try { return ok({ keptId: await resolveDuplicate(id, body.data.pairId, actor.id, body.data.resolution) }); }
   catch { return fail(409, 'conflict', t('duplicates.changed')); }
 }

@@ -45,7 +45,7 @@ import {
  * has not submitted, and the translation is a reading aid for the person on the
  * screen rather than a thing the archive holds. When the record is published,
  * `translateItem` makes and stores its translations on the archive's own terms
- * — after a knowledge expert has approved it, which is the rule this must not
+ * — after a content expert has approved it, which is the rule this must not
  * quietly step around.
  */
 

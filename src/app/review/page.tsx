@@ -1,3 +1,6 @@
+import { ReviewQueue } from '@/components/review-queue';
+import { canEditRecord } from '@/lib/items/edit-permission';
+import { listReviewDrafts } from '@/lib/items/queries';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { FilePreview } from '@/components/file-preview';
@@ -35,10 +38,8 @@ export default async function ReviewPage() {
     if (profile) return <AwaitingApproval email={profile.email} />;
   }
 
-  const [items, uncatalogued] = await Promise.all([listReviewQueue(), volunteer ? listUncataloguedPublished() : []]);
+  const [items, uncatalogued, drafts] = await Promise.all([listReviewQueue(), volunteer ? listUncataloguedPublished() : [], volunteer ? listReviewDrafts() : []]);
 
-  const archive = items.filter((item) => readingState(item) === 'ready');
-  const unread = items.filter((item) => readingState(item) !== 'ready');
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-8 pb-14 sm:pt-12 sm:pb-16">
@@ -55,32 +56,14 @@ export default async function ReviewPage() {
         </p>
       </header>
 
-      {items.length === 0 ? (
-        <EmptyState
-          title={t('queue.clear')}
-          body={t('queue.emptyBody')}
-          action={{ href: '/portal', label: t('queue.openPortal') }}
-        />
-      ) : (
-        <>
-          {archive.length > 0 && (
-            <section className="mb-12">
-              <p className="eyebrow mb-4">
-                {t('queue.ready')} · {archive.length}
-              </p>
-              <QueueGrid items={archive} />
-            </section>
-          )}
-
-          {unread.length > 0 && <section className="mb-12">
-            <h2 className="eyebrow mb-4">{t('queue.unread')} · {unread.length}</h2>
-            <QueueGrid items={unread} />
-          </section>}
-        </>
-      )}
+      <section className="mb-8 rounded-2xl border border-rule bg-paper-2 p-5">
+        <h2 className="font-display text-2xl">{t('review3.myDrafts')}</h2>
+        {drafts.length ? <ul className="mt-3 divide-y divide-rule">{drafts.map(draft => <li key={draft.item_id}><Link className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-3 focus-visible:outline-2" href={'/review/' + draft.item_id}><span dir="auto">{draft.items.title}</span><time className="text-sm text-muted" dateTime={draft.updated_at}>{formatDate(draft.updated_at)}</time></Link></li>)}</ul> : <p className="mt-3 text-muted">{t('review3.noDrafts')}</p>}
+      </section>
+      {items.length === 0 ? <EmptyState title={t('queue.clear')} body={t('queue.emptyBody')} action={{ href: '/portal', label: t('queue.openPortal') }} /> : <ReviewQueue items={items} />}
       {uncatalogued.length > 0 && <section className="mt-10 border-t border-rule pt-6">
         <h2 className="mb-4 font-display text-2xl">{t('queue.uncatalogued')}</h2>
-        <QueueGrid items={uncatalogued} />
+        <QueueGrid items={uncatalogued.filter(item => canEditRecord(volunteer, item))} />
       </section>}
     </div>
   );
@@ -118,7 +101,7 @@ async function QueueGrid({ items }: { items: QueueItem[] }) {
                 <p className="machine line-clamp-2 text-muted">{item.analysis.summary}</p>
               )}
               {/* The clause, not the verdict. "a festival in Cusco, Peru" is
-                  something a knowledge expert can agree or disagree with at a glance. */}
+                  something a content expert can agree or disagree with at a glance. */}
               {item.analysis?.off_topic && item.analysis.off_topic_reason && (
                 <p className="machine text-caution">{item.analysis.off_topic_reason}</p>
               )}

@@ -2,7 +2,7 @@
  * Which words of a text a person wrote, and which came from the machine.
  *
  * Michal (24.09.2026): when a contributor edits the description the AI wrote,
- * the knowledge expert should see what was the AI's and what was theirs. The
+ * the content expert should see what was the AI's and what was theirs. The
  * two texts are already stored apart — `ai_analyses.summary` and
  * `items.contributor_description` — so this is a comparison, not a new record.
  *

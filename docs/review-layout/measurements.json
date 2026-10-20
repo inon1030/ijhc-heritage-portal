@@ -1,0 +1,122 @@
+[
+  {
+    "view": "grid",
+    "width": 375,
+    "scrollWidth": 375,
+    "smallControls": []
+  },
+  {
+    "view": "list",
+    "width": 375,
+    "scrollWidth": 375,
+    "smallControls": []
+  },
+  {
+    "view": "bulk",
+    "width": 375,
+    "scrollWidth": 375,
+    "smallControls": []
+  },
+  {
+    "view": "grid",
+    "width": 390,
+    "scrollWidth": 390,
+    "smallControls": []
+  },
+  {
+    "view": "list",
+    "width": 390,
+    "scrollWidth": 390,
+    "smallControls": []
+  },
+  {
+    "view": "bulk",
+    "width": 390,
+    "scrollWidth": 390,
+    "smallControls": []
+  },
+  {
+    "view": "grid",
+    "width": 768,
+    "scrollWidth": 768,
+    "smallControls": []
+  },
+  {
+    "view": "list",
+    "width": 768,
+    "scrollWidth": 768,
+    "smallControls": []
+  },
+  {
+    "view": "bulk",
+    "width": 768,
+    "scrollWidth": 768,
+    "smallControls": []
+  },
+  {
+    "view": "grid",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "smallControls": []
+  },
+  {
+    "view": "list",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "smallControls": []
+  },
+  {
+    "view": "bulk",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "smallControls": []
+  },
+  {
+    "view": "candidates",
+    "width": 375,
+    "scrollWidth": 375,
+    "smallControls": []
+  },
+  {
+    "view": "draft",
+    "width": 375,
+    "scrollWidth": 375,
+    "smallControls": []
+  },
+  {
+    "view": "candidates",
+    "width": 390,
+    "scrollWidth": 390,
+    "smallControls": []
+  },
+  {
+    "view": "draft",
+    "width": 390,
+    "scrollWidth": 390,
+    "smallControls": []
+  },
+  {
+    "view": "candidates",
+    "width": 768,
+    "scrollWidth": 768,
+    "smallControls": []
+  },
+  {
+    "view": "draft",
+    "width": 768,
+    "scrollWidth": 768,
+    "smallControls": []
+  },
+  {
+    "view": "candidates",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "smallControls": []
+  },
+  {
+    "view": "draft",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "smallControls": []
+  }
+]

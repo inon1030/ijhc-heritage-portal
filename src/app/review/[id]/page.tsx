@@ -1,3 +1,7 @@
+import { ReviewDraftScope } from '@/components/review-draft-scope';
+import { ReviewReadOnly } from '@/components/review-read-only';
+import { getCurrentVolunteer } from '@/lib/supabase/server';
+import { canEditRecord } from '@/lib/items/edit-permission';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -22,6 +26,9 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
   const { t, language } = await getMessages();
   const item = await getItemDetail(id);
   if (!item) notFound();
+  const actor = await getCurrentVolunteer();
+  if (!actor) notFound();
+  if (!canEditRecord(actor, item)) return <div className="mx-auto max-w-5xl px-4 py-8"><ReviewReadOnly item={item} /></div>;
 
   const [events, vocabulary, families, selectedFamilyIds] = await Promise.all([
     listItemEvents(id),
@@ -36,13 +43,13 @@ export default async function ReviewItemPage({ params }: { params: Params }) {
         <ArrowLeft size={14} /> {t('review.backToQueue')}
       </Link>
 
-      <ReviewWorkbench
+      <ReviewDraftScope><ReviewWorkbench
         item={item}
         vocabulary={vocabulary}
         families={families}
         selectedFamilyIds={selectedFamilyIds}
         siteLanguage={language.code}
-      />
+      /></ReviewDraftScope>
 
       {events.length > 0 && (
         <section className="mt-12 border-t border-rule pt-6">

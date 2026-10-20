@@ -39,7 +39,7 @@ const DECK = {
 };
 
 function stubFetch(deck: unknown = DECK) {
-  const fetcher = vi.fn(async (_input?: unknown, _init?: RequestInit) =>
+  const fetcher = vi.fn<(input?: unknown, init?: RequestInit) => Promise<Response>>(async () =>
     new Response(JSON.stringify({ ok: true, data: deck }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

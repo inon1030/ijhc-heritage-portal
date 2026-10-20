@@ -89,7 +89,7 @@
         "he": "כתובת הדוא\"ל שלכם"
       },
       "body": {
-        "en": "This is the only required field. It is never published. The knowledge expert uses it only if they have a question about what you sent.",
+        "en": "This is the only required field. It is never published. The content expert uses it only if they have a question about what you sent.",
         "he": "זה השדה היחיד שחובה למלא. הכתובת לא מתפרסמת לעולם, ומומחה הידע משתמש בה רק אם יש לו שאלה על מה ששלחתם."
       },
       "quick": {
@@ -141,7 +141,7 @@
         "he": "בודקים את התיאור"
       },
       "body": {
-        "en": "What you see now is a suggestion. The description is pre-filled with the AI’s reading; change anything you know better. The X at the top closes this panel, and nothing is lost: the knowledge expert still sees all of it.",
+        "en": "What you see now is a suggestion. The description is pre-filled with the AI’s reading; change anything you know better. The X at the top closes this panel, and nothing is lost: the content expert still sees all of it.",
         "he": "מה שמופיע עכשיו הוא הצעה. התיאור מולא מראש לפי מה שה-AI קרא, ואפשר לשנות כל מה שאתם יודעים טוב יותר. ה-X למעלה סוגר את החלונית, ושום דבר לא הולך לאיבוד: מומחה הידע עדיין רואה הכל."
       },
       "quick": {
@@ -189,12 +189,12 @@
         "he": "לוחצים \"שליחה לאישור\""
       },
       "body": {
-        "en": "When you are happy with it, press Submit for review. A knowledge expert compares the description with the original before anything is published.",
-        "he": "כשהכל נראה נכון לוחצים \"שליחה לאישור\". מומחה ידע משווה את התיאור למקור לפני שמשהו מתפרסם."
+        "en": "When you are happy with it, press Submit for review. A content expert compares the description with the original before anything is published.",
+        "he": "כשהכל נראה נכון לוחצים \"שליחה לאישור\". מומחה תוכן משווה את התיאור למקור לפני שמשהו מתפרסם."
       },
       "quick": {
-        "en": "Press Submit for review. A knowledge expert checks it before it is published.",
-        "he": "לוחצים \"שליחה לאישור\". מומחה ידע בודק לפני שזה מתפרסם."
+        "en": "Press Submit for review. A content expert checks it before it is published.",
+        "he": "לוחצים \"שליחה לאישור\". מומחה תוכן בודק לפני שזה מתפרסם."
       }
     },
     {
@@ -219,8 +219,8 @@
         "he": "רואים מה חדש בארכיון"
       },
       "body": {
-        "en": "Once a knowledge expert approves it, the item appears in the public archive. The home page shows the items that were added most recently, and on the Explore page you can search and filter by community and kind of item.",
-        "he": "אחרי שמומחה ידע מאשר, הפריט מופיע בארכיון הציבורי. בדף הבית יש רצועה של הפריטים שנוספו לאחרונה, ובדף עיון אפשר לחפש ולסנן לפי קהילה וסוג פריט."
+        "en": "Once a content expert approves it, the item appears in the public archive. The home page shows the items that were added most recently, and on the Explore page you can search and filter by community and kind of item.",
+        "he": "אחרי שמומחה תוכן מאשר, הפריט מופיע בארכיון הציבורי. בדף הבית יש רצועה של הפריטים שנוספו לאחרונה, ובדף עיון אפשר לחפש ולסנן לפי קהילה וסוג פריט."
       }
     }
   ],
@@ -371,12 +371,12 @@
         "he": "אישור, דחייה ושינוי תפקיד"
       },
       "body": {
-        "en": "Approve a request as a knowledge expert, which is the usual choice, or as an administrator, or decline it. An existing account’s role can be changed or suspended. The last administrator cannot be demoted, so promote someone else first.",
-        "he": "מאשרים בקשה כמומחה ידע, שזו הבחירה הרגילה, או כמנהל מערכת, או דוחים אותה. אפשר לשנות תפקיד של חשבון קיים או להשעות אותו. את מנהל המערכת האחרון אי אפשר להוריד, לכן קודם מקדמים מישהו אחר."
+        "en": "Approve a request as a content expert, which is the usual choice, or as an administrator, or decline it. An existing account’s role can be changed or suspended. The last administrator cannot be demoted, so promote someone else first.",
+        "he": "מאשרים בקשה כמומחה תוכן, שזו הבחירה הרגילה, או כמנהל מערכת, או דוחים אותה. אפשר לשנות תפקיד של חשבון קיים או להשעות אותו. את מנהל המערכת האחרון אי אפשר להוריד, לכן קודם מקדמים מישהו אחר."
       },
       "quick": {
-        "en": "Approve new accounts as knowledge experts, or decline them.",
-        "he": "מאשרים חשבונות חדשים כמומחי ידע, או דוחים."
+        "en": "Approve new accounts as content experts, or decline them.",
+        "he": "מאשרים חשבונות חדשים כמומחי תוכן, או דוחים."
       }
     },
     {

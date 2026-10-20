@@ -53,7 +53,7 @@ export async function Masthead() {
           <LanguagePicker
             languages={languages}
             current={reading?.code ?? languages[0]?.code ?? 'en'}
-            /* A knowledge expert changes the language *in order to* review in it.
+            /* A content expert changes the language *in order to* review in it.
                Everyone else is a contributor with unsaved files on the page. */
             exempt={approved}
           />

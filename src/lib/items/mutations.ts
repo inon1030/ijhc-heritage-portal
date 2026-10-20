@@ -8,8 +8,13 @@ import { fieldDef, isValidValue } from '@/lib/fields/registry';
 import { mergeSuggestions } from '@/lib/fields/suggestions';
 import { registerContributor } from '@/lib/contributors';
 import { recordCandidates } from '@/lib/vocabulary/mutations';
+import { canEditRecord } from './edit-permission';
+import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { canTransition } from './status';
 import { verifyReceipt } from './receipt';
+import { DraftPayload } from './draft-schema';
+import { acceptCandidate, declineCandidate } from '@/lib/vocabulary/mutations';
+import { readReviewCandidates } from './queries';
 import { ContributorEdit } from './contributor-edit';
 import type { AccessLevel, Community, Item, ItemCategory, ItemStatus } from '@/lib/types';
 
@@ -73,6 +78,7 @@ export interface CreateFileInput {
 }
 
 export interface CreateItemInput {
+  uploadedBy?: string | null;
   title: string;
   source: string | null;
   /** Set only by link ingestion. A contributor never types this. */
@@ -144,6 +150,7 @@ export async function createItem(input: CreateItemInput): Promise<Item> {
   const { data: item, error: itemError } = await admin
     .from('items')
     .insert({
+      uploaded_by: input.uploadedBy ?? null,
       title: input.title,
       // Deliberately not set: the reviewer catalogues it, with the model's
       // suggestion one click away in the workbench.
@@ -426,13 +433,14 @@ export async function reviewItem(input: ReviewInput): Promise<ReviewOutcome> {
 
   const { data: current, error: readError } = await supabase
     .from('items')
-    .select('id, status')
+    .select('id, status, uploaded_by, reviewed_by, deleted_at')
     .eq('id', input.itemId)
     .maybeSingle();
 
   if (readError) throw readError;
   if (!current) return { ok: false, code: 'not_found', message: 'That submission no longer exists.' };
 
+  if (!canEditRecord(await getCurrentVolunteer(), current as Item)) return { ok: false, code: 'forbidden', message: 'Published record ownership required.' };
   const from = current.status as ItemStatus;
   if (from !== input.status && !canTransition(from, input.status)) {
     return {
@@ -517,12 +525,9 @@ export async function reviewItem(input: ReviewInput): Promise<ReviewOutcome> {
 /**
  * A volunteer's correction of what the machine read off one file.
  *
- * Written with the service-role client because `ai_analyses` has no update
- * policy and should not gain one for this: the route has already required an
- * approved volunteer, and the match on both ids below is what stops one
- * record's reading being written through another record's address. The
- * machine's own text is never touched. Returns false when no such reading
- * exists on a live record.
+ * Uses the session-bound correction RPC from 0036. It locks the parent and
+ * rechecks ownership before changing only correction columns. No blanket
+ * ai_analyses UPDATE permission is granted; the machine text stays unchanged.
  */
 export async function correctReading(input: {
   itemId: string;
@@ -531,33 +536,13 @@ export async function correctReading(input: {
   transcript: string | null;
   actorId: string;
 }): Promise<boolean> {
-  const admin = createAdminSupabase();
-
-  const { data: item, error: itemError } = await admin
-    .from('items')
-    .select('id')
-    .eq('id', input.itemId)
-    .is('deleted_at', null)
-    .maybeSingle();
-  if (itemError) throw itemError;
-  if (!item) return false;
-
-  const { error, count } = await admin
-    .from('ai_analyses')
-    .update(
-      {
-        ocr_text_corrected: input.ocrText,
-        transcript_corrected: input.transcript,
-        corrected_by: input.actorId,
-        corrected_at: new Date().toISOString(),
-      },
-      { count: 'exact' },
-    )
-    .eq('id', input.analysisId)
-    .eq('item_id', input.itemId);
-
+  const db = await createServerSupabase();
+  const { data, error } = await db.rpc('correct_review_reading', {
+    record_id: input.itemId, analysis_id: input.analysisId,
+    ocr: input.ocrText, transcript_text: input.transcript,
+  });
   if (error) throw error;
-  return Boolean(count);
+  return Boolean(data);
 }
 
 export async function binItem(itemId: string, actorId: string, reason: string | null): Promise<boolean> {
@@ -634,4 +619,34 @@ export async function purgeItem(itemId: string): Promise<boolean> {
   }
 
   return true;
+}
+
+export async function saveReviewDraft(itemId: string, payload: unknown) {
+  const actor = await getCurrentVolunteer();
+  if (!actor) throw new Error('forbidden');
+  const db = await createServerSupabase();
+  const { data, error } = await db.from('review_drafts').upsert({
+    item_id: itemId, profile_id: actor.id, payload: DraftPayload.parse(payload),
+    updated_at: new Date().toISOString(),
+  }).select('updated_at').single();
+  if (error) throw error;
+  return data;
+}
+
+export async function discardReviewDraft(itemId: string) {
+  const actor = await getCurrentVolunteer();
+  if (!actor) throw new Error('forbidden');
+  const db = await createServerSupabase();
+  const { error } = await db.from('review_drafts').delete().eq('item_id', itemId).eq('profile_id', actor.id);
+  if (error) throw error;
+}
+
+/** Vocabulary decisions remain separate from attaching a term to an item. */
+export async function decideReviewCandidate(itemId: string, id: string, action: 'create' | 'decline') {
+  const candidates = await readReviewCandidates(itemId);
+  const candidate = candidates.find(c => c.id === id);
+  if (!candidate) throw new Error('candidate_changed');
+  if (action === 'create') await acceptCandidate(id);
+  else await declineCandidate(id);
+  return candidate.term;
 }

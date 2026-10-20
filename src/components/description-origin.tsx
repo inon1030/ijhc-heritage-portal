@@ -10,7 +10,7 @@ import { provenance } from '@/lib/text/word-diff';
  *
  * Michal (24.09.2026). The upload screen pre-fills the description with the
  * AI's summary, so "what the user said" was often the machine's words, and a
- * knowledge expert could not tell. Now it says which, and when the user edited
+ * content expert could not tell. Now it says which, and when the user edited
  * the AI text, their own words are marked in place — the words the reviewer
  * should weigh as testimony rather than as a reading of the file.
  */

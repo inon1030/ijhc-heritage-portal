@@ -12,7 +12,7 @@ export interface Profile {
   full_name: string | null;
   role: UserRole;
   created_at: string;
-  /** Mail on every new submission. Knowledge experts and administrators; set by an administrator. */
+  /** Mail on every new submission. Content experts and administrators; set by an administrator. */
   notify_uploads?: boolean;
   /** Mail on every publication to the portal. Administrators; set by an administrator. */
   notify_publications?: boolean;
@@ -64,6 +64,7 @@ export interface Item {
   consent_at: string | null;
   status: ItemStatus;
   access: AccessLevel;
+  uploaded_by?: string | null;
   submitted_by: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -338,6 +339,6 @@ export interface Family {
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   pending: 'Awaiting approval',
-  volunteer: 'Volunteer',
+  volunteer: 'Content expert',
   admin: 'Administrator',
 };

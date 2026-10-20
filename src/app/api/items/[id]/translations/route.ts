@@ -1,3 +1,4 @@
+import { reviewGuard } from '@/lib/items/review-guard';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { fail, invalid, ok, readJson, unexpected } from '@/lib/api';
@@ -54,6 +55,8 @@ export async function POST(_request: NextRequest, context: { params: Promise<{ i
       return fail(401, 'unauthenticated', 'Sign in as an approved volunteer.');
     }
     const { id } = await context.params;
+    const denied = await reviewGuard(id);
+    if (denied) return denied;
 
     // Bounded, and the bound is handed down to the model call itself — the same
     // shape as the nightly sweep, for the same reason: a serverless function is
@@ -79,6 +82,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       return fail(401, 'unauthenticated', 'Sign in as an approved volunteer.');
     }
     const { id } = await context.params;
+    const denied = await reviewGuard(id);
+    if (denied) return denied;
     const parsed = Correction.safeParse(await readJson(request));
     if (!parsed.success) return invalid(parsed.error);
 
