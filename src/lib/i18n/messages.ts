@@ -25,6 +25,7 @@
  */
 
 export const en = {
+  'login.intro': 'Reviewing submissions needs an account. Browsing and contributing do not — those are open to everyone.',
   'review3.signIn': 'Sign in as an approved content expert.',
   'review3.missing': 'This record is no longer available.',
   'review3.readOnly': 'Read-only: content experts may edit published records only if they uploaded or approved them.',

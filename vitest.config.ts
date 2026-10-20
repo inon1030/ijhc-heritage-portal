@@ -12,6 +12,9 @@ export default defineConfig({
     globals: true,
     include: ['tests/unit/**/*.test.{ts,tsx}'],
     setupFiles: ['tests/setup.ts'],
+    // The suite renders whole screens (upload, review); with 63 files in parallel on a
+    // busy machine a few pass alone in 2s and miss the 5s default. Assertions are unchanged.
+    testTimeout: 20_000,
   },
   resolve: {
     alias: {
