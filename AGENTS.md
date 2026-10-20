@@ -12,6 +12,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # IJHC Heritage Portal — project rules
 
+The map of the code (structure, data model, request paths, deliberate oddities) is
+`docs/CODEBASE-GUIDE.md`. The handoff for people, in Hebrew, is
+`docs/HANDOFF-העברת-מקל.md`. Read the guide before changing anything.
+
 ## Context
 
 Stage 1 of a digital archive for the Indian Jewish Heritage Center. The sibling

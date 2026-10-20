@@ -76,6 +76,10 @@ npx vercel --prod --yes
 
 | Migration | What it did | To undo |
 |---|---|---|
+| 0037 | collector credit columns, `keyword_candidates.source/item_id`, `record_comments` (+ public view), `record_corrections` | Drop the two tables and the view; the columns are safe to leave. Code from 20.10 needs them |
+| 0036 | `items.uploaded_by`, `can_edit_published`, owner rule on items/item_fields/item_families/item_translations policies, `review_drafts`, `similar_review_terms` | Restore the previous policy bodies from 0007/0012/0023 (`is_volunteer()`), drop `review_drafts`. Code from 20.10 needs them |
+| 0035 | `ai_analyses.retry_count`, `last_retry_at`, `claim_reading_retry()` | Drop the function; columns safe to leave |
+| 0034 | `item_duplicates`, `item_contributors`, duplicate functions, restore trigger on `items` | Drop trigger `restore_duplicate_files` first, then functions and tables |
 | 0022 | `items.contributor_id` → `ON DELETE SET NULL` | Re-add the constraint without `on delete set null`. Safe to leave in place |
 | 0021 | Vocabulary gained `branch_key`, `preferred_id`, `external_id` + a trigger | Columns are additive. `drop trigger keywords_variant_flat on keywords;` disables the variant rule without data loss |
 | 0020 | `contributors` + `contributor_families` created; `items.contributor_key` dropped | **Not reversible without the backup.** `contributor_key` held HMACs that cannot be recomputed for deleted rows |
