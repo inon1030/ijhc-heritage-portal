@@ -154,7 +154,7 @@ npm run verify            # typecheck + lint + vitest + build — must be green 
 npm run test:e2e          # Playwright permission suite (needs test accounts)
 ```
 
-- **Deploy = push to `master`.** Vercel is connected to GitHub: every push to master becomes a production deployment within seconds. Branches get preview deployments. `npm run deploy` also exists (pushes env + CLI deploy).
+- **Two Vercel projects deploy this repository, both on the same Supabase project.** `heritage-portal` (account e-m1) serves **heritage-portal-snowy.vercel.app**, the site everyone uses, and is deployed only from the CLI: `npx vercel --prod --yes` in the code folder (see `docs/RUNBOOK.md`). `ijhc-heritage-portal` (the Center's account, indianjews) is connected to GitHub and deploys every push to `master` to **ijhc-heritage-portal.vercel.app**. A push to master is therefore already live on the second address; deploy the first with the CLI after it. Never run the CLI from a worktree such as `../ijhc-autofix`: it creates a new project. Measured 21.10.2026.
 - **Migrations are applied by hand** in the Supabase dashboard SQL editor (project `llfwnitakmhuyexvqvft`), each wrapped in `begin; … commit;`, **before** the code that needs them is pushed. Record each in `docs/RUNBOOK.md` with how to undo it.
 - **Strings**: add the key to `messages.ts` and `he.json` by hand. `npm run i18n` machine-translates hi/mr/ml and **costs Gemini calls** — run it deliberately, not in a loop.
 - **Tests**: every new piece of logic gets a unit test. Do not delete or skip a test to get green; if behaviour changed on purpose, update the test and say so in the commit.
