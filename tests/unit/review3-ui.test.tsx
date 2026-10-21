@@ -59,6 +59,8 @@ it('saves edited readings privately with the catalogue draft', async () => {
     <ReviewReadingDraft analysisId={analysisId} field="transcript" text="Corrected reading" original="Machine reading" restore={vi.fn()} />
   </ReviewDraftScope>);
   await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+  // The button stays disabled until the stored draft has loaded; clicking earlier is ignored.
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save as draft' })).toBeEnabled());
   fireEvent.click(screen.getByRole('button', { name: 'Save as draft' }));
   await screen.findByText('Draft saved privately. The record is unchanged.');
   const sent = JSON.parse(fetcher.mock.calls[1][1]?.body as string);
