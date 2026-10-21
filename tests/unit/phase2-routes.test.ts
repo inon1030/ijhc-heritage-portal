@@ -56,8 +56,18 @@ describe('daily scheduler', () => {
     expect(retryOneReading).not.toHaveBeenCalled();
     vi.unstubAllEnvs();
   });
+  it('does nothing on a deployment that is not the cron home', async () => {
+    vi.stubEnv('CRON_SECRET', 'test-only');
+    vi.stubEnv('CRON_HOME', '');
+    const response = await cron.GET(new Request('https://archive.example', { headers: { authorization: 'Bearer test-only' } }));
+    expect(response.status).toBe(200);
+    expect((await response.json()).data).toEqual({ skipped: 'not the cron home' });
+    expect(retryOneReading).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
+  });
   it('limits the run to the configured number of reading claims', async () => {
     vi.stubEnv('CRON_SECRET', 'test-only');
+    vi.stubEnv('CRON_HOME', '1');
     vi.stubEnv('AI_RETRY_DAILY', '2');
     retryOneReading.mockResolvedValue(true);
     const response = await cron.GET(new Request('https://archive.example', { headers: { authorization: 'Bearer test-only' } }));

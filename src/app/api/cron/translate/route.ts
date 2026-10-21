@@ -1,3 +1,4 @@
+import { isCronHome } from '@/lib/cron-home';
 import { NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { fail, ok, unexpected } from '@/lib/api';
@@ -80,6 +81,7 @@ export async function GET(request: NextRequest) {
     if (!authorised(request)) {
       return fail(401, 'unauthenticated', 'This endpoint is for the scheduler.');
     }
+    if (!isCronHome()) return ok({ skipped: 'not the cron home' });
 
     const started = Date.now();
     const deadline = started + BUDGET_MS;

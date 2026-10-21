@@ -1,3 +1,4 @@
+import { isCronHome } from '@/lib/cron-home';
 import { timingSafeEqual } from 'node:crypto';
 import { fail, ok, unexpected } from '@/lib/api';
 import { retryOneReading } from '@/lib/items/retry-reading';
@@ -13,6 +14,7 @@ export async function GET(request: Request) {
     const { t } = await getMessages();
     return fail(401, 'unauthenticated', t('phase2.forbidden'));
   }
+  if (!isCronHome()) return ok({ skipped: 'not the cron home' });
   const started = Date.now();
   const limit = dailyRetryLimit(process.env.AI_RETRY_DAILY);
   let attempted = 0;

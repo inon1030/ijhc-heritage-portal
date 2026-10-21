@@ -1,3 +1,4 @@
+import { isCronHome } from '@/lib/cron-home';
 import { NextRequest } from 'next/server';
 import { gzipSync } from 'node:zlib';
 import { timingSafeEqual } from 'node:crypto';
@@ -90,6 +91,7 @@ export async function GET(request: NextRequest) {
     if (!authorised(request)) {
       return fail(401, 'unauthenticated', 'This endpoint is for the scheduler.');
     }
+    if (!isCronHome()) return ok({ skipped: 'not the cron home' });
 
     const to = destination();
     if (!to) {
