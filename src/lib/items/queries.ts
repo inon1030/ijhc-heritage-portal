@@ -383,10 +383,18 @@ export async function listReviewQueue(): Promise<(Item & { file: ItemFile | null
 
   return reviewOrder((data ?? []).map(({ item_files, ai_analyses, ...item }) => {
     const file = primaryFile(item_files as FileRow[]);
+    const analyses = (ai_analyses as AiAnalysis[]) ?? [];
+    // The latest reading of each further file. A file that was never read on its
+    // own (items from before per-file readings) is not counted against the item.
+    const otherReadings = orderedFiles(item_files as FileRow[])
+      .filter((f) => f.id !== file?.id)
+      .map((f) => analyses.filter((a) => a.file_id === f.id).sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.status ?? null)
+      .filter((status): status is AiAnalysis['status'] => status !== null);
     return {
       ...(item as Item),
       file,
-      analysis: analysisFor((ai_analyses as AiAnalysis[]) ?? [], file),
+      analysis: analysisFor(analyses, file),
+      otherReadings,
     };
   }));
 }

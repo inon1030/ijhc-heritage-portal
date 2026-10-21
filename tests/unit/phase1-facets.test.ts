@@ -62,6 +62,14 @@ describe('review ordering and publication', () => {
     expect(readingState(item('a','','pending'))).toBe('pending');
     expect(readingState(item('a',''))).toBe('missing');
   });
+  it('treats an item as unread when any of its files failed, even if the first page was read', () => {
+    const ruth = { ...item('ruth','2026-01-01','succeeded'), otherReadings: ['failed', 'failed'] as ('failed')[] };
+    const fine = { ...item('fine','2026-02-01','succeeded'), otherReadings: ['succeeded'] as ('succeeded')[] };
+    expect(readingState(ruth)).toBe('failed');
+    expect(readingState(fine)).toBe('ready');
+    expect(readingState({ ...item('p','','succeeded'), otherReadings: ['pending'] })).toBe('pending');
+    expect(reviewOrder([ruth, fine]).map(r => r.id)).toEqual(['fine','ruth']);
+  });
   it('floors elapsed days and handles future or malformed timestamps', () => {
     const now = Date.parse('2026-10-20T12:00:00Z');
     expect(waitingDays('2026-10-17T13:00:00Z',now)).toBe(2);
