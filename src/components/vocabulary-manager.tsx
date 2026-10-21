@@ -67,12 +67,12 @@ export function VocabularyManager({
 
   async function add(event: React.FormEvent) {
     event.preventDefault();
-    if (!term.trim() || !branch) return;
+    if (!term.trim()) return;
     setBusyId('new');
     const done = await send('/api/manage/keywords', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ term: term.trim(), community: scope || null, branchKey: branch }),
+      body: JSON.stringify({ term: term.trim(), community: scope || null, branchKey: branch || null }),
     });
     if (done) setTerm('');
     setBusyId(null);
@@ -115,7 +115,7 @@ export function VocabularyManager({
             <input
               value={term}
               onChange={(e) => setTerm(e.target.value)}
-              maxLength={60}
+              maxLength={80}
               placeholder="Alibag"
               className="h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:bg-accent-wash/30 focus:outline-none"
             />
@@ -123,16 +123,15 @@ export function VocabularyManager({
 
           <button
             type="submit"
-            disabled={busyId === 'new' || !term.trim() || !branch}
+            disabled={busyId === 'new' || !term.trim()}
             className={buttonClass('primary', 'h-11')}
           >
             {busyId === 'new' ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-            Add
+            {t('tags.add')}
           </button>
 
           <label className="sm:col-span-2">
-            {/* Required, not optional. A term that subdivides nothing is the
-                thing this screen was rebuilt to stop producing. */}
+
             <span className="eyebrow mb-1.5 block">{t('vocab.subdivides')}</span>
             <BranchSelect value={branch} onChange={setBranch} placeholder={t('vocab.chooseBranch')} />
           </label>

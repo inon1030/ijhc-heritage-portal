@@ -1,3 +1,4 @@
+import { getCurrentVolunteer } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import { UploadFlow } from '@/components/upload-flow';
 import { Logo } from '@/components/logo';
@@ -65,6 +66,7 @@ export default async function UploadPage() {
         the bottom of the screen.
       */}
       <UploadFlow
+        expert={Boolean(await getCurrentVolunteer())}
         vocabulary={vocabulary}
         languages={languages}
         siteLanguage={current?.code ?? languages[0]?.code ?? 'en'}

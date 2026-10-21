@@ -23,7 +23,7 @@ import { addKeyword, deleteKeyword, mergeKeyword, placeKeyword } from '@/lib/voc
  */
 
 const Create = z.object({
-  term: z.string().trim().min(2).max(60),
+  term: z.string().trim().min(1).max(80),
   community: z.enum(COMMUNITIES as [string, ...string[]]).nullable(),
   /** Which branch of the logical tree this term subdivides. */
   branchKey: z.enum(FIELD_KEYS as [string, ...string[]]).nullable().optional(),

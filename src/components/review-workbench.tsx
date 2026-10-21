@@ -1,4 +1,5 @@
 'use client';
+import { TagPicker } from './tag-picker';
 import { CollectorCreditEditor } from '@/components/collector-credit-editor';
 
 import { ReviewReadingDraft } from '@/components/review-draft-scope';
@@ -36,7 +37,7 @@ import {
   type ItemFile,
   type ItemStatus,
 } from '@/lib/types';
-import { byBranch, termsFor, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
+import { type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
 import { cn, formatBytes, formatDuration } from '@/lib/utils';
 import { backgroundOf } from '@/lib/ai/background';
 import { contributorTextOf } from '@/lib/ai/replace-text';
@@ -118,6 +119,7 @@ export function ReviewWorkbench({
   const corrections = item.fields.filter((f) => fieldDef(f.field_key)?.column);
   const [showing, setShowing] = useState(0);
   const [busy, setBusy] = useState<ItemStatus | 'delete' | null>(null);
+  const [tagsBusy, setTagsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const transitions = allowedTransitions(item.status);
@@ -125,7 +127,7 @@ export function ReviewWorkbench({
 
   // Only terms offered for the chosen community, plus the global ones. The
   // list narrows as soon as a reviewer picks a stream, which is the point.
-  const offered = termsFor(vocabulary, community || null);
+  const offered = vocabulary;
   const offeredFamilies = community ? families.filter((f) => f.community === community) : [];
 
   async function decide(status: ItemStatus) {
@@ -571,14 +573,9 @@ export function ReviewWorkbench({
           </FieldRow>
 
           <ReviewCandidates itemId={item.id} keywords={keywords} onChange={setKeywords} />
-          <VocabularyPicker
-            keywords={keywords}
-            onChange={setKeywords}
-            offered={offered}
-            suggestions={analysis?.keywords ?? []}
-            contributorTerms={item.contributor_keywords}
-            communityChosen={Boolean(community)}
-          />
+          <TagPicker expert onBusyChange={setTagsBusy} disabled={busy !== null || tagsBusy}
+            chosen={keywords} onChange={setKeywords} offered={offered}
+            suggested={[...(analysis?.keywords ?? []), ...item.contributor_keywords]} />
 
           <FamilyPicker
             families={offeredFamilies}
@@ -590,9 +587,9 @@ export function ReviewWorkbench({
           {/* Everything the model was less than 70% sure of was discarded
               before it reached this screen. What is here is what it could
               name a reason for; the picklist holds the rest of the tree. */}
-          <FieldSheet tone="volunteer" values={fields} onChange={setFields} disabled={busy !== null} />
+          <FieldSheet tone="volunteer" values={fields} onChange={setFields} disabled={busy !== null || tagsBusy} />
 
-          <AudiencePicker value={access} onChange={setAccess} disabled={busy !== null} />
+          <AudiencePicker value={access} onChange={setAccess} disabled={busy !== null || tagsBusy} />
 
           {analysis && !simulated && (
             <div className="card bg-paper-2/50 px-4 py-3.5">
@@ -627,14 +624,14 @@ export function ReviewWorkbench({
           <TranslationDeck itemId={item.id} siteLanguage={siteLanguage} />
         </div>
 
-        <ReviewDraftControls itemId={item.id} deciding={busy !== null} value={{ baseReviewedAt: item.reviewed_at ?? null, title, description, category, community, provenance, language, period, originPlace, keywords, familyIds, access, fields: fields.map(({ key, value }) => ({ key, value })) }} restore={draft => { setTitle(draft.title); setDescription(draft.description); setCategory(draft.category); setCommunity(draft.community); setProvenance(draft.provenance); setLanguage(draft.language); setPeriod(draft.period); setOriginPlace(draft.originPlace); setKeywords(draft.keywords); setFamilyIds(draft.familyIds); setAccess(draft.access); setFields(draft.fields); }} />
+        <ReviewDraftControls itemId={item.id} deciding={busy !== null || tagsBusy} value={{ baseReviewedAt: item.reviewed_at ?? null, title, description, category, community, provenance, language, period, originPlace, keywords, familyIds, access, fields: fields.map(({ key, value }) => ({ key, value })) }} restore={draft => { setTitle(draft.title); setDescription(draft.description); setCategory(draft.category); setCommunity(draft.community); setProvenance(draft.provenance); setLanguage(draft.language); setPeriod(draft.period); setOriginPlace(draft.originPlace); setKeywords(draft.keywords); setFamilyIds(draft.familyIds); setAccess(draft.access); setFields(draft.fields); }} />
         <div className="mt-8 flex flex-wrap gap-3 border-t border-rule pt-6">
           {!category && <p className="w-full text-caution" role="status">{t('wb.categoryRequired')}</p>}
           {(transitions.includes('accepted') || item.status === 'accepted') && (
             <Decision
               onClick={() => decide('accepted')}
               busy={busy === 'accepted'}
-              disabled={busy !== null || !title.trim() || !category}
+              disabled={busy !== null || tagsBusy || !title.trim() || !category}
               tone="accept"
               icon={<Check size={15} />}
             >
@@ -645,7 +642,7 @@ export function ReviewWorkbench({
             <Decision
               onClick={() => decide('shadow_gallery')}
               busy={busy === 'shadow_gallery'}
-              disabled={busy !== null}
+              disabled={busy !== null || tagsBusy}
               tone="neutral"
               icon={<EyeOff size={15} />}
             >
@@ -656,7 +653,7 @@ export function ReviewWorkbench({
             <Decision
               onClick={() => decide('rejected')}
               busy={busy === 'rejected'}
-              disabled={busy !== null}
+              disabled={busy !== null || tagsBusy}
               tone="reject"
               icon={<X size={15} />}
             >
@@ -667,7 +664,7 @@ export function ReviewWorkbench({
             <Decision
               onClick={() => decide('pending')}
               busy={busy === 'pending'}
-              disabled={busy !== null}
+              disabled={busy !== null || tagsBusy}
               tone="neutral"
               icon={<RotateCcw size={15} />}
             >
@@ -676,7 +673,7 @@ export function ReviewWorkbench({
           )}
           <button
             onClick={remove}
-            disabled={busy !== null}
+            disabled={busy !== null || tagsBusy}
             className="ms-auto flex items-center gap-1.5 px-3 py-2.5 text-sm text-critical hover:underline disabled:opacity-50"
           >
             {busy === 'delete' ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
@@ -948,182 +945,6 @@ function FieldRow({
   );
 }
 
-/**
- * Keywords, drawn from the archive's own vocabulary and nothing else.
- *
- * The client asked for exactly this: two volunteers cataloguing the same kind
- * of object should reach for the same word. The list narrows to the chosen
- * community plus the terms offered everywhere.
- *
- * The model's suggestions still appear, split in two. Ones already in the
- * vocabulary are one click away. Ones outside it are shown greyed, because they
- * cannot go on a record — they are queued at /manage/vocabulary for someone to
- * decide whether they should be able to.
- */
-function VocabularyPicker({
-  keywords,
-  onChange,
-  offered,
-  suggestions,
-  contributorTerms,
-  communityChosen,
-}: {
-  keywords: string[];
-  onChange: (next: string[]) => void;
-  offered: VocabularyTerm[];
-  suggestions: string[];
-  contributorTerms: string[];
-  communityChosen: boolean;
-}) {
-  const t = useMessages();
-  const [filter, setFilter] = useState('');
-
-  const terms = offered.map((t) => t.term);
-
-  /*
-   * Variants resolve here as well as at the endpoint.
-   *
-   * A term the archive holds under another spelling is not a term the archive
-   * lacks. Without this, a model returning `Bombay` off an imprint — which it
-   * is invited to do, the enum offers variants — would be shown to a reviewer
-   * as "not in the vocabulary" beside a `Mumbai` chip they could have clicked.
-   */
-  const preferredFor = new Map<string, string>();
-  for (const term of offered) {
-    preferredFor.set(term.term.toLowerCase(), term.term);
-    for (const variant of term.variants) preferredFor.set(variant.toLowerCase(), term.term);
-  }
-
-  const proposed = [...new Set([...suggestions, ...contributorTerms])].filter(
-    (t) => !keywords.some((k) => k.toLowerCase() === (preferredFor.get(t.toLowerCase()) ?? t).toLowerCase()),
-  );
-  const available = [
-    ...new Set(proposed.map((t) => preferredFor.get(t.toLowerCase())).filter((t): t is string => Boolean(t))),
-  ];
-  const notInVocabulary = proposed.filter((t) => !preferredFor.has(t.toLowerCase()));
-
-  const needle = filter.trim().toLowerCase();
-
-  // Typing an old spelling finds the term. Somebody who knows the city as
-  // Bombay should not have to know the archive settled on Mumbai.
-  const matching = offered
-    .filter((t) => !keywords.includes(t.term))
-    .filter(
-      (t) =>
-        !needle ||
-        t.term.toLowerCase().includes(needle) ||
-        t.variants.some((v) => v.toLowerCase().includes(needle)),
-    );
-
-  const grouped = byBranch(matching);
-
-  function add(term: string) {
-    if (keywords.includes(term) || keywords.length >= 20) return;
-    onChange([...keywords, term]);
-  }
-
-  return (
-    <div>
-      <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <span className="eyebrow">{t('wb.keywords')}</span>
-        <span className="machine text-muted">
-          {communityChosen ? `${terms.length} offered` : 'choose a community to narrow the list'}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {keywords.map((keyword) => (
-          <span
-            key={keyword}
-            className="inline-flex items-center gap-1.5 border border-ink bg-ink px-2.5 py-1 font-mono text-xs text-paper"
-          >
-            {keyword}
-            <button
-              onClick={() => onChange(keywords.filter((k) => k !== keyword))}
-              aria-label={t('prereview.removeTag', { term: keyword })}
-              className="opacity-60 hover:opacity-100"
-            >
-              <X size={12} />
-            </button>
-          </span>
-        ))}
-        {keywords.length === 0 && <span className="text-sm text-muted italic">{t('wb.noneYet')}</span>}
-      </div>
-
-      {available.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="machine text-muted">suggested:</span>
-          {available.map((term) => {
-            const exact = terms.find((t) => t.toLowerCase() === term.toLowerCase())!;
-            return (
-              <button
-                key={term}
-                onClick={() => add(exact)}
-                className="border border-dashed border-accent/50 px-2 py-0.5 font-mono text-xs text-accent hover:bg-accent-wash"
-              >
-                + {exact}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {notInVocabulary.length > 0 && (
-        <p className="mt-2 text-sm text-muted">
-          Not in the vocabulary, so not selectable here:{' '}
-          <span className="machine">{notInVocabulary.join(', ')}</span>. They are queued under{' '}
-          <a href="/manage/vocabulary" className="underline underline-offset-2 hover:text-accent">
-            {t('wb.manage')}
-          </a>
-          .
-        </p>
-      )}
-
-      {terms.length === 0 ? (
-        <p className="mt-3 rounded-2xl bg-surface px-3 py-3 text-sm text-muted">
-          The vocabulary holds nothing for this community yet. Add terms under Manage and they
-          become selectable here.
-        </p>
-      ) : (
-        <>
-          <input
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder={t('wb.filterVocabulary')}
-            maxLength={60}
-            className="mt-3 h-11 w-full rounded-lg border border-rule bg-paper px-4 focus:border-accent-strong focus:outline-none"
-          />
-          {/* Under the branch each term subdivides, so a reviewer picking a
-              keyword sees the same structure they just filed the record
-              under. A flat list of sixty words is a search box; a list under
-              "Cities and Villages" is a question with an answer. */}
-          <div className="mt-2 max-h-52 space-y-3 overflow-auto">
-            {grouped.map((group) => (
-              <div key={group.branchKey}>
-                <p className="eyebrow mb-1.5">{group.label}</p>
-                <div className="flex flex-wrap gap-2">
-                  {group.terms.map((term) => (
-                    <button
-                      key={term.id}
-                      onClick={() => add(term.term)}
-                      title={term.variants.length ? `Also written: ${term.variants.join(', ')}` : undefined}
-                      className="border border-rule bg-paper-2 px-2.5 py-1 text-sm transition-colors hover:border-accent hover:bg-accent-wash"
-                    >
-                      {term.term}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {matching.length === 0 && (
-              <span className="text-sm text-muted italic">{t('wb.nothingMatches')}</span>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 /** Families, offered only for the community the record has been placed in. */
 function FamilyPicker({

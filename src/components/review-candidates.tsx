@@ -16,7 +16,6 @@ export function ReviewCandidates({ itemId, keywords, onChange }: { itemId: strin
     return () => controller.abort();
   }, [itemId]);
   async function decide(candidate: ReviewCandidate, action: 'create' | 'decline', replacement?: string) {
-    if ((action === 'create' || replacement) && keywords.length >= 20) { setError(t('review3.tagLimit')); return; }
     setBusy(candidate.id);
     setError('');
     try {

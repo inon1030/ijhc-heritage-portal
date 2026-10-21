@@ -9,7 +9,7 @@ export type ContributorText = Pick<AnalysisResult, 'summary' | 'background' | 'k
 export function replacementFits(drafts: Record<string, Draft>): boolean {
   return Object.values(drafts).every((draft) =>
     draft.title.length <= 200 && draft.description.length <= 4000 &&
-    draft.keywords.every((word) => word.length > 0 && word.length <= 60) &&
+    draft.keywords.every((word) => word.length > 0 && word.length <= 80) &&
     draft.fields.every((field) => field.value.length <= (fieldDef(field.key)?.maxLength ?? 2000) &&
       (field.note?.length ?? 0) <= 400) &&
     (draft.reading?.ocrText?.length ?? 0) <= 20000 &&

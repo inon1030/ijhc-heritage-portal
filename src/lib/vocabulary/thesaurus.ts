@@ -184,6 +184,22 @@ export function isKnown(terms: VocabularyTerm[], word: string): boolean {
   );
 }
 
-function normalise(value: string): string {
+export function normalise(value: string): string {
   return value.trim().toLowerCase();
+}
+
+/** Preserve new selections while resolving existing names in any language. */
+export function normaliseChosen(terms: Pick<VocabularyTerm, 'term' | 'variants'>[], chosen: string[]): string[] {
+  const index = new Map<string, string>();
+  for (const term of terms) {
+    for (const name of [term.term, ...term.variants]) {
+      if (!index.has(normalise(name))) index.set(normalise(name), term.term);
+    }
+  }
+  const result = new Map<string, string>();
+  for (const raw of chosen) {
+    const value = index.get(normalise(raw)) ?? raw.trim();
+    if (value && !result.has(normalise(value))) result.set(normalise(value), value);
+  }
+  return [...result.values()];
 }

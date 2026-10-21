@@ -25,6 +25,10 @@
  */
 
 export const en = {
+  'tags.add': 'Add',
+  'tags.create': 'Create and add “{text}”',
+  'tags.proposed': 'Proposed for review',
+  'tags.expertHint': 'Choose any term or type a new one. New terms are added to the vocabulary when you select them.',
   'login.intro': 'Reviewing submissions needs an account. Browsing and contributing do not — those are open to everyone.',
   'review3.signIn': 'Sign in as an approved content expert.',
   'review3.missing': 'This record is no longer available.',
@@ -50,7 +54,6 @@ export const en = {
   'review3.createTerm': 'Create this term',
   'review3.useTerm': 'Use {term} instead',
   'review3.decline': 'Decline',
-  'review3.tagLimit': 'A record can have up to 20 tags. Remove one before adding another.',
   'review3.batchLimit': 'Select between 1 and 50 different records.',
   'review3.batchReview': 'Review selected records',
   'review3.batchNote': 'Review each category, audience and suggested tag. Only checked tags are attached. Records without a category stay in the queue.',
@@ -69,7 +72,6 @@ export const en = {
   'review3.access.research': 'Research — experts only for now',
   'review3.access.administrative': 'Archive team only',
   'review3.newTerm': 'New term — checking it accepts the candidate on approval',
-  'review3.unavailableTerm': 'No open candidate — manage this term in Vocabulary',
   'review3.view': 'Queue view',
   'review3.grid': 'Grid',
   'review3.list': 'List',
@@ -479,7 +481,7 @@ export const en = {
   'prereview.machineReading': 'The machine’s reading',
   'prereview.yourDescription': 'Your description',
   'prereview.yourTags': 'Your tags',
-  'prereview.addTag': 'Search the archive’s tags',
+  'prereview.addTag': 'Add a tag',
   'prereview.tagsFromList':
     'Tags come from the archive’s own list, so the same thing is filed under the same word everywhere. If what you want is not here, say it in the description and the content expert can add it.',
   'prereview.tagsSuggested': 'Suggested for this item',

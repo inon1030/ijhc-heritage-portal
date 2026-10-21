@@ -706,7 +706,7 @@ export async function decideReviewCandidate(itemId: string, id: string, action: 
   const candidates = await readReviewCandidates(itemId);
   const candidate = candidates.find(c => c.id === id);
   if (!candidate) throw new Error('candidate_changed');
-  if (action === 'create') await acceptCandidate(id);
+  if (action === 'create') return await acceptCandidate(id);
   else await declineCandidate(id);
   return candidate.term;
 }

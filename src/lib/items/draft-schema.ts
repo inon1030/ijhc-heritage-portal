@@ -13,7 +13,7 @@ export const DraftPayload = z.object({
   language: z.string().max(60),
   period: z.string().max(120),
   originPlace: z.string().max(200),
-  keywords: z.array(z.string().max(60)).max(20),
+  keywords: z.array(z.string().trim().min(1).max(80)),
   familyIds: z.array(z.string().uuid()).max(12),
   access: z.enum(ACCESS_LEVELS),
   fields: z.array(z.object({ key: z.string().max(120), value: z.string().max(2000) })).max(100),

@@ -1,4 +1,5 @@
 'use client';
+import { TagPicker } from './tag-picker';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMessages } from '@/lib/i18n/provider';
@@ -7,9 +8,9 @@ import { CATEGORIES, type ItemDetail, type ItemCategory, type AccessLevel } from
 import { ACCESS_LEVELS } from '@/lib/access';
 import { fieldDef } from '@/lib/fields/registry';
 import type { ReviewCandidate } from '@/lib/items/queries';
-import { resolveTerms, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
+import { normaliseChosen, resolveTerms, type VocabularyTerm } from '@/lib/vocabulary/thesaurus';
 
-type Row = { item: ItemDetail; familyIds: string[]; candidates: ReviewCandidate[]; category: ItemCategory | ''; access: AccessLevel; keywords: string[]; candidateIds: string[] };
+type Row = { item: ItemDetail; familyIds: string[]; candidates: ReviewCandidate[]; category: ItemCategory | ''; access: AccessLevel; keywords: string[] };
 const button = 'min-h-11 rounded-full border border-rule-strong bg-paper px-5 font-medium focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50';
 
 export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; close: () => void; completed: (ids: string[]) => void }) {
@@ -18,6 +19,7 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
   const [rows, setRows] = useState<Row[]>([]);
   const [vocabulary, setVocabulary] = useState<VocabularyTerm[]>([]);
   const [busy, setBusy] = useState(false);
+  const [tagsBusy, setTagsBusy] = useState(false);
   const [error, setError] = useState('');
   const [results, setResults] = useState<Record<string, { ok: boolean; message: string }>>({});
   useEffect(() => {
@@ -27,7 +29,7 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
       if (!body.ok) throw new Error(body.error.message);
       setVocabulary(body.data.vocabulary);
       setRows(body.data.items.map((row: Pick<Row, 'item' | 'familyIds' | 'candidates'>) => ({
-        ...row, category: row.item.category ?? '', access: row.item.access, keywords: row.item.keywords, candidateIds: [],
+        ...row, category: row.item.category ?? '', access: row.item.access, keywords: normaliseChosen(body.data.vocabulary, row.item.keywords),
       })));
       if (body.data.items.length !== ids.length) setError(t('review3.changed'));
     }).catch(e => { if (!controller.signal.aborted) setError(e.message); });
@@ -47,7 +49,7 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
             title: row.item.title, description: row.item.description, category: row.category,
             community: row.item.community, provenance: row.item.provenance, language: row.item.language,
             period: row.item.period, originPlace: row.item.origin_place, access: row.access,
-            keywords: row.keywords, familyIds: row.familyIds, candidateIds: row.candidateIds,
+            keywords: row.keywords, familyIds: row.familyIds,
             fields: row.item.fields.filter(field => field.source !== 'ai' && !fieldDef(field.field_key)?.column)
               .map(field => ({ key: field.field_key, value: field.value })),
           },
@@ -71,7 +73,7 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
   return <section aria-labelledby="bulk-title" className="my-6 min-w-0 rounded-2xl border border-rule-strong bg-paper p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h2 id="bulk-title" className="font-display text-2xl">{t('review3.batchReview')}</h2>
-      <button type="button" className={button} disabled={busy} onClick={close}>{t('review3.close')}</button>
+      <button type="button" className={button} disabled={busy || tagsBusy} onClick={close}>{t('review3.close')}</button>
     </div>
     <p className="my-3 text-muted">{t('review3.batchNote')}</p>
     {!rows.length && !error && <p role="status">{t('review3.loading')}</p>}
@@ -80,8 +82,8 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
         <caption className="sr-only">{t('review3.batchReview')}</caption>
         <thead className="hidden lg:table-header-group"><tr>{(['title', 'category', 'tags', 'access', 'result'] as const).map(key => <th key={key} scope="col" className="p-3 text-start">{t(`review3.${key}`)}</th>)}</tr></thead>
         <tbody className="block lg:table-row-group">{rows.map(row => {
-          const disabled = busy || results[row.item.id]?.ok;
-          const suggestions = [...new Set([...row.item.keywords, ...(row.item.analysis?.keywords ?? []), ...row.item.contributor_keywords, ...row.candidates.map(c => c.term)])];
+          const disabled = busy || tagsBusy || results[row.item.id]?.ok;
+          const suggestions = normaliseChosen(vocabulary, [...row.item.keywords, ...(row.item.analysis?.keywords ?? []), ...row.item.contributor_keywords, ...row.candidates.map(c => c.term)]);
           return <tr key={row.item.id} className="mb-4 block rounded-xl border border-rule p-3 lg:table-row lg:border-x-0">
             <th scope="row" className="block break-words py-3 text-start font-medium lg:table-cell lg:p-3"><span dir="auto">{row.item.title}</span></th>
             <td className="block py-3 align-top lg:table-cell lg:p-3">
@@ -96,17 +98,17 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
             <td className="block py-3 align-top lg:table-cell lg:p-3">
               <fieldset><legend>{t('review3.tags')}</legend>{suggestions.map(term => {
                 const resolved = resolveTerms(vocabulary, [term])[0];
-                const candidate = row.candidates.find(c => c.term === term);
                 const canonical = resolved ?? term;
                 const checked = row.keywords.includes(canonical);
                 return <label key={term} className="flex min-h-11 cursor-pointer items-center gap-2 break-words py-2">
-                  <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--color-accent-strong)]" checked={checked} disabled={disabled || (!resolved && !candidate) || (!checked && row.keywords.length >= 20)} onChange={e => patch(row.item.id, {
+                  <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--color-accent-strong)]" checked={checked} disabled={disabled} onChange={e => patch(row.item.id, {
                     keywords: e.target.checked ? [...new Set([...row.keywords, canonical])] : row.keywords.filter(k => k !== canonical),
-                    candidateIds: candidate && !resolved ? (e.target.checked ? [...row.candidateIds, candidate.id] : row.candidateIds.filter(id => id !== candidate.id)) : row.candidateIds,
                   })} />
-                  <span dir="auto">{term}{!resolved && <span className="block text-sm text-muted">{t(candidate ? 'review3.newTerm' : 'review3.unavailableTerm')}</span>}</span>
+                  <span dir="auto">{term}{!resolved && <span className="block text-sm text-muted">{t('review3.newTerm')}</span>}</span>
                 </label>;
               })}</fieldset>
+              <TagPicker expert onBusyChange={setTagsBusy} disabled={disabled} chosen={row.keywords} offered={vocabulary} suggested={[]}
+                onChange={keywords => patch(row.item.id, { keywords })} />
             </td>
             <td className="block py-3 align-top lg:table-cell lg:p-3"><label>{t('review3.access')}
               <select value={row.access} disabled={disabled} onChange={e => patch(row.item.id, { access: e.target.value as AccessLevel })} className="mt-2 min-h-11 w-full rounded-lg border border-rule bg-paper px-2 focus-visible:outline-2">
@@ -118,7 +120,7 @@ export function ReviewBulkTable({ ids, close, completed }: { ids: string[]; clos
         })}</tbody>
       </table>
     </div>
-    <button type="button" className={button} disabled={busy || !eligible.length} onClick={approve}>{t('review3.approveRecords', { count: eligible.length })}</button>
+    <button type="button" className={button} disabled={busy || tagsBusy || !eligible.length} onClick={approve}>{t('review3.approveRecords', { count: eligible.length })}</button>
     {error && <p role="alert" className="mt-3 text-critical">{error}</p>}
   </section>;
 }

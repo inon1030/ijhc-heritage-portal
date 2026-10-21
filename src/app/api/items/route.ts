@@ -1,3 +1,4 @@
+import { ensureKeywords } from '@/lib/vocabulary/mutations';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { NextRequest, after } from 'next/server';
 import { z } from 'zod';
@@ -73,7 +74,7 @@ const Body = z.object({
   contributorLanguage: z.enum(['en','he','hi','mr','ml']).nullable().optional(),
   collectorName: z.string().trim().max(200).nullable().optional(),
   collectorCreditRequired: z.boolean().default(false),
-  suggestedKeywords: z.array(z.string().trim().min(2).max(60)).max(20).default([]),
+  suggestedKeywords: z.array(z.string().trim().min(1).max(80)).default([]),
   title: z.string().trim().min(1).max(200),
   source: z.string().trim().max(200).nullable().optional(),
   /** Written by the client from what /api/links/ingest returned, never typed. */
@@ -92,7 +93,7 @@ const Body = z.object({
    */
   consentVersion: z.string().trim().min(1).max(40),
   contributorDescription: z.string().trim().max(4000).nullable().optional(),
-  contributorKeywords: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
+  contributorKeywords: z.array(z.string().trim().min(1).max(80)).optional(),
   /** "How accurate was the AI's reading?" 1-5, optional (Michal, 24.09). */
   aiRating: z.number().int().min(1).max(5).nullable().optional(),
   /**
@@ -141,7 +142,7 @@ const Body = z.object({
         /** The contributor's correction of what the machine read. See 0030. */
         contributorText: z.object({
           summary: z.string().max(4000), background: z.string().max(12000).nullable(),
-          keywords: z.array(z.string().max(200)).max(40),
+          keywords: z.array(z.string().max(200)),
           backgroundSources: z.array(z.object({ title: z.string().max(400), url: z.string().url().max(2000) })).max(6),
         }).optional(),
         corrected: z
@@ -195,12 +196,14 @@ export async function POST(request: NextRequest) {
       return fail(403, 'forbidden', t('err.oneUploadNotOurs'));
     }
     const uploader = await getCurrentVolunteer();
+    const chosenKeywords = [...(body.contributorKeywords ?? []), ...body.suggestedKeywords];
+    const expertKeywords = uploader ? await ensureKeywords(chosenKeywords) : null;
     const item = await createItem({
       uploadedBy: uploader?.id ?? null,
       contributorLanguage: body.contributorLanguage ?? null,
       collectorName: body.collectorName || null,
       collectorCreditRequired: body.collectorCreditRequired,
-      suggestedKeywords: body.suggestedKeywords,
+      suggestedKeywords: uploader ? [] : body.suggestedKeywords,
       title: body.title,
       source: body.source?.trim() || null,
       sourceUrl: body.sourceUrl?.trim() || null,
@@ -208,7 +211,7 @@ export async function POST(request: NextRequest) {
       contributorFullName: body.contributorFullName?.trim() || null,
       consentVersion: body.consentVersion,
       contributorDescription: body.contributorDescription?.trim() || null,
-      contributorKeywords: body.contributorKeywords ?? [],
+      contributorKeywords: expertKeywords ?? body.contributorKeywords ?? [],
       aiRating: body.aiRating ?? null,
       contributorFields: body.contributorFields ?? null,
       files: body.files.map((file) => ({

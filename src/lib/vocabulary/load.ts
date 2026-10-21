@@ -22,10 +22,7 @@ export async function loadVocabulary(): Promise<VocabularyBranch[]> {
 
 /** For screens: the caller's own session, flat, ready for `termsFor` and `byBranch`. */
 export async function readVocabulary(): Promise<VocabularyTerm[]> {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from('keywords').select('*');
-  if (error) throw error;
-  return buildVocabulary((data ?? []) as Keyword[]);
+  return readUploadVocabulary();
 }
 
 /** Upload searches every community, language and variant, without PostgREST's row cap. */

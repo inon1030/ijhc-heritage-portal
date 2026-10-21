@@ -174,7 +174,7 @@
     "prereview.machineReading": "f3108da41585571e",
     "prereview.yourDescription": "bf3a2be349f58b2a",
     "prereview.yourTags": "b0e1a3cbc428026c",
-    "prereview.addTag": "1c864eea7c5ea3e3",
+    "prereview.addTag": "acfd447bab4b395d",
     "prereview.addTagAction": "3e10b08cc8745141",
     "prereview.submit": "40447e4493fb3832",
     "prereview.submitMany": "9434a867d1e3c39a",
@@ -893,7 +893,6 @@
     "review3.createTerm": "95d3728bc806b2e9",
     "review3.useTerm": "e7c01081d1bcd006",
     "review3.decline": "a2d285b352873457",
-    "review3.tagLimit": "77a30f442ce5e53b",
     "review3.batchLimit": "465760dcc2e29bf1",
     "review3.batchReview": "2e9f4b008685e8f8",
     "review3.batchNote": "1b6ec9bfda48d93f",
@@ -912,7 +911,6 @@
     "review3.access.research": "a6c52c8e408f49d1",
     "review3.access.administrative": "421028210c484a6d",
     "review3.newTerm": "91accfb444bd811b",
-    "review3.unavailableTerm": "414b0097a7200198",
     "review3.view": "dd10bbecf8515a78",
     "review3.grid": "0d7d12ac624c66e6",
     "review3.list": "6f202f54a7b2d8fe",
@@ -980,7 +978,11 @@
     "public.description": "526e0087cc3f254d",
     "public.tagsHint": "08ccc84d3e8f709a",
     "public.removeTag": "488464ba45b0e8e2",
-    "login.intro": "bf5c476d49e13cc2"
+    "login.intro": "bf5c476d49e13cc2",
+    "tags.add": "9fd728c66c9a256b",
+    "tags.create": "1258256646331038",
+    "tags.proposed": "429959f18fd3fc97",
+    "tags.expertHint": "49977adbc83d64cd"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",

@@ -1,4 +1,7 @@
 import 'server-only';
+import { z } from 'zod';
+import { readVocabulary } from './load';
+import { normalise, normaliseChosen, type VocabularyTerm } from './thesaurus';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { createServerSupabase } from '@/lib/supabase/server';
 import { fieldDef } from '@/lib/fields/registry';
@@ -14,20 +17,74 @@ import type { Community, UserRole } from '@/lib/types';
  * only operation the anon-key client cannot perform at all.
  */
 
-export async function addKeyword(
-  term: string,
-  community: Community | null,
-  branchKey: string | null = null,
-) {
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from('keywords')
-    .insert({ term: term.trim(), community, branch_key: branchKey })
-    .select()
-    .single();
+const Term = z.string().trim().min(1).max(80);
 
-  if (error) throw error;
-  return data;
+/** Shared session/RLS creation path for management, review and expert uploads. */
+export async function addKeyword(term: string, community: Community | null, branchKey: string | null = null) {
+  const vocabulary = await readVocabulary();
+  const keyword = await resolveOrCreate(Term.parse(term), community, branchKey, vocabulary);
+  await acceptMatchingCandidates(vocabulary, [keyword.term]);
+  return keyword;
+}
+
+async function resolveOrCreate(term: string, community: Community | null, branchKey: string | null, vocabulary: VocabularyTerm[]) {
+  const canonical = normaliseChosen(vocabulary, [term])[0];
+  const existing = vocabulary.find(row => row.term === canonical);
+  if (existing) return existing;
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase.from('keywords')
+    .insert({ term, community, branch_key: branchKey }).select().single();
+  if (error) {
+    // Another expert may have created this term while this tab was saving.
+    if (error.code === '23505') {
+      const fresh = await readVocabulary();
+      const resolved = normaliseChosen(fresh, [term])[0];
+      const winner = fresh.find(row => row.term === resolved);
+      if (winner) { vocabulary.push(winner); return winner; }
+    }
+    throw error;
+  }
+  const created: VocabularyTerm = { id: data.id, term: data.term, variants: [], community: data.community,
+    branchKey: data.branch_key, externalId: data.external_id };
+  vocabulary.push(created);
+  return created;
+}
+
+/** Explicitly chosen terms only; callers enforce the expert guard. */
+export async function ensureKeywords(chosen: string[]): Promise<string[]> {
+  const validated = z.array(Term).parse(chosen);
+  if (!validated.length) return [];
+  const vocabulary = await readVocabulary();
+  const result: string[] = [];
+  for (const term of normaliseChosen(vocabulary, validated)) {
+    const keyword = await resolveOrCreate(term, null, null, vocabulary);
+    if (!result.includes(keyword.term)) result.push(keyword.term);
+  }
+  await acceptMatchingCandidates(vocabulary, result);
+  return result;
+}
+
+async function acceptMatchingCandidates(vocabulary: VocabularyTerm[], chosen: string[]) {
+  const supabase = await createServerSupabase();
+  const selected = new Set(chosen.map(normalise));
+  const ids: string[] = [];
+  // Read all pages before updating: changing status mid-pagination skips rows.
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from('keyword_candidates').select('id,term')
+      .eq('status', 'open').order('id').range(offset, offset + 499);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      const canonical = normaliseChosen(vocabulary, [row.term])[0];
+      if (canonical && selected.has(normalise(canonical))) ids.push(row.id);
+    }
+    if ((data?.length ?? 0) < 500) break;
+  }
+  for (let offset = 0; offset < ids.length; offset += 100) {
+    const { error } = await supabase.from('keyword_candidates')
+      .update({ status: 'accepted', updated_at: new Date().toISOString() })
+      .in('id', ids.slice(offset, offset + 100)).eq('status', 'open');
+    if (error) throw error;
+  }
 }
 
 /** Hangs a term on a branch of the tree, or moves it to another one. */
@@ -119,27 +176,12 @@ export async function acceptCandidate(id: string) {
 
   if (readError) throw readError;
 
-  const { error: insertError } = await supabase
-    .from('keywords')
-    // The branch travels with the term. A candidate that arrived as a
-    // subdivision of "Cities and Villages" becomes a term under it — promoting
-    // it into a flat list is what the queue was there to prevent.
-    .insert({
-      term: candidate.term,
-      community: candidate.community,
-      branch_key: candidate.branch_key,
-    });
-
-  // 23505 is unique_violation: the term already exists, which is the outcome
-  // we wanted anyway.
-  if (insertError && insertError.code !== '23505') throw insertError;
-
-  const { error } = await supabase
-    .from('keyword_candidates')
-    .update({ status: 'accepted', updated_at: new Date().toISOString() })
-    .eq('id', id);
-
+  const keyword = await addKeyword(candidate.term, candidate.community, candidate.branch_key);
+  const { error } = await supabase.from('keyword_candidates')
+    .update({ status: 'accepted', updated_at: new Date().toISOString() }).eq('id', id);
   if (error) throw error;
+  return keyword.term;
+
 }
 
 export async function declineCandidate(id: string) {
@@ -206,7 +248,7 @@ export async function recordCandidates(
       const term = proposal.term?.trim();
       const branchKey = proposal.branchKey?.trim();
       if (!term || !branchKey) continue;
-      if (term.length < 2 || term.length > 60) continue;
+      if (term.length < 1 || term.length > 80) continue;
       if (known.has(term.toLowerCase())) continue;
       if (!fieldDef(branchKey)) continue;
       fresh.set(term.toLowerCase(), { term, branchKey });
@@ -241,7 +283,7 @@ export async function recordCandidates(
 /** A contributor suggestion is tied to this submission, never an approved tag. */
 export async function recordContributorCandidates(terms: string[], itemId: string): Promise<void> {
   const fresh = [...new Map(terms.map(term => [term.trim().toLowerCase(), term.trim()])).values()]
-    .filter(term => term.length >= 2 && term.length <= 60).slice(0, 20);
+    .filter(term => term.length >= 1 && term.length <= 80);
   if (!fresh.length) return;
   const { error } = await createAdminSupabase().from('keyword_candidates').insert(
     fresh.map(term => ({ term, source: 'contributor', item_id: itemId, first_item_id: itemId })),

@@ -553,17 +553,26 @@ export interface ReviewCandidate {
 export async function readReviewCandidates(itemId: string): Promise<ReviewCandidate[]> {
   if (!await getCurrentVolunteer()) return [];
   const db = await createServerSupabase();
-  const { data, error } = await db.from('keyword_candidates')
-    .select('id, term, source, item_id, first_item_id').eq('status', 'open')
-    .or(`item_id.eq.${itemId},first_item_id.eq.${itemId}`).order('created_at').limit(50);
-  // Only a missing-column/schema-cache error is a rollout compatibility case.
-  if (error && ['42703', 'PGRST204'].includes(error.code)) return [];
-  if (error) throw error;
-  return Promise.all((data ?? []).map(async candidate => {
-    const { data: similar, error: matchError } = await db.rpc('similar_review_terms', { proposed: candidate.term });
-    if (matchError) throw matchError;
-    return { id: candidate.id, term: candidate.term, source: candidate.source ?? 'ai', similar: similar ?? [] };
-  }));
+  const data: { id: string; term: string; source: string | null }[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const { data: page, error } = await db.from('keyword_candidates')
+      .select('id, term, source, item_id, first_item_id').eq('status', 'open')
+      .or(`item_id.eq.${itemId},first_item_id.eq.${itemId}`).order('created_at').order('id').range(offset, offset + 499);
+    if (error && ['42703', 'PGRST204'].includes(error.code)) return [];
+    if (error) throw error;
+    data.push(...(page ?? []));
+    if ((page?.length ?? 0) < 500) break;
+  }
+  const result: ReviewCandidate[] = [];
+  // No selection cap; bound concurrent similarity requests instead.
+  for (let offset = 0; offset < data.length; offset += 10) {
+    result.push(...await Promise.all(data.slice(offset, offset + 10).map(async candidate => {
+      const { data: similar, error: matchError } = await db.rpc('similar_review_terms', { proposed: candidate.term });
+      if (matchError) throw matchError;
+      return { id: candidate.id, term: candidate.term, source: candidate.source ?? 'ai', similar: similar ?? [] };
+    })));
+  }
+  return result;
 }
 
 /** Request-local cache only; never share one visitor's RLS results with another. */

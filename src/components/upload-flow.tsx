@@ -89,12 +89,14 @@ type Grouping = 'one' | 'separate';
 type Phase = 'describe' | 'analysing' | 'reviewing' | 'submitting' | 'done';
 
 export function UploadFlow({
+  expert = false,
   vocabulary,
   mark,
   languages,
   siteLanguage,
 }: {
   vocabulary: OfferedTerm[];
+  expert?: boolean;
   /** The code of the language the site is currently in. */
   siteLanguage: string;
   /**
@@ -1364,6 +1366,7 @@ export function UploadFlow({
           <InReadingLanguage catalogue={flowCatalogue}>
           <div className="mt-6">
             <PreReview
+              expert={expert}
               entries={analysed.map((entry) => ({
                 id: entry.id,
                 fileName: entry.fileName,

@@ -1,5 +1,15 @@
 # IJHC Heritage Portal — a guide to the code for AI coding tools
 
+Tag selection update (21.10.2026): review, bulk review and upload share
+`src/components/tag-picker.tsx`. Experts create terms through the guarded
+`/api/manage/keywords` route; review saves also resolve/create explicitly chosen
+terms through `ensureKeywords` in vocabulary mutations. Contributors only propose.
+The full paginated vocabulary includes translations and variants across communities.
+There is no tag-count cap; selected terms are trimmed and limited to 80 characters.
+Migration `0038_open_tag_lengths.sql` is required for the new length range and was
+written but **not applied** in this task. Decisions and verification are in
+`docs/tags-open-2110.md`.
+
 Read this file first, then `AGENTS.md`. AGENTS.md holds the rules that are not negotiable; this file holds the map. Where they disagree, AGENTS.md wins.
 
 Last written: 20.10.2026, after phases 1–3 of Inon's request list (search, filters, review FIFO, password reset, duplicates, AI retry queue, roles, drafts, bulk review, public comments and corrections, collector credit).

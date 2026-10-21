@@ -14,27 +14,23 @@ import { readWatchers } from '@/lib/mail/watchers';
 import { siteUrl } from '@/lib/site';
 import { getCurrentVolunteer } from '@/lib/supabase/server';
 import { translateRecord, verifyRecord } from '@/lib/translate';
-import { setItemFamilies } from '@/lib/vocabulary/mutations';
-import { readVocabulary } from '@/lib/vocabulary/load';
-import { resolveTerms } from '@/lib/vocabulary/thesaurus';
+import { ensureKeywords, setItemFamilies } from '@/lib/vocabulary/mutations';
 import { CATEGORIES, COMMUNITIES } from '@/lib/types';
 
 import { getMessages } from '@/lib/i18n';
 import { needsCategory } from '@/lib/items/review-order';
-import { readReviewCandidates } from '@/lib/items/queries';
-import { decideReviewCandidate } from '@/lib/items/mutations';
 
 const STATUSES = ['pending', 'accepted', 'rejected', 'shadow_gallery'] as const;
 
 const Body = z.object({
-  candidateIds: z.array(z.string().uuid()).max(20).optional(),
+  // Legacy candidateIds are intentionally ignored: selected keywords are authoritative.
   status: z.enum(STATUSES),
   title: z.string().trim().min(1).max(200),
   category: z.enum(CATEGORIES as [string, ...string[]]).nullable().optional(),
   description: z.string().trim().max(4000).nullable(),
   community: z.enum(COMMUNITIES as [string, ...string[]]).nullable(),
   provenance: z.string().trim().max(2000).nullable(),
-  keywords: z.array(z.string().trim().min(1).max(60)).max(20),
+  keywords: z.array(z.string().trim().min(1).max(80)),
   language: z.string().trim().max(60).nullable(),
   period: z.string().trim().max(120).nullable(),
   originPlace: z.string().trim().max(200).nullable(),
@@ -76,15 +72,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       const { t } = await getMessages();
       return fail(400, 'category_required', t('wb.categoryRequired'));
     }
-    if (body.candidateIds?.length) {
-      const candidates = await readReviewCandidates(id);
-      const selected = [...new Set(body.candidateIds)];
-      if (selected.some(candidateId => !candidates.some(candidate => candidate.id === candidateId && body.keywords.includes(candidate.term)))) {
-        const { t } = await getMessages();
-        return fail(409, 'candidate_changed', t('review3.changed'));
-      }
-      for (const candidateId of selected) await decideReviewCandidate(id, candidateId, 'create');
-    }
     const result = await reviewItem({
       itemId: id,
       status: body.status,
@@ -93,21 +80,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       description: body.description,
       community: body.community as never,
       provenance: body.provenance,
-      /*
-       * Resolved against the archive's own list, which does two things at once.
-       *
-       * A variant becomes its preferred spelling — a reviewer picking `Bombay`
-       * from an old tab writes `Mumbai`, so the collection stays whole. And a
-       * word the vocabulary does not hold is dropped rather than written: the
-       * workbench only offers listed terms, but the workbench is not the only
-       * thing that can POST here, and "the vocabulary is closed" has to be true
-       * at the endpoint or it is not true at all.
-       *
-       * Dropped rather than refused, because a stale tab holding a term an
-       * administrator has just removed is ordinary, and failing a volunteer's
-       * whole save over one word is not a good trade.
-       */
-      keywords: resolveTerms(await readVocabulary(), body.keywords),
+      // Only the expert's explicit selection can create vocabulary terms.
+      keywords: await ensureKeywords(body.keywords),
       language: body.language,
       period: body.period,
       originPlace: body.originPlace,

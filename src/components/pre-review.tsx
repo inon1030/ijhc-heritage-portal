@@ -1,9 +1,11 @@
 'use client';
+import { TagPicker } from './tag-picker';
+export { TagPicker } from './tag-picker';
 
 import { replacementFits, replaceReviewText, type ContributorText } from '@/lib/ai/replace-text';
 import { buttonClass } from '@/components/primitives';
-import { useId, useMemo, useState } from 'react';
-import { Eye, Languages, Loader2, Plus, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Eye, Languages, Loader2, X } from 'lucide-react';
 import { useMessages } from '@/lib/i18n/provider';
 import { AiRating } from '@/components/ai-rating';
 import { FieldSheet } from '@/components/field-sheet';
@@ -99,6 +101,7 @@ export function PreReview({
   submitting,
   blocked,
   vocabulary,
+  expert = false,
   languages,
   rating,
   onRating,
@@ -121,6 +124,7 @@ export function PreReview({
   blocked: boolean;
   /** The complete vocabulary. New terms remain suggestions for expert review. */
   vocabulary: OfferedTerm[];
+  expert?: boolean;
   /**
    * The languages the archive publishes in, for the switch under the scanned
    * text. Read from `archive_languages` on the server and handed down, so
@@ -133,6 +137,7 @@ export function PreReview({
 }) {
   const t = useMessages();
   const [edited, setEdited] = useState(false);
+  const [tagsBusy, setTagsBusy] = useState(false);
   const [find, setFind] = useState('');
   const [replacement, setReplacement] = useState('');
   const [confirming, setConfirming] = useState(false);
@@ -155,7 +160,7 @@ export function PreReview({
     )}
     <button
       onClick={onSubmit}
-      disabled={submitting || blocked}
+      disabled={submitting || tagsBusy || blocked}
       className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-accent-strong font-medium text-paper transition-colors duration-200 hover:bg-accent disabled:pointer-events-none disabled:opacity-60"
     >
       {submitting ? (
@@ -251,6 +256,9 @@ export function PreReview({
           const panels = members.map((entry, index) => (
             <EntryPanel
               vocabulary={vocabulary}
+              expert={expert}
+              tagsBusy={tagsBusy || submitting}
+              onTagBusyChange={setTagsBusy}
               key={entry.id}
               entry={entry}
               index={index}
@@ -311,6 +319,9 @@ export function PreReview({
 const EMPTY_DRAFT: Draft = { title: '', description: '', keywords: [], fields: [] };
 
 function EntryPanel({
+  tagsBusy,
+  onTagBusyChange,
+  expert = false,
   entry,
   index,
   total,
@@ -321,6 +332,9 @@ function EntryPanel({
   vocabulary,
   languages,
 }: {
+  expert?: boolean;
+  tagsBusy: boolean;
+  onTagBusyChange: (busy: boolean) => void;
   entry: PreReviewEntry;
   index: number;
   total: number;
@@ -380,6 +394,12 @@ function EntryPanel({
         </div>
       )}
 
+      <div className="mb-5">
+        <TagPicker expert={expert} disabled={tagsBusy} onBusyChange={onTagBusyChange} chosen={draft.keywords} offered={vocabulary}
+          suggested={analysis?.keywords ?? []} onChange={keywords => onChange({ ...draft, keywords })} />
+      </div>
+
+
       {analysis && (
         <>
           {(
@@ -402,18 +422,6 @@ function EntryPanel({
                 {t('prereview.prefilled')}
               </span>
             </label>
-          )}
-
-          {(
-            <div className="mb-5">
-              <p className="eyebrow mb-1.5">{t('prereview.yourTags')}</p>
-              <TagPicker
-                chosen={draft.keywords}
-                offered={vocabulary}
-                suggested={analysis.keywords}
-                onChange={(keywords) => onChange({ ...draft, keywords })}
-              />
-            </div>
           )}
 
           {showFields && (
@@ -517,143 +525,6 @@ function Suggested({
         {t('prereview.useThis')}
       </button>
     </span>
-  );
-}
-
-/** Search all vocabulary labels; new terms remain contributor suggestions. */
-export function TagPicker({
-  chosen,
-  offered,
-  suggested,
-  onChange,
-}: {
-  chosen: string[];
-  offered: { term: string; variants: string[] }[];
-  suggested: string[];
-  onChange: (keywords: string[]) => void;
-}) {
-  const t = useMessages();
-  const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
-
-  const add = (term: string) => {
-    if (chosen.length < 20 && !chosen.includes(term)) onChange([...chosen, term]);
-    setQuery('');
-  };
-
-  /*
-   * Only terms the archive actually holds, and only ones not already chosen.
-   * Matched on the preferred spelling *and* on every variant, so the person who
-   * knows it as Bombay finds it without knowing what the archive calls it.
-   */
-  const searchId = useId();
-  const needle = query.trim().toLowerCase();
-  const canSuggest = needle.length >= 2 && chosen.length < 20 && !chosen.some(v => v.toLowerCase() === needle) && !offered.some(term => [term.term, ...term.variants].some(v => v.toLowerCase() === needle));
-  const matches = offered
-    .filter((term) => !chosen.includes(term.term))
-    .filter(
-      (term) =>
-        !needle ||
-        term.term.toLowerCase().includes(needle) ||
-        term.variants.some((v) => v.toLowerCase().includes(needle)),
-    )
-    .slice(0, 40);
-
-  // A model suggestion is only offered if it is a term that exists. One that is
-  // not in the list is not a tag, whatever the model thought.
-  const known = new Set(offered.map((term) => term.term));
-  const suggestions = suggested.filter((term) => known.has(term) && !chosen.includes(term));
-
-  return (
-    <div>
-      <ul className="flex flex-wrap items-center gap-2">
-        {chosen.map((term) => (
-          <li
-            key={term}
-            className="flex max-w-full flex-wrap items-center gap-1 break-all rounded-full border border-rule bg-paper py-1.5 pe-1.5 ps-3.5 text-sm"
-          >
-            {term}
-            <button
-              type="button"
-              onClick={() => onChange(chosen.filter((k) => k !== term))}
-              aria-label={t('prereview.removeTag', { term })}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full px-2 text-muted transition-colors hover:bg-critical/10 hover:text-critical"
-            >
-              <X size={13} />
-              <span>{t('public.removeTag')}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <div className="relative mt-2" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
-        <label htmlFor={searchId} className="mb-2 block">{t('prereview.addTag')}</label>
-        <input id={searchId}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          placeholder={t('prereview.addTag')}
-          maxLength={60}
-          className="h-11 w-full rounded-lg border border-rule bg-paper px-3.5 text-sm focus:border-accent-strong focus:outline-none"
-        />
-
-        {open && (
-          <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-rule bg-paper shadow-lift">
-            {canSuggest && <button type="button" className={buttonClass('quiet', 'min-h-11 h-auto w-full whitespace-normal py-2 text-start')} onClick={() => add(query.trim())}>{t('public.suggestTag', { text: query.trim() })}</button>}
-            {matches.length === 0 ? (
-              <p className="px-3.5 py-3 text-sm text-muted">{t('prereview.tagsNoMatch')}</p>
-            ) : (
-              <ul>
-                {matches.map((term) => (
-                  <li key={term.term}>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => add(term.term)}
-                      className="flex min-h-11 w-full items-baseline gap-2 px-3.5 py-2 text-start text-sm transition-colors hover:bg-paper-2"
-                    >
-                      <span>{term.term}</span>
-                      {needle &&
-                        !term.term.toLowerCase().includes(needle) &&
-                        term.variants.some((v) => v.toLowerCase().includes(needle)) && (
-                          <span className="text-xs text-muted">
-                            {term.variants.find((v) => v.toLowerCase().includes(needle))}
-                          </span>
-                        )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {suggestions.length > 0 && (
-        <div className="mt-2.5">
-          <p className="eyebrow mb-1.5 text-[0.7rem]">{t('prereview.tagsSuggested')}</p>
-          <ul className="flex flex-wrap gap-2">
-            {suggestions.map((term) => (
-              <li key={term}>
-                <button
-                  type="button"
-                  onClick={() => add(term)}
-                  className="flex min-h-11 items-center gap-1 rounded-full border border-dashed border-rule-strong px-3 py-1.5 text-sm text-muted transition-colors hover:border-accent-strong hover:bg-accent-wash hover:text-ink"
-                >
-                  <Plus size={13} />
-                  {term}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <p className="mt-2 text-sm leading-relaxed text-muted">{t('public.tagsHint')}</p>
-    </div>
   );
 }
 

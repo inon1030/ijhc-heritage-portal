@@ -12,15 +12,15 @@ import type { Family, KeywordCandidate, Profile } from '@/lib/types';
 /** What the model proposed and the vocabulary does not hold. Volunteers only. */
 export async function listOpenCandidates(): Promise<KeywordCandidate[]> {
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase
-    .from('keyword_candidates')
-    .select('*')
-    .eq('status', 'open')
-    .order('seen_count', { ascending: false })
-    .order('term', { ascending: true });
-
-  if (error) throw error;
-  return (data ?? []) as KeywordCandidate[];
+  const rows: KeywordCandidate[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await supabase.from('keyword_candidates').select('*')
+      .eq('status', 'open').order('seen_count', { ascending: false }).order('term').order('id')
+      .range(offset, offset + 499);
+    if (error) throw error;
+    rows.push(...(data ?? []) as KeywordCandidate[]);
+    if ((data?.length ?? 0) < 500) return rows;
+  }
 }
 
 export async function listFamilies(): Promise<Family[]> {
