@@ -1,0 +1,74 @@
+<standard>
+Act as an elite, world-class UI/UX designer, full-stack software architect, and creative director.
+From now on, whenever we build websites, applications, or visual software systems together, I expect nothing less than industry-defining, production-ready, ultra-high-end execution.
+To achieve this, apply these core engineering and design principles to everything you build:
+ * Visual & Cinematic Quality: Deliver exceptionally polished layouts. Utilize modern design systems, advanced CSS/Tailwind animations, micro-interactions, perfect typography, dynamic lighting/shadow effects, and stunning color theory that feels immersive, like a high-end digital movie or a top-tier tech product.
+ * Technical Excellence: Write clean, modular, scalable, and highly optimized code. Never take shortcuts or leave placeholders; write the full, robust implementation.
+ * Interactive & Responsive: Ensure every interface is fully responsive across all devices and feels fluid, snappy, and deeply engaging to the user.
+ * Proactive Engineering: Anticipate edge cases, performance bottlenecks, and UX friction points, solving them before I even have to ask.
+Acknowledge that you understand these standards, and let's build something extraordinary together.
+
+How this translates in THIS project (binding):
+- Users are volunteers in their seventies, half in Hebrew (RTL). Every new control: visible label, 44px touch target, keyboard focus, works in RTL at 375px.
+- LIGHT ONLY. Existing tokens and button styles only.
+- Every new string goes through i18n: English in src/lib/i18n/messages.ts, Hebrew in src/lib/i18n/locales/he.json, both written by hand. Emails too, in the reader's language (follow the existing mail templates).
+- In the report, list three edge cases you solved without being asked.
+</standard>
+
+<task>
+Worktree: C:\Users\inon1\Desktop\SelfEmployee\IJHC\ijhc-p2a (branch feature/phase2-server, already created). IJHC Heritage Portal: Next.js 16, React 19, Supabase. ANOTHER agent is working in parallel in a different worktree on: the portal pages (src/app/portal/**, src/app/page.tsx, src/components/portal-filters.tsx), the review queue page (src/app/review/page.tsx), src/lib/items/queries.ts listing/search functions, upload-flow.tsx, pre-review.tsx, site-nav.tsx, i18n label for nav.contribute, src/lib/translate/**. AVOID editing those files. If you must touch one, keep the change minimal and additive (a new import + one element), and list it in the report so the merge can be done by hand. Prefer new files.
+
+Read first: AGENTS.md (rules bind you; read node_modules/next/dist/docs where relevant), docs/decisions-2010.md if present, src/lib/supabase/*, src/proxy.ts, src/lib/mail/*, src/app/api/uploads/sign/route.ts, src/app/api/items/route.ts, src/lib/items/background-reading.ts, src/lib/items/mutations.ts, src/app/api/files/[fileId]/route.ts, src/components/review-workbench.tsx, src/components/login-form.tsx, src/app/login, vercel.json, supabase/migrations (0001, 0002, 0007, 0018, 0031, 0032).
+
+Implement four changes requested by Inon (developer) on 20.10.2026. "Done" = implemented, unit tests for the logic, `npm run verify` green.
+
+A. PASSWORD RESET. "Add a password reset: it sends an email to the account owner, the email has a link, clicking it lets us create a new password for the account and activate it."
+ - "Forgot your password?" link on the login form -> /login/forgot: one email field. POST /api/auth/forgot: ALWAYS answers the same neutral message whether or not the address exists (no account enumeration); rate-limited per address and per IP in memory or via the existing problems/route patterns (keep it simple and safe; say what you chose).
+ - Server uses the admin client's auth.admin.generateLink({ type: 'recovery', email, options: { redirectTo } }) and sends OUR OWN email through the existing nodemailer mail lib (not Supabase's mailer), in the reader's language, with the link. The link expires per Supabase; the email says it is valid for a limited time and that if they did not ask, they can ignore it.
+ - /login/reset: verifies the token (verifyOtp with token_hash + type 'recovery', or the session from the link - read the Next 16 + @supabase/ssr docs in node_modules to do it the supported way), then a form for a new password (twice, minimum length same as account request), updateUser({ password }), then signs in and redirects. A profile with role 'pending' stays pending: reset does NOT approve an account (no change to who can do what). Expired/invalid link: a clear message and a button to request a new one.
+ - These public routes must be reachable while signed out: if src/proxy.ts gates them, add them to the public list only. Nothing else in proxy.ts changes.
+
+B. DUPLICATE RULE. "Create a duplicate rule with a HASH computed on the documents and images at upload... and an alert to the content experts on potential duplicate records, showing the records with the option to MERGE."
+ - Browser computes SHA-256 of each file (crypto.subtle.digest, streamed in chunks for large files up to the 50 MB limit, without blocking the UI) - put it in a NEW helper module (src/lib/files/hash.ts) and pass it in the sign request body as an optional field; DO NOT edit upload-flow.tsx: wire it in the code path that calls /api/uploads/sign if that is outside upload-flow.tsx; if it is only inside upload-flow.tsx, export a tiny function the other agent's merge can call, and ALSO have the server compute SHA-256 itself when the item is created (server-side hash of the stored object is the source of truth; the client hash is only an early hint). Store it in item_files.checksum (the column already exists and is never written).
+ - On item creation, look for other non-binned items with a file of the same checksum (strong match), or same original file name + same mime type + same byte size (weak match). Record each pair in a new table item_duplicates (migration supabase/migrations/0034_duplicates_are_flagged.sql): id, item_id, other_item_id, reason ('same_content'|'same_name_type_size'), created_at, resolved_at, resolved_by, resolution ('not_duplicate'|'merged'). RLS: knowledge experts (is_volunteer()) read and update; nobody writes from the browser except through the route handlers; anon nothing. Follow the style of existing migrations (comments explaining why, search_path pinned for functions).
+ - Review workbench: a clear warning banner when the item has open duplicate pairs, with a thumbnail/title link to each other record, and two actions: "Not a duplicate" (resolves) and "Merge into the older record": the older record is kept; the newer item's files move to it (item_files.item_id update), its contributor link is added to item_contributors if not there, the newer item goes to the bin (existing soft delete), an item_events row is written on both, and the pair is resolved as 'merged'. Through src/lib/items/mutations.ts and a route under src/app/api/items/[id]/duplicates. Confirm before merging; it is restorable from the bin.
+ - Notify experts: include the duplicate warning in the existing newSubmissionMail when a pair is found (a line, not a new email type).
+ - Add a script scripts/backfill-checksums.ts that computes checksums for existing item_files from storage (dry-run by default, --apply to write). Do NOT run it.
+
+C. DAILY AI RETRY QUEUE. "What did not pass AI analysis goes into a daily queue that retries the review for items that were blocked."
+ - Migration supabase/migrations/0035_a_failed_reading_is_tried_again.sql: ai_analyses.retry_count int not null default 0, last_retry_at timestamptz.
+ - New cron route /api/cron/reread (protect it exactly like the existing cron routes), added to vercel.json once a day at a quiet hour that does not collide with the existing two. It picks items (not binned, status pending or shadow_gallery) whose latest reading is 'failed', or 'pending' for more than 2 hours, oldest first, retry_count < 3, at most AI_RETRY_DAILY per run (env, default 5 - the Gemini free tier is 20 calls a day and uploads come first), and re-reads each with the existing background-reading code path. Success replaces the failed reading the same way the background path does; failure increments retry_count and logs a problem. Never writes AI output into items.
+ - Workbench: for a failed/pending reading, show "Next automatic attempt: tonight" or "No more automatic attempts (3 tried)", and a button "Try reading again now" for experts (one call, same code path, disabled while running, counts toward the limit).
+
+D. DOWNLOAD PROTECTION. "If possible block screenshots and direct downloads of files... add copyright under every document."
+ - Screenshots cannot be blocked on the web; do not pretend. Do: on public pages (/portal/[id] media viewer components - edit the media components under src/components, not the page file, where possible) disable the context menu and drag on images, video, audio and document previews; video/audio get controlsList="nodownload noremoteplayback" and disablePictureInPicture; images non-draggable and not selectable; /api/files serves public files with Content-Disposition: inline and no filename that invites saving; a print stylesheet hides the media on public pages. Knowledge experts and admins in /review keep full access (they must be able to download).
+ - The copyright line itself is phase-2b (another agent); do not build it.
+</task>
+
+<hard_constraints>
+- No change to who can do what beyond: new tables get RLS as stated; public routes for password reset. No role changes, no loosening of any policy.
+- New migrations ONLY 0034 and 0035 as named. Never edit an existing migration. Do NOT apply migrations; Claude applies them.
+- No new dependencies; do not edit package.json or package-lock.json.
+- Do not read, print or write .env* files. Never reference secret values.
+- Do not call Gemini or any network service. Do NOT run: npm run dev, npm run i18n, npm run quota, npm run deploy, npm run public, npm run db:*, npm run sync:vault, npm run test:e2e, npm run test:db, supabase, vercel, the backfill script.
+- No git commands. Claude commits.
+- AI output never lands in items; no React component talks to Supabase directly.
+- Do not weaken, skip or delete tests.
+- Work only inside this worktree.
+</hard_constraints>
+
+<verification_loop>
+`npm run verify` (typecheck, lint, vitest, build). Baseline: green, 46 files / 412 tests, lint 0 errors 2 warnings. Do not add warnings. Red = not done.
+</verification_loop>
+
+<default_follow_through_policy>
+Do not ask questions. Decide and record each decision in one line in docs/phase2-server-2010.md (write its plan section first, then code). If something cannot be done inside the constraints, skip it and say exactly why.
+</default_follow_through_policy>
+
+<action_safety>
+Only this worktree. No git. Nothing that writes to a remote service.
+</action_safety>
+
+<compact_output_contract>
+Report in Hebrew: one-line verdict; table per change A-D with files; tests before/after; "not done and why"; every file you touched that is on the AVOID list, with the exact lines; the SQL of 0034 and 0035 summarised; three edge cases solved unasked; proposed commit boundaries with Hebrew messages.
+</compact_output_contract>

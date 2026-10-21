@@ -1,3 +1,7 @@
+import { creditText } from '@/lib/files/credit-text';
+import { composeCredit, creditCachePath } from '@/lib/files/credit-band';
+import { recordProblem } from '@/lib/problems/record';
+import { problemCode } from '@/lib/problems/code';
 import { NextRequest, NextResponse } from 'next/server';
 import { getMessages } from '@/lib/i18n';
 import { fail, unexpected } from '@/lib/api';
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
 
     const { data: file, error } = await admin
       .from('item_files')
-      .select('storage_path, preview_path, mime_type, items(status, access, deleted_at)')
+      .select('storage_path, preview_path, mime_type, checksum, items(status, access, deleted_at, collector_name, source)')
       .eq('id', fileId)
       .maybeSingle();
 
@@ -34,6 +38,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
     if (!file) return fail(404, 'not_found', t('err.fileNotFound'));
 
     const item = file.items as unknown as {
+      collector_name: string | null;
+      source: string | null;
       status: string;
       access: string;
       deleted_at: string | null;
@@ -75,49 +81,43 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
       return fail(403, 'forbidden', 'This file is not publicly available.');
     }
 
-    /*
-     * `?rendition` asks for the viewable copy rather than the master.
-     *
-     * The same permission decision governs both — one row, one check — so a
-     * derivative can never be reachable when its master is not. If a caller
-     * asks for a rendition and none was made, the master is served: it is
-     * viewable, which is precisely why no derivative exists.
-     */
+    // Experts always receive the master, even when a UI requests a derivative.
     const wantsRendition = request.nextUrl.searchParams.has('rendition');
-    const path = wantsRendition && file.preview_path ? file.preview_path : file.storage_path;
+    const path = !expert && wantsRendition && file.preview_path ? file.preview_path : file.storage_path;
 
-    /*
-     * `?thumb` is the tile on a wall, not the plate on the table.
-     *
-     * Measured on the live portal, 16.09.2026: the grid drew each card at 91px
-     * and downloaded the master for it — 640px and about a hundred kilobytes a
-     * tile, eight tiles a screen. The master is what the record page and the
-     * lightbox want; a card wants a fraction of it.
-     *
-     * Made here rather than at upload because it has to work for the thirty-five
-     * files already in the archive, and because it is cheap: one resize, then
-     * the answer sits in the CDN for a year. Only a published file may be cached
-     * publicly — the same rule the redirect below follows.
-     */
-    if (request.nextUrl.searchParams.has('thumb') && (file.mime_type ?? '').startsWith('image/')) {
-      const { data: blob, error: downloadError } = await admin.storage.from('heritage').download(path);
+    // Authorize before reading private cached bytes; never cache access decisions.
+    if (!expert && isPublished && (file.mime_type ?? '').startsWith('image/')) {
+      const bucket = admin.storage.from('heritage');
+      const thumbnail = request.nextUrl.searchParams.has('thumb');
+      const text = creditText(item?.collector_name, item?.source, undefined, 48);
+      const cachePath = creditCachePath(fileId, file.checksum, path, thumbnail ? 'thumb' : 'full', text);
+      const imageResponse = (bytes: Uint8Array, mime = 'image/jpeg') => new NextResponse(bytes as unknown as BodyInit, {
+        headers: { 'Content-Type': mime, 'Content-Disposition': 'inline',
+          'Content-Length': String(bytes.byteLength), 'Cache-Control': 'private, no-store',
+            Vary: 'Cookie, Authorization', 'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': "sandbox; default-src 'none'" },
+      });
+      const { data: cached } = await bucket.download(cachePath).catch(() => ({ data: null }));
+      if (cached) return imageResponse(new Uint8Array(await cached.arrayBuffer()));
+      const { data: blob, error: downloadError } = await bucket.download(path);
       if (downloadError || !blob) return fail(502, 'storage_unavailable', t('err.fileNotOpened'));
-
-      const thumb = await makeThumb(new Uint8Array(await blob.arrayBuffer()));
-      if (thumb) {
-        return new NextResponse(new Uint8Array(thumb) as unknown as BodyInit, {
-          headers: {
-            'Content-Type': 'image/jpeg',
-            'Content-Disposition': 'inline',
-            'Content-Length': String(thumb.byteLength),
-            'Cache-Control': isPublished
-              ? 'public, max-age=31536000, immutable'
-              : 'private, no-store',
-          },
-        });
+      const original = new Uint8Array(await blob.arrayBuffer());
+      let bytes: Uint8Array = original;
+      let mime = wantsRendition && file.preview_path ? 'image/jpeg' : file.mime_type;
+      try {
+        if (thumbnail) {
+          const thumb = await makeThumb(original);
+          if (thumb) { bytes = new Uint8Array(thumb); mime = 'image/jpeg'; }
+        }
+        const burned = await composeCredit(bytes, text);
+        // Cache failures must not discard a successfully rendered image.
+        const { error: cacheError } = await bucket.upload(cachePath, burned, { contentType: 'image/jpeg', upsert: true }).catch(() => ({ error: true }));
+        if (cacheError) await recordProblem({ code: problemCode(), source: 'server', place: 'files/credit-cache', message: 'Could not cache credit derivative' });
+        return imageResponse(new Uint8Array(burned));
+      } catch {
+        await recordProblem({ code: problemCode(), source: 'server', place: 'files/credit-band', message: 'Could not render credit derivative' });
+        return imageResponse(bytes, mime);
       }
-      // A thumbnail that cannot be made is not worth failing a page over; the
-      // master below is always viewable.
     }
 
     const { data: signed, error: signError } = await admin
@@ -142,6 +142,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
         'Content-Type': upstream.headers.get('content-type') ?? file.mime_type,
         'Content-Disposition': 'inline',
         'Cache-Control': 'private, no-store',
+        Vary: 'Cookie, Authorization',
         'X-Content-Type-Options': 'nosniff',
         // Files must not execute in the application's origin.
         'Content-Security-Policy': "sandbox; default-src 'none'",
@@ -156,11 +157,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ fil
     return NextResponse.redirect(signed.signedUrl, {
       status: 307,
       headers: {
-        // Published files may sit in a shared cache; anything else must not.
+        // A privileged redirect must never be replayed from a shared cache.
         'Cache-Control': 'private, no-store',
+        Vary: 'Cookie, Authorization',
       },
     });
   } catch (error) {
     return unexpected(error, '/api/files/[fileId]');
   }
-}
+}

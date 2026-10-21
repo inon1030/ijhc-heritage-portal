@@ -1,3 +1,4 @@
+import { creditText } from '@/lib/files/credit-text';
 import Link from 'next/link';
 import { RecordEditLink } from '@/components/record-edit-link';
 import { RecordFeedback } from '@/components/record-feedback';
@@ -110,8 +111,7 @@ export default async function RecordPage({
           </div>
 
           <div className="mt-4 space-y-1 text-sm leading-relaxed text-muted" dir="auto">
-            {item.collector_name && <p>{t('public.collection', { collector: item.collector_name })}</p>}
-            <p>{t('public.credit', { source: item.source || t('public.unknownSource') })}</p>
+            <p className="rounded-lg bg-paper px-3 py-2 text-ink">{creditText(item.collector_name, item.source, t)}</p>
           </div>
 
           {/* A record can be a document scanned page by page. Every page is

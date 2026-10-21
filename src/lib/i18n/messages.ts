@@ -25,6 +25,10 @@
  */
 
 export const en = {
+  'credit.collection': "© {collector} collection",
+  'credit.shared': "Shared by {source}",
+  'credit.center': "Indian Jewish Heritage Center",
+  'credit.centerCopyright': "© Indian Jewish Heritage Center",
   'login.intro': 'Reviewing submissions needs an account. Browsing and contributing do not — those are open to everyone.',
   'review3.signIn': 'Sign in as an approved content expert.',
   'review3.missing': 'This record is no longer available.',

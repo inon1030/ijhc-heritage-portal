@@ -980,7 +980,11 @@
     "public.description": "526e0087cc3f254d",
     "public.tagsHint": "08ccc84d3e8f709a",
     "public.removeTag": "488464ba45b0e8e2",
-    "login.intro": "bf5c476d49e13cc2"
+    "login.intro": "bf5c476d49e13cc2",
+    "credit.collection": "400776b04c42f35d",
+    "credit.shared": "7a3e37752da28331",
+    "credit.center": "e5dadf70da927c9f",
+    "credit.centerCopyright": "576f9d012e3a35c3"
   },
   "hi": {
     "site.name": "e5dadf70da927c9f",

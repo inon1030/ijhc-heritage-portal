@@ -979,5 +979,9 @@
   "public.title": "כותרת",
   "public.tagsHint": "אפשר לחפש בכל השפות והכתיבים, או להציע תגית חדשה לבדיקה של מומחה תוכן.",
   "public.removeTag": "הסרת תגית",
-  "public.description": "תיאור"
+  "public.description": "תיאור",
+  "credit.collection": "© אוסף {collector}",
+  "credit.shared": "שותף על ידי {source}",
+  "credit.center": "מרכז מורשת יהדות הודו",
+  "credit.centerCopyright": "© מרכז מורשת יהדות הודו"
 }
